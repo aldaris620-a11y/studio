@@ -72,6 +72,7 @@ export default function SignupPage() {
   const auth = useAuth();
   const db = useFirestore();
   const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,6 +90,11 @@ export default function SignupPage() {
   function handleAcceptTerms() {
     form.setValue('terms', true, { shouldValidate: true });
     setTermsModalOpen(false);
+  }
+
+  function handleAcceptPrivacy() {
+    form.setValue('privacy', true, { shouldValidate: true });
+    setPrivacyModalOpen(false);
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -250,22 +256,25 @@ export default function SignupPage() {
                           <FormControl>
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
-                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="4"></circle>
-                                <line x1="12" y1="16" x2="12" y2="22"></line>
-                                <line x1="9" y1="19" x2="15" y2="19"></line>
-                              </svg>
+                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="4"/>
+                                <path d="M16 8h-2m4 0h-2"/>
+                                <path d="m15 7 1-1"/>
+                                <path d="m15 9 1 1"/>
+                                <path d="M9 16.7A5 5 0 0 1 9 7.3"/>
+                            </svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
-                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
+                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M16 7h.01"></path>
-                                <path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L8.4 6.82A4 4 0 0 0 5 10v1a8 8 0 0 0 8 8h1.6"></path>
+                                <circle cx="12" cy="10" r="4"/>
+                                <path d="M12 14v8"/>
+                                <path d="M9 20h6"/>
                             </svg>
                           </Label>
                         </FormItem>
@@ -273,7 +282,7 @@ export default function SignupPage() {
                           <FormControl>
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
-                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
+                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
                           </Label>
                         </FormItem>
@@ -315,7 +324,7 @@ export default function SignupPage() {
                               <TermsContent />
                             </ScrollArea>
                             <DialogFooter>
-                              <Button onClick={handleAcceptTerms}>
+                              <Button type="button" onClick={handleAcceptTerms}>
                                 Acepto mi destino
                               </Button>
                             </DialogFooter>
@@ -342,7 +351,7 @@ export default function SignupPage() {
                     <div className="space-y-1 leading-none">
                       <FormLabel>
                         He leído y acepto la {" "}
-                        <Dialog>
+                        <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
                           <DialogTrigger asChild>
                             <span className="underline text-primary hover:text-primary/80 cursor-pointer">
                              Política de Privacidad
@@ -358,6 +367,11 @@ export default function SignupPage() {
                             <ScrollArea className="h-96 pr-4">
                               <PrivacyContent />
                             </ScrollArea>
+                             <DialogFooter>
+                              <Button type="button" onClick={handleAcceptPrivacy}>
+                                Acepto mi destino
+                              </Button>
+                            </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       </FormLabel>
@@ -383,3 +397,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
