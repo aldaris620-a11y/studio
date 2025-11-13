@@ -21,7 +21,6 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp, auth: Auth, fi
       } catch (e) {
         // Silently catch errors. If emulators are not running, it will connect to production.
         // This is a more robust approach in development environments.
-        console.error('Error connecting to Firebase emulators. Trying to connect to production services.', e);
       }
   }
 
@@ -29,7 +28,7 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp, auth: Auth, fi
 }
 
 export * from './provider';
-export * from './client-provider';
+
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './non-blocking-updates';
