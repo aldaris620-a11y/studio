@@ -12,14 +12,14 @@ export default async function DashboardPage() {
   return (
     <div className="container mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Your Dashboard</h1>
-        <p className="text-muted-foreground">Track your progress and unlock amazing rewards.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Tu Panel</h1>
+        <p className="text-muted-foreground">Sigue tu progreso y desbloquea recompensas increíbles.</p>
       </div>
 
       <section>
         <h2 className="text-2xl font-semibold tracking-tight mb-4 flex items-center gap-2">
             <Gamepad2 className="text-primary"/>
-            Your Games
+            Tus Juegos
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {games.map((game) => (
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
       <section className="mt-12">
         <h2 className="text-2xl font-semibold tracking-tight mb-4 flex items-center gap-2">
             <Trophy className="text-accent" />
-            Cross-Game Rewards
+            Recompensas Entre Juegos
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {rewards.map((reward) => (
@@ -59,11 +59,11 @@ export default async function DashboardPage() {
                     <CardTitle className="text-xl">{reward.name}</CardTitle>
                     {reward.unlocked ? (
                          <Badge variant="default" className="bg-accent hover:bg-accent/80 text-accent-foreground">
-                            <Unlock className="mr-1 h-4 w-4"/> Unlocked
+                            <Unlock className="mr-1 h-4 w-4"/> Desbloqueado
                         </Badge>
                     ) : (
                         <Badge variant="secondary">
-                            <Lock className="mr-1 h-4 w-4"/> Locked
+                            <Lock className="mr-1 h-4 w-4"/> Bloqueado
                         </Badge>
                     )}
                 </div>
@@ -71,7 +71,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground italic">
-                  How to unlock: {reward.gameToUnlock}
+                  Cómo desbloquear: {reward.gameToUnlock}
                 </p>
               </CardContent>
             </Card>

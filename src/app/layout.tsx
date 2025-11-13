@@ -4,8 +4,8 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'GameSync Hub',
-  description: 'Sync your game progress and rewards seamlessly.',
+  title: 'Centro de Sincronización de Juegos',
+  description: 'Sincroniza tu progreso de juego y recompensas sin problemas.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

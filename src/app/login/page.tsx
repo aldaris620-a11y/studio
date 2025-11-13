@@ -30,8 +30,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Gamepad2 } from "lucide-react";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
+  password: z.string().min(1, { message: "La contraseña es requerida." }),
 });
 
 export default function LoginPage() {
@@ -54,8 +54,8 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (error: any) {
       toast({
-        title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
+        title: "Falló el Inicio de Sesión",
+        description: error.message || "Ocurrió un error inesperado.",
         variant: "destructive",
       });
       console.error("Login error:", error);
@@ -71,9 +71,9 @@ export default function LoginPage() {
             <div className="flex justify-center items-center mb-4">
              <Gamepad2 className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Welcome Back!</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">¡Bienvenido de Nuevo!</CardTitle>
           <CardDescription>
-            Enter your credentials to access your GameSync Hub.
+            Introduce tus credenciales para acceder a tu Centro de Sincronización de Juegos.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,9 +84,9 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Correo Electrónico</FormLabel>
                     <FormControl>
-                      <Input placeholder="gamer@example.com" {...field} />
+                      <Input placeholder="jugador@ejemplo.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -97,7 +97,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Contraseña</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -106,14 +106,14 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? "Iniciando Sesión..." : "Iniciar Sesión"}
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            ¿No tienes una cuenta?{" "}
             <Link href="/signup" className="underline text-primary hover:text-primary/80">
-              Sign up
+              Regístrate
             </Link>
           </div>
         </CardContent>

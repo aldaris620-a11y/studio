@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const profileSchema = z.object({
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
+  username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
 });
 
 const avatarImages = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
@@ -74,13 +74,13 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: 'Profile Updated',
-        description: 'Your profile has been successfully updated.',
+        title: 'Perfil Actualizado',
+        description: 'Tu perfil ha sido actualizado exitosamente.',
       });
     } catch (error: any) {
       toast({
-        title: 'Update Failed',
-        description: error.message || 'An error occurred.',
+        title: 'Falló la Actualización',
+        description: error.message || 'Ocurrió un error.',
         variant: 'destructive',
       });
     } finally {
@@ -91,12 +91,12 @@ export default function ProfilePage() {
   if (isPageLoading) {
     return (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Your Profile</h1>
-          <p className="text-muted-foreground mb-8">Manage your public profile information.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Tu Perfil</h1>
+          <p className="text-muted-foreground mb-8">Administra la información de tu perfil público.</p>
           <Card>
             <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>Update your username and choose your avatar.</CardDescription>
+                <CardTitle>Ajustes del Perfil</CardTitle>
+                <CardDescription>Actualiza tu nombre de usuario y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <Skeleton className="h-10 w-1/2" />
@@ -118,15 +118,15 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold tracking-tight">Your Profile</h1>
-      <p className="text-muted-foreground mb-8">Manage your public profile information.</p>
+      <h1 className="text-3xl font-bold tracking-tight">Tu Perfil</h1>
+      <p className="text-muted-foreground mb-8">Administra la información de tu perfil público.</p>
 
       <Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardHeader>
-              <CardTitle>Profile Settings</CardTitle>
-              <CardDescription>Update your username and choose your avatar.</CardDescription>
+              <CardTitle>Ajustes del Perfil</CardTitle>
+              <CardDescription>Actualiza tu nombre de usuario y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -134,9 +134,9 @@ export default function ProfilePage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Nombre de usuario</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your cool gamer tag" {...field} className="max-w-sm" />
+                      <Input placeholder="Tu genial gamertag" {...field} className="max-w-sm" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +170,7 @@ export default function ProfilePage() {
             </CardContent>
             <CardContent>
                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Saving...' : 'Save Changes'}
+                    {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
             </CardContent>
           </form>

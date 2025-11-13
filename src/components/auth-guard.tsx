@@ -20,7 +20,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             <div className="flex h-screen w-full flex-col items-center justify-center bg-background">
                 <Gamepad2 className="h-12 w-12 animate-pulse text-primary" />
                 <p className="mt-4 text-lg font-semibold text-foreground">
-                    Securing Connection...
+                    Asegurando Conexión...
                 </p>
             </div>
         );

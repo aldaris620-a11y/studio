@@ -9,9 +9,9 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Gamepad2 },
-    { href: '/profile', label: 'Profile', icon: User },
-    { href: '/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard', label: 'Panel', icon: Gamepad2 },
+    { href: '/profile', label: 'Perfil', icon: User },
+    { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
 
 export function MobileNav() {
@@ -25,7 +25,7 @@ export function MobileNav() {
                   className="shrink-0 md:hidden"
                 >
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle navigation menu</span>
+                  <span className="sr-only">Alternar menú de navegación</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="flex flex-col">
@@ -35,7 +35,7 @@ export function MobileNav() {
                     className="flex items-center gap-2 text-lg font-semibold text-primary"
                   >
                     <Gamepad2 className="h-6 w-6" />
-                    <span>GameSync Hub</span>
+                    <span>Centro de Sincronización</span>
                   </Link>
                    {navItems.map((item) => (
                         <Link

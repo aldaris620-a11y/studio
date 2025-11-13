@@ -19,12 +19,12 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const passwordSchema = z.object({
-    currentPassword: z.string().min(1, 'Current password is required.'),
-    newPassword: z.string().min(6, 'New password must be at least 6 characters.'),
+    currentPassword: z.string().min(1, 'La contraseña actual es requerida.'),
+    newPassword: z.string().min(6, 'La nueva contraseña debe tener al menos 6 caracteres.'),
 });
 
 const deleteSchema = z.object({
-    confirmPassword: z.string().min(1, 'Password is required to delete your account.'),
+    confirmPassword: z.string().min(1, 'Se requiere la contraseña para eliminar tu cuenta.'),
 });
 
 export default function SettingsPage() {
@@ -54,14 +54,14 @@ export default function SettingsPage() {
       await updatePassword(user, values.newPassword);
       
       toast({
-        title: 'Success',
-        description: 'Your password has been changed successfully.',
+        title: 'Éxito',
+        description: 'Tu contraseña ha sido cambiada exitosamente.',
       });
       passwordForm.reset();
     } catch (error: any) {
       toast({
-        title: 'Error Changing Password',
-        description: error.message || 'Please check your current password and try again.',
+        title: 'Error al Cambiar la Contraseña',
+        description: error.message || 'Por favor, verifica tu contraseña actual e inténtalo de nuevo.',
         variant: 'destructive',
       });
     } finally {
@@ -84,15 +84,15 @@ export default function SettingsPage() {
       await deleteUser(user);
 
       toast({
-        title: 'Account Deleted',
-        description: 'Your account and all associated data have been permanently deleted.',
+        title: 'Cuenta Eliminada',
+        description: 'Tu cuenta y todos los datos asociados han sido eliminados permanentemente.',
       });
 
       router.push('/login');
     } catch (error: any) {
       toast({
-        title: 'Error Deleting Account',
-        description: error.message || 'An error occurred. Please check your password.',
+        title: 'Error al Eliminar la Cuenta',
+        description: error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.',
         variant: 'destructive',
       });
     } finally {
@@ -102,35 +102,35 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-      <p className="text-muted-foreground mb-8">Manage your account settings and data.</p>
+      <h1 className="text-3xl font-bold tracking-tight">Ajustes de Cuenta</h1>
+      <p className="text-muted-foreground mb-8">Administra los ajustes y datos de tu cuenta.</p>
       
       <div className="space-y-8">
         <Card>
           <Form {...passwordForm}>
             <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)}>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Update your password here. It's a good practice to use a strong, unique password.</CardDescription>
+                <CardTitle>Cambiar Contraseña</CardTitle>
+                <CardDescription>Actualiza tu contraseña aquí. Es una buena práctica usar una contraseña fuerte y única.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField control={passwordForm.control} name="currentPassword" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Password</FormLabel>
+                    <FormLabel>Contraseña Actual</FormLabel>
                     <FormControl><Input type="password" {...field} className="max-w-sm" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={passwordForm.control} name="newPassword" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>Nueva Contraseña</FormLabel>
                     <FormControl><Input type="password" {...field} className="max-w-sm" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
               </CardContent>
               <CardContent>
-                <Button type="submit" disabled={isPasswordLoading}>{isPasswordLoading ? 'Changing...' : 'Change Password'}</Button>
+                <Button type="submit" disabled={isPasswordLoading}>{isPasswordLoading ? 'Cambiando...' : 'Cambiar Contraseña'}</Button>
               </CardContent>
             </form>
           </Form>
@@ -138,37 +138,37 @@ export default function SettingsPage() {
 
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">Delete Account</CardTitle>
-            <CardDescription>Permanently delete your account and all of your content. This action is not reversible.</CardDescription>
+            <CardTitle className="text-destructive">Eliminar Cuenta</CardTitle>
+            <CardDescription>Elimina permanentemente tu cuenta y todo tu contenido. Esta acción no es reversible.</CardDescription>
           </CardHeader>
           <CardContent>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete My Account</Button>
+                <Button variant="destructive">Eliminar Mi Cuenta</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <Form {...deleteForm}>
                   <form onSubmit={deleteForm.handleSubmit(handleDeleteAccount)}>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                        Please type your password to confirm.
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y borrará tus datos de nuestros servidores.
+                        Por favor, escribe tu contraseña para confirmar.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="py-4">
                       <FormField control={deleteForm.control} name="confirmPassword" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>Contraseña</FormLabel>
                           <FormControl><Input type="password" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                     </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction type="submit" disabled={isDeleteLoading} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        {isDeleteLoading ? 'Deleting...' : 'Delete Account'}
+                        {isDeleteLoading ? 'Eliminando...' : 'Eliminar Cuenta'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </form>

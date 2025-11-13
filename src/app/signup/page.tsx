@@ -31,9 +31,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Gamepad2 } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: "Username must be at least 3 characters." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }),
+  email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
+  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
 });
 
 export default function SignupPage() {
@@ -70,8 +70,8 @@ export default function SignupPage() {
       router.push("/dashboard");
     } catch (error: any) {
       toast({
-        title: "Sign Up Failed",
-        description: error.message || "An unexpected error occurred.",
+        title: "Falló el Registro",
+        description: error.message || "Ocurrió un error inesperado.",
         variant: "destructive",
       });
       console.error("Signup error:", error);
@@ -87,9 +87,9 @@ export default function SignupPage() {
             <div className="flex justify-center items-center mb-4">
              <Gamepad2 className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Join the Hub</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">Únete al Centro</CardTitle>
           <CardDescription>
-            Create an account to start syncing your games.
+            Crea una cuenta para empezar a sincronizar tus juegos.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,9 +100,9 @@ export default function SignupPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Nombre de usuario</FormLabel>
                     <FormControl>
-                      <Input placeholder="PlayerOne" {...field} />
+                      <Input placeholder="JugadorUno" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,9 +113,9 @@ export default function SignupPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Correo Electrónico</FormLabel>
                     <FormControl>
-                      <Input placeholder="gamer@example.com" {...field} />
+                      <Input placeholder="jugador@ejemplo.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -126,7 +126,7 @@ export default function SignupPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Contraseña</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -135,14 +135,14 @@ export default function SignupPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Create Account"}
+                {isLoading ? "Creando Cuenta..." : "Crear Cuenta"}
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
+            ¿Ya tienes una cuenta?{" "}
             <Link href="/login" className="underline text-primary hover:text-primary/80">
-              Sign in
+              Inicia sesión
             </Link>
           </div>
         </CardContent>

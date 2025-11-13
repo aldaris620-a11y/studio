@@ -47,7 +47,7 @@ export function UserNav() {
             }
           }
         } catch (error) {
-          console.error("Failed to fetch user data for avatar:", error);
+          console.error("No se pudieron obtener los datos del usuario para el avatar:", error);
         }
       };
       fetchUserData();
@@ -60,8 +60,8 @@ export function UserNav() {
       router.push('/login');
     } catch (error) {
       toast({
-        title: "Logout Failed",
-        description: "An error occurred while signing out.",
+        title: "Falló el Cierre de Sesión",
+        description: "Ocurrió un error al cerrar la sesión.",
         variant: "destructive",
       });
     }
@@ -77,7 +77,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={avatarUrl} alt={user?.displayName || 'User'} />
+            <AvatarImage src={avatarUrl} alt={user?.displayName || 'Usuario'} />
             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
         </Button>
@@ -96,20 +96,20 @@ export function UserNav() {
           <Link href="/profile">
             <DropdownMenuItem>
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>Perfil</span>
             </DropdownMenuItem>
           </Link>
           <Link href="/settings">
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+              <span>Ajustes</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Cerrar sesión</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
