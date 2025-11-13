@@ -7,12 +7,10 @@ import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
-// Initialize Firebase immediately at the module level.
-// This ensures it's done only once, outside of the React render cycle.
-const { firebaseApp, auth, firestore } = initializeFirebase();
-
-interface FirebaseProviderProps {
-  children: ReactNode;
+interface FirebaseServices {
+  firebaseApp: FirebaseApp;
+  firestore: Firestore;
+  auth: Auth;
 }
 
 // Combined state for the Firebase context
@@ -23,6 +21,42 @@ export interface FirebaseContextState {
   user: User | null;
   isUserLoading: boolean;
 }
+
+export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
+
+/**
+ * FirebaseProvider manages and provides Firebase services and user authentication state.
+ */
+export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Use useMemo to ensure Firebase is initialized only once
+  const { firebaseApp, auth, firestore } = useMemo(() => initializeFirebase(), []);
+
+  const [user, setUser] = useState<User | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setIsUserLoading(false);
+    });
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [auth]);
+
+  const contextValue = useMemo((): FirebaseContextState => ({
+    firebaseApp,
+    firestore,
+    auth,
+    user,
+    isUserLoading,
+  }), [firebaseApp, firestore, auth, user, isUserLoading]);
+
+  return (
+    <FirebaseContext.Provider value={contextValue}>
+      {children}
+    </FirebaseContext.Provider>
+  );
+};
 
 /**
  * Hook to access core Firebase services and user authentication state.
@@ -36,39 +70,6 @@ export const useFirebase = (): FirebaseContextState => {
   return context;
 };
 
-// React Context
-export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
-
-/**
- * FirebaseProvider manages and provides Firebase services and user authentication state.
- */
-export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setIsUserLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const contextValue = useMemo((): FirebaseContextState => ({
-    firebaseApp,
-    firestore,
-    auth,
-    user,
-    isUserLoading,
-  }), [user, isUserLoading]);
-
-  return (
-    <FirebaseContext.Provider value={contextValue}>
-      <FirebaseErrorListener />
-      {children}
-    </FirebaseContext.Provider>
-  );
-};
 
 /** Hook to access Firebase Auth instance. */
 export const useAuth = (): Auth => {
@@ -95,3 +96,19 @@ export const useUser = () => {
   const { user, isUserLoading } = useFirebase();
   return { user, isUserLoading };
 };
+
+/**
+ * Hook to memoize a Firestore reference or query.
+ * This is crucial to prevent re-renders and infinite loops in `useDoc` and `useCollection`.
+ * @param factory A function that returns a Firestore ref or query.
+ * @param deps The dependency array for the factory function.
+ * @returns A memoized Firestore ref or query, or null if dependencies are not met.
+ */
+export const useMemoFirebase = <T>(factory: () => T, deps: React.DependencyList): T => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const memoizedRef = useMemo<T>(() => factory(), deps);
+    if(memoizedRef && typeof memoizedRef === 'object' && !('__memo' in memoizedRef)) {
+      (memoizedRef as any).__memo = true;
+    }
+    return memoizedRef;
+}
