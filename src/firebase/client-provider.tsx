@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, type ReactNode, useState, useEffect } from 'react';
@@ -27,7 +28,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     if (typeof window !== 'undefined' && !firebaseServices) {
       setFirebaseServices(initializeFirebase());
     }
-  }, [firebaseServices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // <-- Dependency array is now empty
 
   // Don't render children until Firebase is initialized
   if (!firebaseServices) {
