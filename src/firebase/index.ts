@@ -2,29 +2,28 @@
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
-export function initializeFirebase() {
+export function initializeFirebase(): { firebaseApp: FirebaseApp, auth: Auth, firestore: Firestore } {
   const isConfigured = getApps().length > 0;
   const app = !isConfigured ? initializeApp(firebaseConfig) : getApp();
   const auth = getAuth(app);
   const firestore = getFirestore(app);
 
-  if (process.env.NODE_ENV === 'development') {
-      // Connect to emulators if in development
-      // NOTE: process.env.NEXT_PUBLIC_... variables are not available in this file
+  // Use NEXT_PUBLIC_ variable which is available on the client
+  if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {
       try {
+        console.log('Connecting to Firebase emulators...');
         connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
         connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+        console.log('Successfully connected to emulators.');
       } catch (e) {
-        // Errors are expected if emulators are not running.
-        // This is not a critical error, so we can ignore it.
+        console.error('Error connecting to Firebase emulators:', e);
       }
   }
-
 
   return { firebaseApp: app, auth, firestore };
 }
