@@ -257,12 +257,9 @@ export default function SignupPage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                            <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="4"/>
-                                <path d="M16 8h-2m4 0h-2"/>
-                                <path d="m15 7 1-1"/>
-                                <path d="m15 9 1 1"/>
-                                <path d="M9 16.7A5 5 0 0 1 9 7.3"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(45) translate(0, -2)">
+                                <circle cx="10" cy="14" r="5"/>
+                                <path d="M14 4h6m0 0v6m0-6-7 7"/>
                             </svg>
                           </Label>
                         </FormItem>
@@ -272,9 +269,9 @@ export default function SignupPage() {
                           </FormControl>
                            <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="10" r="4"/>
-                                <path d="M12 14v8"/>
-                                <path d="M9 20h6"/>
+                                <circle cx="12" cy="10" r="5"/>
+                                <path d="M12 15v6"/>
+                                <path d="M9 18h6"/>
                             </svg>
                           </Label>
                         </FormItem>
@@ -397,5 +394,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
