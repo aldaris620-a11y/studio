@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,9 @@ const formSchema = z.object({
   terms: z.boolean().default(false).refine(value => value === true, {
     message: "Debes aceptar los términos y condiciones.",
   }),
+  privacy: z.boolean().default(false).refine(value => value === true, {
+    message: "Debes aceptar la política de privacidad.",
+  }),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden.",
   path: ["confirmPassword"],
@@ -68,6 +71,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
   const db = useFirestore();
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,8 +82,14 @@ export default function SignupPage() {
       password: "",
       confirmPassword: "",
       terms: false,
+      privacy: false,
     },
   });
+
+  function handleAcceptTerms() {
+    form.setValue('terms', true, { shouldValidate: true });
+    setTermsModalOpen(false);
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -241,10 +251,11 @@ export default function SignupPage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                            <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(45)">
-                              <path d="M19 5L5 19M19 19L14 19M19 19L19 14"/>
-                              <circle cx="9" cy="15" r="4"/>
-                            </svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <line x1="12" y1="16" x2="12" y2="22"></line>
+                                <line x1="9" y1="19" x2="15" y2="19"></line>
+                              </svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -252,7 +263,10 @@ export default function SignupPage() {
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
                            <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="5"/><path d="M12 15v6"/><path d="M9 18h6"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 7h.01"></path>
+                                <path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L8.4 6.82A4 4 0 0 0 5 10v1a8 8 0 0 0 8 8h1.6"></path>
+                            </svg>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
@@ -260,7 +274,7 @@ export default function SignupPage() {
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
                            <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
                           </Label>
                         </FormItem>
                       </RadioGroup>
@@ -270,7 +284,7 @@ export default function SignupPage() {
                 )}
               />
 
-               <FormField
+              <FormField
                 control={form.control}
                 name="terms"
                 render={({ field }) => (
@@ -283,11 +297,8 @@ export default function SignupPage() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        Aceptar términos y condiciones
-                      </FormLabel>
-                      <FormDescription>
-                        Aceptas nuestros {" "}
-                        <Dialog>
+                        Acepto los {" "}
+                        <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
                           <DialogTrigger asChild>
                             <span className="underline text-primary hover:text-primary/80 cursor-pointer">
                               Términos de Servicio
@@ -303,9 +314,34 @@ export default function SignupPage() {
                             <ScrollArea className="h-96 pr-4">
                               <TermsContent />
                             </ScrollArea>
+                            <DialogFooter>
+                              <Button onClick={handleAcceptTerms}>
+                                Acepto mi destino
+                              </Button>
+                            </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                         {" "} y {" "}
+                      </FormLabel>
+                       <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="privacy"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        He leído y acepto la {" "}
                         <Dialog>
                           <DialogTrigger asChild>
                             <span className="underline text-primary hover:text-primary/80 cursor-pointer">
@@ -324,8 +360,7 @@ export default function SignupPage() {
                             </ScrollArea>
                           </DialogContent>
                         </Dialog>
-                        .
-                      </FormDescription>
+                      </FormLabel>
                        <FormMessage />
                     </div>
                   </FormItem>
