@@ -205,24 +205,24 @@ export default function ProfilePage() {
                           <FormControl>
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
-                          <Label htmlFor="masculino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <User className="h-6 w-6"/>
+                          <Label htmlFor="masculino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <User className="h-8 w-8"/>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
-                           <Label htmlFor="femenino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <User className="h-6 w-6" />
+                           <Label htmlFor="femenino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <User className="h-8 w-8" />
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
-                           <Label htmlFor="otro" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <UserCog className="h-6 w-6" />
+                           <Label htmlFor="otro" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <UserCog className="h-8 w-8" />
                           </Label>
                         </FormItem>
                       </RadioGroup>
