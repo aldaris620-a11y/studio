@@ -28,12 +28,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, ShieldCheck } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import TermsContent from "@/components/terms-content";
+import PrivacyContent from "@/components/privacy-content";
 
 const formSchema = z.object({
   username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }),
@@ -230,7 +241,10 @@ export default function SignupPage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                            <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(45)"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(45)">
+                              <path d="M19 5L5 19M19 19L14 19M19 19L19 14"/>
+                              <circle cx="9" cy="15" r="4"/>
+                            </svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -273,13 +287,43 @@ export default function SignupPage() {
                       </FormLabel>
                       <FormDescription>
                         Aceptas nuestros {" "}
-                        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
-                          Términos de Servicio
-                        </Link>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <span className="underline text-primary hover:text-primary/80 cursor-pointer">
+                              Términos de Servicio
+                            </span>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px] md:max-w-xl">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <Gamepad2 className="h-6 w-6" />
+                                Términos y Servicios (La Letra Pequeña para Gamers)
+                              </DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="h-96 pr-4">
+                              <TermsContent />
+                            </ScrollArea>
+                          </DialogContent>
+                        </Dialog>
                          {" "} y {" "}
-                        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
-                         Política de Privacidad
-                        </Link>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <span className="underline text-primary hover:text-primary/80 cursor-pointer">
+                             Política de Privacidad
+                            </span>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px] md:max-w-xl">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <ShieldCheck className="h-6 w-6" />
+                                Política de Privacidad (La Versión Rápida)
+                              </DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="h-96 pr-4">
+                              <PrivacyContent />
+                            </ScrollArea>
+                          </DialogContent>
+                        </Dialog>
                         .
                       </FormDescription>
                        <FormMessage />
@@ -304,5 +348,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
