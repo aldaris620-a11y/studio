@@ -62,18 +62,20 @@ export default function SignupPage() {
 
       // Create user document in Firestore
       await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        displayName: values.username,
-        email: user.email,
+        id: user.uid,
+        username: values.username,
         avatar: "avatar-1", // Default avatar
-        createdAt: new Date(),
       });
 
       router.push("/dashboard");
     } catch (error: any) {
+      let description = "Ocurrió un error inesperado.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
+      }
       toast({
         title: "Falló el Registro",
-        description: error.message || "Ocurrió un error inesperado.",
+        description: description,
         variant: "destructive",
       });
       console.error("Signup error:", error);

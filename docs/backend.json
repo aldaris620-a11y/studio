@@ -133,7 +133,7 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}/profile",
+        "path": "/users/{userId}/profile/{profileId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
@@ -144,6 +144,10 @@
             {
               "name": "userId",
               "description": "The unique identifier of the user, matching the Firebase Authentication UID."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the user profile, should be the same as the userId."
             }
           ]
         }

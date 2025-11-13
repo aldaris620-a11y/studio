@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
 import { useUser, useFirestore, useAuth } from '@/firebase';
@@ -43,17 +43,23 @@ export default function ProfilePage() {
     if (user) {
       const fetchUserData = async () => {
         setIsPageLoading(true);
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          form.reset({ username: userData.displayName || user.displayName });
-          setSelectedAvatar(userData.avatar || 'avatar-1');
-        } else {
-            form.reset({ username: user.displayName || '' });
-            const userDocRef = doc(db, "users", user.uid);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-                setSelectedAvatar(userDocSnap.data().avatar || 'avatar-1');
+        if (db) {
+            const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
+            try {
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    form.reset({ username: userData.username || user.displayName || '' });
+                    setSelectedAvatar(userData.avatar || 'avatar-1');
+                } else {
+                    // If profile doesn't exist, use auth data and set a default avatar
+                    form.reset({ username: user.displayName || '' });
+                    setSelectedAvatar('avatar-1');
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                form.reset({ username: user.displayName || '' });
+                setSelectedAvatar('avatar-1');
             }
         }
         setIsPageLoading(false);
@@ -63,21 +69,21 @@ export default function ProfilePage() {
   }, [user, form, db]);
 
   async function onSubmit(values: z.infer<typeof profileSchema>) {
-    if (!user) return;
+    if (!user || !db) return;
     setIsLoading(true);
     try {
       // Update Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        displayName: values.username,
+      const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
+      await setDoc(userDocRef, {
+        id: user.uid,
+        username: values.username,
         avatar: selectedAvatar,
-      });
+      }, { merge: true });
 
       // Update Firebase Auth profile
-      if (auth.currentUser) {
+      if (auth.currentUser && auth.currentUser.displayName !== values.username) {
         await updateAuthProfile(auth.currentUser, {
           displayName: values.username,
-          // You'd typically upload the avatar and get a URL here
         });
       }
 
