@@ -204,7 +204,6 @@ export default function SignupPage() {
                           </FormControl>
                           <Label htmlFor="masculino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
                             <User className="h-6 w-6"/>
-                            <span>Masculino</span>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -213,7 +212,6 @@ export default function SignupPage() {
                           </FormControl>
                            <Label htmlFor="femenino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
                             <User className="h-6 w-6" />
-                            <span>Femenino</span>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
@@ -222,7 +220,6 @@ export default function SignupPage() {
                           </FormControl>
                            <Label htmlFor="otro" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
                             <UserCog className="h-6 w-6" />
-                            <span>Otro</span>
                           </Label>
                         </FormItem>
                       </RadioGroup>
@@ -280,5 +277,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
