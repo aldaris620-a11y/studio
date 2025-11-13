@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo, type ReactNode, useState, useEffect } from 'react';
+import React, { type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import type { FirebaseApp } from 'firebase/app';
@@ -13,35 +13,22 @@ interface FirebaseClientProviderProps {
   children: ReactNode;
 }
 
-interface FirebaseServices {
-  firebaseApp: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore;
-}
+// Initialize Firebase immediately at the module level.
+// This ensures it's done only once, outside of the React render cycle.
+const { firebaseApp, auth, firestore } = initializeFirebase();
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  // Use state to hold the services, ensuring they are created only once
-  const [firebaseServices, setFirebaseServices] = useState<FirebaseServices | null>(null);
-
-  useEffect(() => {
-    // Initialize Firebase on the client side, but only once.
-    // The empty dependency array ensures this effect runs only on mount.
-    if (typeof window !== 'undefined' && !firebaseServices) {
-      setFirebaseServices(initializeFirebase());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // <-- Dependency array is now empty
-
-  // Don't render children until Firebase is initialized
-  if (!firebaseServices) {
-    return null; // Or a loading spinner
+  // The services are now guaranteed to be initialized.
+  if (!firebaseApp || !auth || !firestore) {
+    // This should theoretically never happen.
+    return null;
   }
 
   return (
     <FirebaseProvider
-      firebaseApp={firebaseServices.firebaseApp}
-      auth={firebaseServices.auth}
-      firestore={firebaseServices.firestore}
+      firebaseApp={firebaseApp}
+      auth={auth}
+      firestore={firestore}
     >
       <FirebaseErrorListener />
       {children}
