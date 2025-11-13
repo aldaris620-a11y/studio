@@ -229,34 +229,24 @@ export default function SignupPage() {
                           <FormControl>
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
-                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="10" cy="14" r="5"/>
-                                <path d="M14 4h6m0 0v6m0-6-7 7"/>
-                            </svg>
+                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(45)"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
-                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="10" r="5"/>
-                                <path d="M12 15v6"/>
-                                <path d="M9 18h6"/>
-                            </svg>
+                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="5"/><path d="M12 15v6"/><path d="M9 18h6"/></svg>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
-                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                                 <path d="M12 17h.01"/>
-                             </svg>
+                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer flex items-center justify-center">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
                           </Label>
                         </FormItem>
                       </RadioGroup>
@@ -283,11 +273,11 @@ export default function SignupPage() {
                       </FormLabel>
                       <FormDescription>
                         Aceptas nuestros {" "}
-                        <Link href="/terms" className="underline text-primary hover:text-primary/80">
+                        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
                           Términos de Servicio
                         </Link>
                          {" "} y {" "}
-                        <Link href="/privacy" className="underline text-primary hover:text-primary/80">
+                        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
                          Política de Privacidad
                         </Link>
                         .
