@@ -1,81 +1,9 @@
 
-/**
- * @file Firebase Security Rules for GameSync Hub.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for private user data
- * (profiles, game progress, rewards) and provides public read access to reward definitions.
- *
- * Data Structure:
- * - /users/{userId}: User profile data, accessible only by the owning user.
- * - /users/{userId}/game_progress/{gameProgressId}: Game progress data, accessible only by the owning user.
- * - /users/{userId}/user_rewards/{userRewardId}: User rewards data, accessible only by the owning user.
- * - /rewards/{rewardId}: Reward definitions, publicly readable.
- *
- * Key Security Decisions:
- * - User listing is disallowed.
- * - Reward definitions are publicly readable but not writable by clients.
- * - All write operations on user-owned data require the user to be authenticated and the owner of the data.
- * - Username uniqueness is enforced on creation.
- *
- * Denormalization for Authorization:
- * - User ownership is enforced through path-based rules (e.g., /users/{userId}/...).
- * - This avoids the need for `get()` calls to check ownership.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Checks if the request is made by an authenticated user.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the resource, based on the userId.
-     */
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    /**
-     * @description Security rules for user profiles.
-     * @path /users/{userId}
-     */
-    match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if false;
-      allow create: if request.auth.uid == userId
-                    && !exists(/databases/$(database)/documents/users/$(request.resource.data.username));
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-
-        /**
-         * @description Security rules for game progress entries.
-         * @path /users/{userId}/game_progress/{gameProgressId}
-         */
-        match /game_progress/{gameProgressId} {
-          allow get, list, create, update, delete: if isOwner(userId);
-        }
-
-        /**
-         * @description Security rules for user reward entries.
-         * @path /users/{userId}/user_rewards/{userRewardId}
-         */
-        match /user_rewards/{userRewardId} {
-         allow get, list, create, update, delete: if isOwner(userId);
-        }
-    }
-
-    /**
-     * @description Security rules for reward definitions.
-     * @path /rewards/{rewardId}
-     */
-    match /rewards/{rewardId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
