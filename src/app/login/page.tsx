@@ -54,9 +54,13 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push("/dashboard");
     } catch (error: any) {
+       let description = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        description = "El correo electrónico o la contraseña son incorrectos. Por favor, verifica tus credenciales.";
+      }
       toast({
         title: "Falló el Inicio de Sesión",
-        description: error.message || "Ocurrió un error inesperado.",
+        description: description,
         variant: "destructive",
       });
       console.error("Login error:", error);
