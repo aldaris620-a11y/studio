@@ -1,0 +1,129 @@
+/**
+ * @file Firebase Security Rules for GameSync Hub.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for private user data
+ * (profiles, game progress, rewards) and provides public read access to reward definitions.
+ *
+ * Data Structure:
+ * - /users/{userId}/profile: User profile data, accessible only by the owning user.
+ * - /users/{userId}/game_progress/{gameProgressId}: Game progress data, accessible only by the owning user.
+ * - /users/{userId}/user_rewards/{userRewardId}: User rewards data, accessible only by the owning user.
+ * - /rewards/{rewardId}: Reward definitions, publicly readable.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Reward definitions are publicly readable but not writable by clients.
+ * - All write operations on user-owned data require the user to be authenticated and the owner of the data.
+ *
+ * Denormalization for Authorization:
+ * - User ownership is enforced through path-based rules (e.g., /users/{userId}/...).
+ * - This avoids the need for `get()` calls to check ownership.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is made by an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of the resource, based on the userId.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of the existing resource.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && getAfter(resource).data != null;
+    }
+
+    /**
+     * @description Security rules for user profiles.
+     * @path /users/{userId}/profile
+     * @allow (create) User with UID 'user123' creates their profile document at /users/user123/profile.
+     * @allow (get) User with UID 'user123' reads their profile document at /users/user123/profile.
+     * @allow (update) User with UID 'user123' updates their profile document at /users/user123/profile.
+     * @allow (delete) User with UID 'user123' deletes their profile document at /users/user123/profile.
+     * @deny (create) User with UID 'user456' attempts to create a profile document at /users/user123/profile.
+     * @deny (get) User with UID 'user456' attempts to read the profile document at /users/user123/profile.
+     * @deny (update) User with UID 'user456' attempts to update the profile document at /users/user123/profile.
+     * @deny (delete) User with UID 'user456' attempts to delete the profile document at /users/user123/profile.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/profile {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Security rules for game progress entries.
+     * @path /users/{userId}/game_progress/{gameProgressId}
+     * @allow (create) User with UID 'user123' creates a game progress document at /users/user123/game_progress/game1.
+     * @allow (get) User with UID 'user123' reads their game progress document at /users/user123/game_progress/game1.
+     * @allow (update) User with UID 'user123' updates their game progress document at /users/user123/game_progress/game1.
+     * @allow (delete) User with UID 'user123' deletes their game progress document at /users/user123/game_progress/game1.
+     * @deny (create) User with UID 'user456' attempts to create a game progress document at /users/user123/game_progress/game1.
+     * @deny (get) User with UID 'user456' attempts to read the game progress document at /users/user123/game_progress/game1.
+     * @deny (update) User with UID 'user456' attempts to update the game progress document at /users/user123/game_progress/game1.
+     * @deny (delete) User with UID 'user456' attempts to delete the game progress document at /users/user123/game_progress/game1.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/game_progress/{gameProgressId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Security rules for user reward entries.
+     * @path /users/{userId}/user_rewards/{userRewardId}
+     * @allow (create) User with UID 'user123' creates a user reward document at /users/user123/user_rewards/reward1.
+     * @allow (get) User with UID 'user123' reads their user reward document at /users/user123/user_rewards/reward1.
+     * @allow (update) User with UID 'user123' updates their user reward document at /users/user123/user_rewards/reward1.
+     * @allow (delete) User with UID 'user123' deletes their user reward document at /users/user123/user_rewards/reward1.
+     * @deny (create) User with UID 'user456' attempts to create a user reward document at /users/user123/user_rewards/reward1.
+     * @deny (get) User with UID 'user456' attempts to read the user reward document at /users/user123/user_rewards/reward1.
+     * @deny (update) User with UID 'user456' attempts to update the user reward document at /users/user123/user_rewards/reward1.
+     * @deny (delete) User with UID 'user456' attempts to delete the user reward document at /users/user123/user_rewards/reward1.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/user_rewards/{userRewardId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Security rules for reward definitions.
+     * @path /rewards/{rewardId}
+     * @allow (get) Any user can read a reward document at /rewards/reward1.
+     * @allow (list) Any user can list reward documents in the /rewards collection.
+     * @deny (create) No user can create a reward document.
+     * @deny (update) No user can update a reward document.
+     * @deny (delete) No user can delete a reward document.
+     * @principle Public read access, owner-only writes (disabled in this prototype).
+     */
+    match /rewards/{rewardId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
