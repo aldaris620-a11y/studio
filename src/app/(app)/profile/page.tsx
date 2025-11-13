@@ -231,7 +231,7 @@ export default function ProfilePage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                           <Label htmlFor="masculino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="7"></line><line x1="12" y1="17" x2="12" y2="23"></line><line x1="1" y1="12" x2="7" y2="12"></line><line x1="17" y1="12" x2="23" y2="12"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><path d="M12.56 12.56L19 6m-4-2h4v4"/><circle cx="10" cy="14" r="7"/></svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
