@@ -4,8 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { useUser, useAuth, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -26,41 +25,16 @@ import Link from 'next/link';
 export function UserNav() {
   const { user } = useUser();
   const auth = useAuth();
-  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState('');
 
-  const userDocRef = useMemoFirebase(() => {
-    if (user && db) {
-      return doc(db, 'users', user.uid);
-    }
-    return null;
-  }, [user, db]);
-
   useEffect(() => {
-    if (userDocRef) {
-      const fetchUserData = async () => {
-        try {
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const avatarId = userData.avatar || 'avatar-1';
-            const avatarImage = PlaceHolderImages.find(img => img.id === avatarId);
-            if (avatarImage) {
-              setAvatarUrl(avatarImage.imageUrl);
-            } else {
-              const defaultAvatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
-              if (defaultAvatar) setAvatarUrl(defaultAvatar.imageUrl);
-            }
-          }
-        } catch (error) {
-          console.error("No se pudieron obtener los datos del usuario para el avatar:", error);
-        }
-      };
-      fetchUserData();
-    }
-  }, [userDocRef]);
+    // We are setting a default avatar, in a real scenario this would
+    // probably come from the user's profile in firestore
+    const defaultAvatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
+    if (defaultAvatar) setAvatarUrl(defaultAvatar.imageUrl);
+  }, []);
 
   const handleSignOut = async () => {
     try {

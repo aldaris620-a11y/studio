@@ -1,13 +1,24 @@
+
+'use client';
 import { getGames, getRewards } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Gamepad2, Lock, Trophy, Unlock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Game, Reward } from '@/lib/data';
 
-export default async function DashboardPage() {
-  const games = await getGames();
-  const rewards = await getRewards();
+
+export default function DashboardPage() {
+  const [games, setGames] = useState<Game[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+
+  useEffect(() => {
+    // TODO: This should come from firestore
+    getGames().then(setGames);
+    getRewards().then(setRewards);
+  }, []);
 
   return (
     <div className="container mx-auto">
