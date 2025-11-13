@@ -120,6 +120,19 @@ export default function SignupPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+               <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre de usuario</FormLabel>
+                    <FormControl>
+                      <Input placeholder="JugadorUno" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="fullName"
@@ -128,19 +141,6 @@ export default function SignupPage() {
                     <FormLabel>Nombre Completo</FormLabel>
                     <FormControl>
                       <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre de usuario</FormLabel>
-                    <FormControl>
-                      <Input placeholder="JugadorUno" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
