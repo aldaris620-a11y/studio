@@ -231,9 +231,10 @@ export default function ProfilePage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                            <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(-45)">
-                                <circle cx="12" cy="12" r="5"/>
-                                <path d="M17 7h-6m0 0v6"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="13" r="5"/>
+                                <path d="M19 5L13 11"/>
+                                <path d="M19 9L19 5L15 5"/>
                             </svg>
                           </Label>
                         </FormItem>
@@ -242,7 +243,7 @@ export default function ProfilePage() {
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
                            <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="10" r="5"/>
                                 <path d="M12 15v6"/>
                                 <path d="M9 18h6"/>
@@ -300,3 +301,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
