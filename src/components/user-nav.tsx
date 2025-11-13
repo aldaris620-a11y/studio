@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
-import { useAuth } from '@/hooks/use-auth';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -24,7 +23,9 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 export function UserNav() {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -52,7 +53,7 @@ export function UserNav() {
       };
       fetchUserData();
     }
-  }, [user]);
+  }, [user, db]);
 
   const handleSignOut = async () => {
     try {

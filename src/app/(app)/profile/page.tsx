@@ -7,8 +7,7 @@ import * as z from 'zod';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
-import { useAuth } from '@/hooks/use-auth';
-import { db, auth } from '@/lib/firebase';
+import { useUser, useFirestore, useAuth } from '@/firebase';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,9 @@ const profileSchema = z.object({
 const avatarImages = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const db = useFirestore();
+  const auth = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
@@ -47,12 +48,19 @@ export default function ProfilePage() {
           const userData = userDoc.data();
           form.reset({ username: userData.displayName || user.displayName });
           setSelectedAvatar(userData.avatar || 'avatar-1');
+        } else {
+            form.reset({ username: user.displayName || '' });
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                setSelectedAvatar(userDocSnap.data().avatar || 'avatar-1');
+            }
         }
         setIsPageLoading(false);
       };
       fetchUserData();
     }
-  }, [user, form]);
+  }, [user, form, db]);
 
   async function onSubmit(values: z.infer<typeof profileSchema>) {
     if (!user) return;

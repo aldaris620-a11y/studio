@@ -8,8 +8,7 @@ import { useRouter } from 'next/navigation';
 
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
-import { useAuth } from '@/hooks/use-auth';
-import { auth, db } from '@/lib/firebase';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +27,9 @@ const deleteSchema = z.object({
 });
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const auth = useAuth();
+  const db = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
@@ -150,7 +151,7 @@ export default function SettingsPage() {
                 <Form {...deleteForm}>
                   <form onSubmit={deleteForm.handleSubmit(handleDeleteAccount)}>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                      <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
                       <AlertDialogDescription>
                         Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y borrará tus datos de nuestros servidores.
                         Por favor, escribe tu contraseña para confirmar.

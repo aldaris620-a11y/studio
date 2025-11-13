@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { useAuth, useFirestore } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,8 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const auth = useAuth();
+  const db = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
