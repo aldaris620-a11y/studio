@@ -16,12 +16,12 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp, auth: Auth, fi
   // Use NEXT_PUBLIC_ variable which is available on the client
   if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {
       try {
-        console.log('Connecting to Firebase emulators...');
         connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
         connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
-        console.log('Successfully connected to emulators.');
       } catch (e) {
-        console.error('Error connecting to Firebase emulators:', e);
+        // Silently catch errors. If emulators are not running, it will connect to production.
+        // This is a more robust approach in development environments.
+        console.error('Error connecting to Firebase emulators. Trying to connect to production services.', e);
       }
   }
 
