@@ -230,24 +230,24 @@ export default function ProfilePage() {
                           <FormControl>
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
-                          <Label htmlFor="masculino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 7.5a2.5 2.5 0 0 0-5 0v1.5H12V9a2.5 2.5 0 0 0-5 0v1.5H5V18h14V9h-2z"/><circle cx="12" cy="4" r="2"/></svg>
+                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v7"/><path d="M12 15l-3 7h6l-3-7Z"/></svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
-                           <Label htmlFor="femenino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 7.5a2.5 2.5 0 0 0-5 0v1.5H9V9a2.5 2.5 0 0 0-5 0v1.5H2V18h14v-7.5h-2zM22 18h-2v-7.5h-2V9a2.5 2.5 0 0 0-5 0v1.5h-1.5"/><circle cx="12" cy="4" r="2"/></svg>
+                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v5"/><path d="M12 13c-2.5 0-5 2.5-5 5h10c0-2.5-2.5-5-5-5Z"/></svg>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
-                           <Label htmlFor="otro" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm-1.29 5.75a2 2 0 1 1 2.58 0M12 12h.01M16 16s-1.5-2-4-2-4 2-4 2"/></svg>
+                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v5"/><path d="M12 13c-2.5 0-5 2.5-5 5h5m5 0h-5c0-2.5 2.5-5 5-5Z"/><path d="M12 15l-3 7h3"/></svg>
                           </Label>
                         </FormItem>
                       </RadioGroup>
