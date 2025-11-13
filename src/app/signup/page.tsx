@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, User, UserCog } from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -203,7 +203,7 @@ export default function SignupPage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                           <Label htmlFor="masculino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <User className="h-8 w-8"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="10" cy="14" r="7"></circle><line x1="15" y1="9" x2="20" y2="4"></line><polyline points="15 4 20 4 20 9"></polyline></svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -211,7 +211,7 @@ export default function SignupPage() {
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
                            <Label htmlFor="femenino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <User className="h-8 w-8" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="12" cy="7" r="5"></circle><line x1="12" y1="12" x2="12" y2="22"></line><line x1="7" y1="17" x2="17" y2="17"></line></svg>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
@@ -219,7 +219,7 @@ export default function SignupPage() {
                             <RadioGroupItem value="otro" id="otro" />
                           </FormControl>
                            <Label htmlFor="otro" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <UserCog className="h-8 w-8" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
                           </Label>
                         </FormItem>
                       </RadioGroup>
