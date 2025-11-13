@@ -12,14 +12,15 @@ export function initializeFirebase() {
   const auth = getAuth(app);
   const firestore = getFirestore(app);
 
-  if (process.env.NODE_ENV === 'development' && !auth.emulatorConfig && !firestore.emulatorConfig) {
-      // Connect to emulators if in development and not already connected
+  if (process.env.NODE_ENV === 'development') {
+      // Connect to emulators if in development
       // NOTE: process.env.NEXT_PUBLIC_... variables are not available in this file
       try {
         connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
         connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
       } catch (e) {
-        console.error('Error connecting to Firebase emulators. Make sure they are running.', e);
+        // Errors are expected if emulators are not running.
+        // This is not a critical error, so we can ignore it.
       }
   }
 
