@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -18,9 +19,14 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { User, UserCog } from 'lucide-react';
 
 const profileSchema = z.object({
+  fullName: z.string().min(3, { message: "El nombre completo debe tener al menos 3 caracteres." }),
   username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
+  gender: z.enum(["masculino", "femenino", "otro"], { required_error: "Debes seleccionar un género." }),
 });
 
 const avatarImages = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
@@ -36,31 +42,41 @@ export default function ProfilePage() {
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { username: '' },
+    defaultValues: { username: '', fullName: '' },
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && db) {
       const fetchUserData = async () => {
         setIsPageLoading(true);
-        if (db) {
-            const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
-            try {
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    form.reset({ username: userData.username || user.displayName || '' });
-                    setSelectedAvatar(userData.avatar || 'avatar-1');
-                } else {
-                    // If profile doesn't exist, use auth data and set a default avatar
-                    form.reset({ username: user.displayName || '' });
-                    setSelectedAvatar('avatar-1');
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                form.reset({ username: user.displayName || '' });
+        const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
+        try {
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                form.reset({ 
+                    username: userData.username || user.displayName || '',
+                    fullName: userData.fullName || '',
+                    gender: userData.gender || 'otro'
+                });
+                setSelectedAvatar(userData.avatar || 'avatar-1');
+            } else {
+                // If profile doesn't exist, use auth data and set a default avatar
+                form.reset({ 
+                    username: user.displayName || '',
+                    fullName: '',
+                    gender: 'otro'
+                });
                 setSelectedAvatar('avatar-1');
             }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            form.reset({ 
+                username: user.displayName || '',
+                fullName: '',
+                gender: 'otro'
+            });
+            setSelectedAvatar('avatar-1');
         }
         setIsPageLoading(false);
       };
@@ -69,7 +85,7 @@ export default function ProfilePage() {
   }, [user, form, db]);
 
   async function onSubmit(values: z.infer<typeof profileSchema>) {
-    if (!user || !db) return;
+    if (!user || !db || !auth.currentUser) return;
     setIsLoading(true);
     try {
       // Update Firestore
@@ -77,11 +93,13 @@ export default function ProfilePage() {
       await setDoc(userDocRef, {
         id: user.uid,
         username: values.username,
+        fullName: values.fullName,
+        gender: values.gender,
         avatar: selectedAvatar,
       }, { merge: true });
 
       // Update Firebase Auth profile
-      if (auth.currentUser && auth.currentUser.displayName !== values.username) {
+      if (auth.currentUser.displayName !== values.username) {
         await updateAuthProfile(auth.currentUser, {
           displayName: values.username,
         });
@@ -114,6 +132,8 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <Skeleton className="h-10 w-1/2" />
+                <Skeleton className="h-10 w-1/2" />
+                <Skeleton className="h-10 w-1/2" />
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20" />
                     <div className="flex gap-4">
@@ -140,9 +160,22 @@ export default function ProfilePage() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardHeader>
               <CardTitle>Ajustes del Perfil</CardTitle>
-              <CardDescription>Actualiza tu nombre de usuario y elige tu avatar.</CardDescription>
+              <CardDescription>Actualiza tu información y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre Completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tu nombre completo" {...field} className="max-w-sm" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="username"
@@ -151,6 +184,51 @@ export default function ProfilePage() {
                     <FormLabel>Nombre de usuario</FormLabel>
                     <FormControl>
                       <Input placeholder="Tu genial gamertag" {...field} className="max-w-sm" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Género</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="flex items-center space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="masculino" id="masculino" />
+                          </FormControl>
+                          <Label htmlFor="masculino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <User className="h-6 w-6"/>
+                            <span>Masculino</span>
+                          </Label>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="femenino" id="femenino" />
+                          </FormControl>
+                           <Label htmlFor="femenino" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <User className="h-6 w-6" />
+                            <span>Femenino</span>
+                          </Label>
+                        </FormItem>
+                         <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="otro" id="otro" />
+                          </FormControl>
+                           <Label htmlFor="otro" className="flex flex-col items-center gap-2 p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
+                            <UserCog className="h-6 w-6" />
+                            <span>Otro</span>
+                          </Label>
+                        </FormItem>
+                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -193,3 +271,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    

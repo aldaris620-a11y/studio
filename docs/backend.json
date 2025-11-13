@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -14,6 +15,19 @@
           "type": "string",
           "description": "The user's display name."
         },
+        "fullName": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "gender": {
+          "type": "string",
+          "description": "The user's gender.",
+          "enum": [
+            "masculino",
+            "femenino",
+            "otro"
+          ]
+        },
         "avatar": {
           "type": "string",
           "description": "URL or reference to the user's selected avatar image."
@@ -21,7 +35,9 @@
       },
       "required": [
         "id",
-        "username"
+        "username",
+        "fullName",
+        "gender"
       ]
     },
     "GameProgress": {
@@ -212,3 +228,5 @@
     "reasoning": "The Firestore structure is designed to secure user data, game progress, and rewards within the GameSync Hub. Prioritizing Authorization Independence, the structure avoids hierarchical `get()` calls in security rules by denormalizing necessary authorization data. This design enhances security, allows atomic operations (transactions/batches), and improves debuggability.\n\n*   **UserProfile (Private Data):**  User profiles are stored under `/users/{userId}/profile`. This path-based ownership ensures that only the authenticated user can access their profile. Since `userId` comes directly from `request.auth.uid`, authorization is simple and secure.\n*   **GameProgress (User-Owned Data):** The `GameProgress` collection is located at `/users/{userId}/game_progress/{gameProgressId}`. This hierarchical path establishes a clear ownership model (User 1:N GameProgress). Security rules can easily enforce that only the authenticated user (`request.auth.uid == userId`) can manage their game progress entries.\n*   **UserRewards (User-Owned Data):** Similar to GameProgress, UserRewards are stored under `/users/{userId}/user_rewards/{userRewardId}` to maintain ownership and simplify rules.\n*   **Rewards (Global Data):** The `rewards` collection at the root level (`/rewards/{rewardId}`) stores the definitions of all available rewards in the application. These rewards can be considered public or read-only data.\n\nQAPs are supported by segregating user-specific data (profiles, game progress, rewards) within user-scoped collections. This ensures that list operations are always scoped to the authenticated user, preventing unauthorized data access. The public `rewards` collection is inherently QAP-compliant as all reward documents share the same access permissions (read access for all authenticated users)."
   }
 }
+
+    

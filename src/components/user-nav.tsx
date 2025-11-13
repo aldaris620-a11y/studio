@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { useUser, useAuth, useFirestore } from '@/firebase';
+import { useUser, useAuth, useFirestore, useMemoFirebase } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -30,11 +31,17 @@ export function UserNav() {
   const { toast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState('');
 
+  const userDocRef = useMemoFirebase(() => {
+    if (user && db) {
+      return doc(db, 'users', user.uid, 'profile', user.uid);
+    }
+    return null;
+  }, [user, db]);
+
   useEffect(() => {
-    if (user) {
+    if (userDocRef) {
       const fetchUserData = async () => {
         try {
-          const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
@@ -53,7 +60,7 @@ export function UserNav() {
       };
       fetchUserData();
     }
-  }, [user, db]);
+  }, [userDocRef]);
 
   const handleSignOut = async () => {
     try {
@@ -116,3 +123,5 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
+
+    
