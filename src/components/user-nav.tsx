@@ -33,7 +33,7 @@ export function UserNav() {
 
   const userDocRef = useMemoFirebase(() => {
     if (user && db) {
-      return doc(db, 'users', user.uid, 'profile', user.uid);
+      return doc(db, 'users', user.uid);
     }
     return null;
   }, [user, db]);
@@ -123,5 +123,3 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
-
-    

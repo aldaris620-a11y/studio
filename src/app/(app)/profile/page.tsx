@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, query, where, getDocs, collection } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
 import { useUser, useFirestore, useAuth } from '@/firebase';
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     if (user && db) {
       const fetchUserData = async () => {
         setIsPageLoading(true);
-        const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
+        const userDocRef = doc(db, 'users', user.uid);
         try {
             const userDoc = await getDoc(userDocRef);
             if (userDoc.exists()) {
@@ -86,9 +86,35 @@ export default function ProfilePage() {
   async function onSubmit(values: z.infer<typeof profileSchema>) {
     if (!user || !db || !auth.currentUser) return;
     setIsLoading(true);
+
+    // Check if new username is already taken by another user
+    if (form.getValues('username') !== values.username) {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", values.username));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            let isTaken = false;
+            querySnapshot.forEach(doc => {
+                if (doc.id !== user.uid) {
+                    isTaken = true;
+                }
+            });
+            if (isTaken) {
+                toast({
+                    title: 'Falló la Actualización',
+                    description: 'Este nombre de usuario ya está en uso. Por favor, elige otro.',
+                    variant: 'destructive',
+                });
+                setIsLoading(false);
+                return;
+            }
+        }
+    }
+
+
     try {
       // Update Firestore
-      const userDocRef = doc(db, 'users', user.uid, 'profile', user.uid);
+      const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         id: user.uid,
         username: values.username,
@@ -205,7 +231,7 @@ export default function ProfilePage() {
                             <RadioGroupItem value="masculino" id="masculino" />
                           </FormControl>
                           <Label htmlFor="masculino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="10" cy="14" r="7"></circle><line x1="15" y1="9" x2="20" y2="4"></line><polyline points="15 4 20 4 20 9"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><path d="M12.56 12.56a5 5 0 0 0-5.12-5.12-1 1 0 1 0-1.42 1.42A3 3 0 0 1 7.44 6a3 3 0 0 1 5.12 2.56Z"></path><path d="M14.24 14.24a5 5 0 0 0-5.68-5.68"></path><path d="M16.5 3.5a1 1 0 1 0-1.42 1.42A3 3 0 0 1 17.5 7.4a3 3 0 0 1-2.56 5.12 1 1 0 1 0 1.42 1.42a5 5 0 0 0-1.12-8.12Z"></path><path d="M3.5 16.5a1 1 0 1 0 1.42-1.42A3 3 0 0 1 7.4 17.5a3 3 0 0 1-5.12-2.56 1 1 0 1 0-1.42-1.42a5 5 0 0 0 8.12 1.12Z"></path></svg>
                           </Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -213,7 +239,7 @@ export default function ProfilePage() {
                             <RadioGroupItem value="femenino" id="femenino" />
                           </FormControl>
                            <Label htmlFor="femenino" className="p-2 rounded-md border border-transparent hover:border-primary data-[state=checked]:border-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="12" cy="7" r="5"></circle><line x1="12" y1="12" x2="12" y2="22"></line><line x1="7" y1="17" x2="17" y2="17"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
                           </Label>
                         </FormItem>
                          <FormItem className="flex items-center space-x-2 space-y-0">
