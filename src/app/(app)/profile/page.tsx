@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, runTransaction } from 'firebase/firestore';
+import { doc, getDoc, runTransaction, setDoc } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
-import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter, setDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Button } from '@/components/ui/button';
@@ -86,7 +86,6 @@ export default function ProfilePage() {
     const oldUsername = initialUsername.toLowerCase();
 
     try {
-        // Step 1: If username is being changed, handle the username reservation transaction
         if (newUsername !== oldUsername) {
             await runTransaction(db, async (transaction) => {
                 const newUsernameDocRef = doc(db, "usernames", newUsername);
@@ -96,10 +95,8 @@ export default function ProfilePage() {
                     throw new Error("Este nombre de usuario ya está en uso. Por favor, elige otro.");
                 }
                 
-                // Reserve new username
                 transaction.set(newUsernameDocRef, { uid: user.uid });
 
-                // Delete old username if it exists
                 if (oldUsername) {
                     const oldUsernameDocRef = doc(db, "usernames", oldUsername);
                     transaction.delete(oldUsernameDocRef);
@@ -107,7 +104,6 @@ export default function ProfilePage() {
             });
         }
         
-        // Step 2: Update the user profile document in Firestore
         const userDocRef = doc(db, 'users', user.uid);
         const profileData = {
             username: values.username,
@@ -115,37 +111,36 @@ export default function ProfilePage() {
             avatar: selectedAvatar,
         };
 
-        // Use the non-blocking update with proper error handling
-        setDocumentNonBlocking(userDocRef, profileData, { merge: true });
-
-        // Step 3: Update Firebase Auth profile display name
-        if (auth.currentUser.displayName !== values.username) {
-            await updateAuthProfile(auth.currentUser, { displayName: values.username });
-        }
-
-        setInitialUsername(values.username);
-        toast({
-            title: 'Perfil Actualizado',
-            description: 'Tu perfil ha sido actualizado exitosamente.',
-            variant: 'success',
-        });
+        setDoc(userDocRef, profileData, { merge: true })
+            .then(async () => {
+                if (auth.currentUser?.displayName !== values.username) {
+                    await updateAuthProfile(auth.currentUser!, { displayName: values.username });
+                }
+                setInitialUsername(values.username);
+                toast({
+                    title: 'Perfil Actualizado',
+                    description: 'Tu perfil ha sido actualizado exitosamente.',
+                    variant: 'success',
+                });
+            })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: profileData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
 
     } catch (error: any) {
-        if (error.name === 'FirebaseError') {
-             const permissionError = new FirestorePermissionError({
-                path: error.request?.path || `users/${user.uid}`,
-                operation: 'update',
-                requestResourceData: { username: newUsername, fullName: values.fullName, avatar: selectedAvatar },
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        } else {
-            toast({
-                title: 'Falló la Actualización',
-                description: error.message || 'Ocurrió un error inesperado al actualizar tu perfil.',
-                variant: 'destructive',
-            });
-        }
-    } finally {
+        toast({
+            title: 'Falló la Actualización',
+            description: error.message || 'Ocurrió un error inesperado al actualizar tu perfil.',
+            variant: 'destructive',
+        });
         setIsLoading(false);
     }
   }
@@ -255,7 +250,5 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
 
     
