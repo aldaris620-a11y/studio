@@ -10,7 +10,15 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read, update, delete: if isOwner(userId);
-      allow create: if request.auth.uid == userId;
+      
+      // Allow create only if user is creating their own document
+      // and provides all the required fields.
+      allow create: if request.auth.uid == userId &&
+                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'gender']) &&
+                      request.resource.data.id == userId &&
+                      request.resource.data.username is string &&
+                      request.resource.data.fullName is string &&
+                      request.resource.data.gender is string;
 
       match /game_progress/{gameProgressId} {
         allow read, write: if isOwner(userId);
