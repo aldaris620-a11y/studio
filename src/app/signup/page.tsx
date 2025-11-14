@@ -116,7 +116,6 @@ export default function SignupPage() {
       router.push("/dashboard");
 
     } catch (error: any) {
-      console.error("Signup error:", error); // For better debugging
       let title = "Falló el Registro";
       let description = "Ocurrió un error inesperado durante el registro. Por favor, inténtalo de nuevo.";
       
@@ -126,7 +125,7 @@ export default function SignupPage() {
         // This case is for Firestore security rule errors, which we're handling globally
         // but can still provide a user-friendly message here.
         const permissionError = new FirestorePermissionError({
-            path: `users/${error.request.auth?.uid || 'unknown'}`,
+            path: `users/${error.request?.auth?.uid || 'unknown'}`,
             operation: 'create',
             requestResourceData: {
                 username: values.username,
@@ -136,6 +135,8 @@ export default function SignupPage() {
         errorEmitter.emit('permission-error', permissionError);
         // The global listener will throw, but we can set a toast as a fallback.
         description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
+      } else {
+        console.error("Signup error:", error); // For other unexpected errors
       }
       
       toast({
@@ -333,3 +334,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
