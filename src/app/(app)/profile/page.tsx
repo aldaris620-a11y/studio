@@ -19,13 +19,10 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 
 const profileSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo debe tener al menos 3 caracteres." }),
   username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
-  gender: z.enum(["masculino", "femenino", "otro"], { required_error: "Debes seleccionar un género." }),
 });
 
 const avatarImages = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
@@ -56,7 +53,6 @@ export default function ProfilePage() {
                 form.reset({ 
                     username: userData.username || user.displayName || '',
                     fullName: userData.fullName || '',
-                    gender: userData.gender || 'otro'
                 });
                 setSelectedAvatar(userData.avatar || 'avatar-1');
             } else {
@@ -64,7 +60,6 @@ export default function ProfilePage() {
                 form.reset({ 
                     username: user.displayName || '',
                     fullName: '',
-                    gender: 'otro'
                 });
                 setSelectedAvatar('avatar-1');
             }
@@ -73,7 +68,6 @@ export default function ProfilePage() {
             form.reset({ 
                 username: user.displayName || '',
                 fullName: '',
-                gender: 'otro'
             });
             setSelectedAvatar('avatar-1');
         }
@@ -116,10 +110,8 @@ export default function ProfilePage() {
       // Update Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
-        id: user.uid,
         username: values.username,
         fullName: values.fullName,
-        gender: values.gender,
         avatar: selectedAvatar,
       }, { merge: true });
 
@@ -157,7 +149,6 @@ export default function ProfilePage() {
                 <CardDescription>Actualiza tu nombre de usuario y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <Skeleton className="h-10 w-1/2" />
                 <Skeleton className="h-10 w-1/2" />
                 <Skeleton className="h-10 w-1/2" />
                 <div className="space-y-2">
@@ -215,56 +206,6 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Género</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex items-center space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="masculino" id="masculino" />
-                          </FormControl>
-                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="13" r="5"/>
-                                <path d="M19 5L13 11"/>
-                                <path d="M19 9L19 5L15 5"/>
-                            </svg>
-                          </Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="femenino" id="femenino" />
-                          </FormControl>
-                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="10" r="5"/>
-                                <path d="M12 15v6"/>
-                                <path d="M9 18h6"/>
-                            </svg>
-                          </Label>
-                        </FormItem>
-                         <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="otro" id="otro" />
-                          </FormControl>
-                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                          </Label>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <div className="space-y-2">
                 <FormLabel>Avatar</FormLabel>
                 <div className="flex flex-wrap gap-4">
@@ -302,5 +243,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    

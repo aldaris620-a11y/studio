@@ -40,9 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2, ShieldCheck } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
 
@@ -52,7 +50,6 @@ const formSchema = z.object({
   email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   confirmPassword: z.string().min(6, { message: "La confirmación de contraseña debe tener al menos 6 caracteres." }),
-  gender: z.enum(["masculino", "femenino", "otro"], { required_error: "Debes seleccionar un género." }),
   terms: z.boolean().default(false).refine(value => value === true, {
     message: "Debes aceptar los términos y condiciones.",
   }),
@@ -82,7 +79,6 @@ export default function SignupPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      gender: "otro",
       terms: false,
       privacy: false,
     },
@@ -100,11 +96,12 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    
+    let user;
+
     try {
       // Step 1: Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
+      user = userCredential.user;
 
       // Step 2: Reserve the username in a transaction
       const usernameDocRef = doc(db, 'usernames', values.username.toLowerCase());
@@ -122,7 +119,6 @@ export default function SignupPage() {
         id: user.uid,
         username: values.username,
         fullName: values.fullName,
-        gender: values.gender,
         avatar: "avatar-1", // Default avatar
       };
       await setDoc(userProfileDocRef, profileData);
@@ -140,10 +136,10 @@ export default function SignupPage() {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
-      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied')) {
+      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied') && user) {
         description = "Un error de permisos impidió crear tu perfil. Por favor, contacta a soporte.";
          const permissionError = new FirestorePermissionError({
-          path: `usernames/${values.username} or users/${values.email}`, // Approximate path
+          path: `usernames/${values.username} or users/${user.uid}`, 
           operation: 'create',
           requestResourceData: { username: values.username, email: values.email }
         });
@@ -236,57 +232,6 @@ export default function SignupPage() {
                     <FormLabel>Confirmar Contraseña</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Género</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex items-center space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="masculino" id="masculino" />
-                          </FormControl>
-                           <Label htmlFor="masculino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="13" r="5"/>
-                                <path d="M19 5L13 11"/>
-                                <path d="M19 9L19 5L15 5"/>
-                            </svg>
-                          </Label>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="femenino" id="femenino" />
-                          </FormControl>
-                           <Label htmlFor="femenino" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="10" r="5"/>
-                                <path d="M12 15v6"/>
-                                <path d="M9 18h6"/>
-                            </svg>
-                          </Label>
-                        </FormItem>
-                         <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="otro" id="otro" />
-                          </FormControl>
-                           <Label htmlFor="otro" className="p-2 rounded-md border-2 border-transparent hover:border-primary data-[state=checked]:border-primary cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                          </Label>
-                        </FormItem>
-                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -397,5 +342,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
