@@ -118,23 +118,37 @@ export default function SignupPage() {
         }
 
         // If username is available, create the username doc and the user profile doc
-        transaction.set(usernameRef, { uid: user.uid });
-        transaction.set(userProfileRef, {
+        const profileData = {
           id: user.uid,
           username: values.username,
           fullName: values.fullName,
           gender: values.gender,
           avatar: "avatar-1", // Default avatar
-        });
+        };
+        transaction.set(usernameRef, { uid: user.uid });
+        transaction.set(userProfileRef, profileData);
       }).catch(error => {
+          // This catch block is for transaction-specific errors, including security rules.
+          if (error.name !== 'FirebaseError') {
+              // If it is not a Firestore error, just re-throw it.
+              throw error;
+          }
           const permissionError = new FirestorePermissionError({
-            path: `usernames/${values.username}`,
+            path: `usernames/${values.username} and users/${user.uid}`,
             operation: 'create',
-            requestResourceData: { username: values.username, profile: { id: user.uid, fullName: values.fullName, gender: values.gender } },
+            requestResourceData: {
+              username: { uid: user.uid },
+              profile: {
+                id: user.uid,
+                username: values.username,
+                fullName: values.fullName,
+                gender: values.gender,
+              }
+            }
           });
           errorEmitter.emit('permission-error', permissionError);
-          // Re-throw the original error to be caught by the outer catch block
-          throw error;
+          // Re-throw to be caught by the outer catch block to show a toast.
+          throw permissionError;
       });
 
       // Step 3: Update Auth display name (less critical, can happen after transaction)
@@ -144,19 +158,25 @@ export default function SignupPage() {
       router.push("/dashboard");
 
     } catch (error: any) {
+      // This is the generic catch block for the entire onSubmit function.
       let description = "Ocurrió un error inesperado.";
       if (error.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro o inicia sesión.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
+      } else if (error.name !== 'FirebaseError') {
+         // Only show toast if it's not a permission error we're already handling.
+         description = error.message || description;
       }
-      
-      toast({
-        title: "Falló el Registro",
-        description: description,
-        variant: "destructive",
-      });
-      console.error("Signup error:", error);
+
+      // Avoid showing a generic toast if a specific one was already emitted for a permission error.
+      if (error.name !== 'FirebaseError') {
+        toast({
+          title: "Falló el Registro",
+          description: description,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -398,5 +418,7 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
 
     
