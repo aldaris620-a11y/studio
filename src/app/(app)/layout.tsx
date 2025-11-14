@@ -1,7 +1,10 @@
+
 import { AuthGuard } from '@/components/auth-guard';
 import { MainNav } from '@/components/main-nav';
 import { MobileNav } from '@/components/mobile-nav';
 import { UserNav } from '@/components/user-nav';
+import { Suspense } from 'react';
+import { AnimatedLoading } from '@/components/animated-loading';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +18,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <UserNav />
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-            {children}
+            <Suspense fallback={<AnimatedLoading text="Cargando página..." />}>
+              {children}
+            </Suspense>
           </main>
         </div>
       </div>
