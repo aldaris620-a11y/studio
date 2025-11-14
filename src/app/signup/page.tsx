@@ -100,51 +100,42 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-  
     try {
       // Step 1: Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
-  
-      // Step 2: Use a transaction to atomically claim the username.
+
+      // Step 2: Use a transaction to atomically claim the username and create the user profile
       const usernameDocRef = doc(db, 'usernames', values.username);
-      
+      const userProfileDocRef = doc(db, 'users', user.uid);
+
       await runTransaction(db, async (transaction) => {
         const usernameDoc = await transaction.get(usernameDocRef);
         if (usernameDoc.exists()) {
+          // This specific error will be caught by the outer catch block
           throw new Error("Username is already taken.");
         }
-        // If it does not exist, "claim" it by creating the document
-        transaction.set(usernameDocRef, { uid: user.uid });
-      });
-  
-      // Step 3: Create the user profile document (outside the transaction)
-      const userProfileDocRef = doc(db, 'users', user.uid);
-      const profileData = {
-        id: user.uid,
-        username: values.username,
-        fullName: values.fullName,
-        gender: values.gender,
-        avatar: "avatar-1", // Default avatar
-      };
 
-      // Use setDoc and catch potential permission errors
-      await setDoc(userProfileDocRef, profileData).catch(error => {
-          const permissionError = new FirestorePermissionError({
-            path: userProfileDocRef.path,
-            operation: 'create',
-            requestResourceData: profileData
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError; // Stop execution
+        // If username doesn't exist, proceed with setting both documents
+        const usernameData = { uid: user.uid };
+        transaction.set(usernameDocRef, usernameData);
+
+        const profileData = {
+          id: user.uid,
+          username: values.username,
+          fullName: values.fullName,
+          gender: values.gender,
+          avatar: "avatar-1", // Default avatar
+        };
+        transaction.set(userProfileDocRef, profileData);
       });
-  
-      // Step 4: Update Auth display name
+
+      // Step 3: Update Auth display name
       await updateProfile(user, { displayName: values.username });
-  
-      // Step 5: Redirect to dashboard
+
+      // Step 4: Redirect to dashboard
       router.push("/dashboard");
-  
+
     } catch (error: any) {
       let description = "Ocurrió un error inesperado.";
       
@@ -152,19 +143,23 @@ export default function SignupPage() {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro o inicia sesión.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
-      } else if (error.name !== 'FirebaseError') {
+      } else if (error.name === 'FirebaseError') {
+        // If it's a permission error, it will be handled by the listener, but we can log it here if needed.
+        // We still need a user-friendly message.
+        description = "Ocurrió un error al guardar tu perfil. Verifica tus permisos."
+      } else {
          description = error.message || description;
       }
   
-      // Only show a toast if it's not a permission error (which is handled globally)
-      if (error.name !== 'FirebaseError') {
-        toast({
-          title: "Falló el Registro",
-          description: description,
-          variant: "destructive",
-        });
-      }
+      // Show toast for any error that occurs
+      toast({
+        title: "Falló el Registro",
+        description: description,
+        variant: "destructive",
+      });
+
     } finally {
+      // This will run regardless of success or failure
       setIsLoading(false);
     }
   }
@@ -405,3 +400,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
