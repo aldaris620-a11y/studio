@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, runTransaction, getDoc } from "firebase/firestore";
+import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
@@ -106,55 +106,54 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       
-      // Step 2: Run a transaction to create user profile and claim username
+      // Step 2: Run a transaction to claim username
+      const usernameRef = doc(db, 'usernames', values.username);
       await runTransaction(db, async (transaction) => {
-        const usernameRef = doc(db, 'usernames', values.username);
-        const userProfileRef = doc(db, 'users', user.uid);
-
-        // Check if username document already exists
         const usernameDoc = await transaction.get(usernameRef);
         if (usernameDoc.exists()) {
           throw new Error("Username is already taken.");
         }
-
-        // If username is available, create the username doc and the user profile doc
-        const profileData = {
-          id: user.uid,
-          username: values.username,
-          fullName: values.fullName,
-          gender: values.gender,
-          avatar: "avatar-1", // Default avatar
-        };
         transaction.set(usernameRef, { uid: user.uid });
-        transaction.set(userProfileRef, profileData);
       }).catch(error => {
-          // This catch block is for transaction-specific errors, including security rules.
           if (error.name !== 'FirebaseError') {
-              // If it is not a Firestore error, just re-throw it.
               throw error;
           }
           const permissionError = new FirestorePermissionError({
             path: `usernames/${values.username}`,
             operation: 'create',
-            requestResourceData: {
-                usernameDoc: { uid: user.uid },
-                userProfileDoc: { 
-                    id: user.uid, 
-                    username: values.username, 
-                    fullName: values.fullName,
-                    gender: values.gender,
-                }
-            }
+            requestResourceData: { uid: user.uid }
           });
           errorEmitter.emit('permission-error', permissionError);
-          // Re-throw to be caught by the outer catch block to show a toast.
           throw permissionError;
       });
 
-      // Step 3: Update Auth display name (less critical, can happen after transaction)
+      // Step 3: Create the user profile document
+      const userProfileRef = doc(db, 'users', user.uid);
+      const profileData = {
+        id: user.uid,
+        username: values.username,
+        fullName: values.fullName,
+        gender: values.gender,
+        avatar: "avatar-1", // Default avatar
+      };
+      await setDoc(userProfileRef, profileData).catch(error => {
+         if (error.name !== 'FirebaseError') {
+              throw error;
+          }
+          const permissionError = new FirestorePermissionError({
+            path: `users/${user.uid}`,
+            operation: 'create',
+            requestResourceData: profileData
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError;
+      });
+
+
+      // Step 4: Update Auth display name (less critical, can happen after transaction)
       await updateProfile(user, { displayName: values.username });
 
-      // Step 4: Redirect to dashboard
+      // Step 5: Redirect to dashboard
       router.push("/dashboard");
 
     } catch (error: any) {
@@ -418,11 +417,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
