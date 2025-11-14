@@ -58,6 +58,7 @@ export default function SettingsPage() {
       toast({
         title: 'Éxito',
         description: 'Tu contraseña ha sido cambiada exitosamente.',
+        variant: 'success',
       });
       passwordForm.reset();
     } catch (error: any) {

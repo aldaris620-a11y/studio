@@ -133,6 +133,7 @@ export default function ProfilePage() {
       toast({
         title: 'Perfil Actualizado',
         description: 'Tu perfil ha sido actualizado exitosamente.',
+        variant: 'success',
       });
     } catch (error: any) {
       toast({
