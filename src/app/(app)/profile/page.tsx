@@ -54,6 +54,7 @@ export default function ProfilePage() {
                 });
                 setSelectedAvatar(userData.avatar || 'avatar-1');
             } else {
+                // Pre-fill from auth if firestore doc doesn't exist
                 form.reset({ 
                     username: user.displayName || '',
                 });
@@ -76,16 +77,19 @@ export default function ProfilePage() {
     if (!user || !db || !auth.currentUser) return;
     setIsLoading(true);
 
+    const newUsername = values.username;
+    
     const userDocRef = doc(db, 'users', user.uid);
     const profileData = {
-        username: values.username,
+        username: newUsername,
         avatar: selectedAvatar,
     };
 
     setDoc(userDocRef, profileData, { merge: true })
         .then(async () => {
-            if (auth.currentUser?.displayName !== values.username) {
-                await updateAuthProfile(auth.currentUser!, { displayName: values.username });
+            // Update auth profile display name if it's different
+            if (auth.currentUser?.displayName !== newUsername) {
+                await updateAuthProfile(auth.currentUser!, { displayName: newUsername });
             }
             toast({
                 title: 'Perfil Actualizado',
@@ -202,3 +206,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    

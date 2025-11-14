@@ -9,13 +9,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, delete: if isOwner(userId);
-      // Allow create if the user is the owner and provides the required fields.
-      allow create: if request.auth.uid == userId && 
-                      request.resource.data.keys().hasAll(['id', 'username', 'avatar']);
-      // Allow update if the user is the owner. The fields that can be updated
-      // are not restricted here, but are controlled by the app's logic.
-      allow update: if isOwner(userId);
+      // Allow read, delete, and write (create/update) if the user is the owner.
+      // This is a robust way to handle profiles, as it allows creation if the doc
+      // doesn't exist, and updates if it does.
+      allow read, delete, write: if isOwner(userId);
                       
       match /game_progress/{gameProgressId} {
         allow read, write: if isOwner(userId);
@@ -31,3 +28,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
