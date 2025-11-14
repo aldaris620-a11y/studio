@@ -134,16 +134,16 @@ export default function SignupPage() {
               throw error;
           }
           const permissionError = new FirestorePermissionError({
-            path: `usernames/${values.username} and users/${user.uid}`,
+            path: `usernames/${values.username}`,
             operation: 'create',
             requestResourceData: {
-              username: { uid: user.uid },
-              profile: {
-                id: user.uid,
-                username: values.username,
-                fullName: values.fullName,
-                gender: values.gender,
-              }
+                usernameDoc: { uid: user.uid },
+                userProfileDoc: { 
+                    id: user.uid, 
+                    username: values.username, 
+                    fullName: values.fullName,
+                    gender: values.gender,
+                }
             }
           });
           errorEmitter.emit('permission-error', permissionError);
@@ -418,6 +418,8 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
 
     
 
