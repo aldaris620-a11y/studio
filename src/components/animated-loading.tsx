@@ -45,31 +45,26 @@ export function AnimatedLoading({ text }: { text?: string }) {
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-background overflow-hidden">
-            <div className="relative w-48 h-48 mb-8">
-                {icons.map((item, index) => {
-                    const Icon = item.icon;
-                    const animationDelay = `${index * 150}ms`;
-                    return (
-                        <Icon
-                            key={index}
-                            className={cn(
-                                "absolute h-8 w-8 animate-orbit",
-                                item.color
-                            )}
-                            style={
-                                {
-                                    '--orbit-radius': '6rem',
-                                    '--orbit-duration': '10s',
-                                    '--orbit-offset': `${index * (360 / icons.length)}deg`,
-                                    animationDelay,
-                                } as React.CSSProperties
-                            }
-                        />
-                    )
-                })}
+            <div className="relative w-24 h-48 mb-4 overflow-hidden">
+                <div className="absolute inset-0 flex flex-col items-center">
+                    {icons.map((item, index) => {
+                        const Icon = item.icon;
+                        const animationDelay = `${index * 0.5}s`;
+                        return (
+                            <Icon
+                                key={index}
+                                className={cn(
+                                    "absolute h-8 w-8 animate-carousel-vertical",
+                                    item.color
+                                )}
+                                style={{ animationDelay } as React.CSSProperties}
+                            />
+                        )
+                    })}
+                </div>
             </div>
 
-            <p className="mt-4 text-lg font-semibold text-foreground text-center px-4">
+            <p className="mt-8 text-lg font-semibold text-foreground text-center px-4">
                 {currentPhrase}
             </p>
         </div>

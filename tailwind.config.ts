@@ -88,21 +88,25 @@ export default {
             height: '0',
           },
         },
-         orbit: {
-          '0%': {
-            transform:
-              'rotate(var(--orbit-offset)) translateY(var(--orbit-radius)) rotate(calc(-1 * var(--orbit-offset)))',
-          },
-          '100%': {
-            transform:
-              'rotate(calc(360deg + var(--orbit-offset))) translateY(var(--orbit-radius)) rotate(calc(-360deg - var(--orbit-offset)))',
-          },
+        'carousel-vertical': {
+            '0%': {
+                transform: 'translateY(100px)',
+                opacity: '0',
+            },
+            '20%, 80%': {
+                transform: 'translateY(0)',
+                opacity: '1',
+            },
+            '100%': {
+                transform: 'translateY(-100px)',
+                opacity: '0',
+            },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        orbit: 'orbit var(--orbit-duration) linear infinite',
+        'carousel-vertical': 'carousel-vertical 3.5s ease-in-out infinite',
       },
     },
   },
