@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { useUser, useAuth, useFirestore } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -75,13 +76,33 @@ export default function SettingsPage() {
 
     setIsDeleteLoading(true);
     try {
+      // Re-authenticate user first
       const credential = EmailAuthProvider.credential(user.email, values.confirmPassword);
       await reauthenticateWithCredential(user, credential);
       
-      // Delete user data from Firestore
-      await deleteDoc(doc(db, 'users', user.uid));
+      // Get the username from the user's profile document
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        throw new Error("No se pudo encontrar el perfil de usuario para eliminar.");
+      }
       
-      // Delete user from Firebase Auth
+      const username = userDocSnap.data()?.username;
+      if (!username) {
+        throw new Error("No se pudo encontrar el nombre de usuario para eliminar.");
+      }
+
+      // Use a batch write to delete user profile and username doc
+      const batch = writeBatch(db);
+      const usernameDocRef = doc(db, 'usernames', username);
+      
+      batch.delete(userDocRef);
+      batch.delete(usernameDocRef);
+      
+      await batch.commit();
+
+      // Finally, delete user from Firebase Auth
       await deleteUser(user);
 
       toast({
