@@ -49,7 +49,7 @@ export function AnimatedLoading({ text }: { text?: string }) {
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-background overflow-hidden">
-             <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
+             <div className="relative w-24 h-24 mb-4 flex items-center justify-center">
                 {icons.map((item, index) => {
                     const Icon = item.icon;
                     const animationDelay = `${index * animationDuration}s`;
@@ -69,7 +69,7 @@ export function AnimatedLoading({ text }: { text?: string }) {
                 })}
             </div>
 
-            <p className="mt-8 text-lg font-semibold text-foreground text-center px-4">
+            <p className="mt-4 text-lg font-semibold text-foreground text-center px-4">
                 {currentPhrase}
             </p>
         </div>
