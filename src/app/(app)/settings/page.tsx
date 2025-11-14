@@ -61,9 +61,15 @@ export default function SettingsPage() {
       });
       passwordForm.reset();
     } catch (error: any) {
+      let description = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+        description = 'La contraseña actual es incorrecta. Por favor, verifícala e inténtalo de nuevo.';
+      } else {
+        description = error.message;
+      }
       toast({
         title: 'Error al Cambiar la Contraseña',
-        description: error.message || 'Por favor, verifica tu contraseña actual e inténtalo de nuevo.',
+        description: description,
         variant: 'destructive',
       });
     } finally {
