@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -66,9 +67,6 @@ export function AnimatedLoading({ text }: { text?: string }) {
                         />
                     )
                 })}
-                <div className="absolute inset-0 flex items-center justify-center">
-                     <Gamepad2 className="h-12 w-12 text-primary animate-pulse" />
-                </div>
             </div>
 
             <p className="mt-4 text-lg font-semibold text-foreground text-center px-4">
