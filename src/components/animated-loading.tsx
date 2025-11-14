@@ -27,46 +27,48 @@ const phrases = [
 ];
 
 export function AnimatedLoading({ text }: { text?: string }) {
-    const [currentPhrase, setCurrentPhrase] = useState(text || phrases[0]);
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
+    const [randomPhrase, setRandomPhrase] = useState(phrases[0]);
 
     useEffect(() => {
         const iconInterval = setInterval(() => {
             setCurrentIconIndex(prevIndex => (prevIndex + 1) % icons.length);
         }, 1500);
 
-        return () => clearInterval(iconInterval);
-    }, []);
-
-    useEffect(() => {
-        if (text) return; 
-
         const phraseInterval = setInterval(() => {
-            setCurrentPhrase(prev => {
+            setRandomPhrase(prev => {
                 const currentIndex = phrases.indexOf(prev);
                 const nextIndex = (currentIndex + 1) % phrases.length;
                 return phrases[nextIndex];
             });
         }, 2000);
 
-        return () => clearInterval(phraseInterval);
-    }, [text]);
+
+        return () => {
+            clearInterval(iconInterval);
+            clearInterval(phraseInterval);
+        };
+    }, []);
 
     const CurrentIcon = icons[currentIconIndex].icon;
-    const iconColor = icons[currentIconIndex].color;
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-background overflow-hidden">
              <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
                 <CurrentIcon
                     key={currentIconIndex}
-                    className={cn("h-14 w-14 animate-fade-in-out", iconColor)}
+                    className={cn("h-14 w-14 animate-fade-in-out", icons[currentIconIndex].color)}
                 />
             </div>
 
-            <p className="mt-2 text-lg font-semibold text-foreground text-center px-4">
-                {currentPhrase}
+            <p className="text-lg font-semibold text-foreground text-center px-4">
+                {text || randomPhrase}
             </p>
+            {text && (
+                 <p className="mt-2 text-sm text-muted-foreground text-center px-4">
+                    {randomPhrase}
+                </p>
+            )}
         </div>
     );
 }
