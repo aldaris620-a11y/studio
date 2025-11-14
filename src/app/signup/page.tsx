@@ -100,75 +100,78 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-
+  
     try {
       // Step 1: Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
-      
-      // Step 2: Run a transaction to claim username
-      const usernameRef = doc(db, 'usernames', values.username);
+  
+      // Step 2 & 3: Run a transaction to claim username and create user profile
+      const usernameDocRef = doc(db, 'usernames', values.username);
+      const userProfileDocRef = doc(db, 'users', user.uid);
+  
       await runTransaction(db, async (transaction) => {
-        const usernameDoc = await transaction.get(usernameRef);
+        const usernameDoc = await transaction.get(usernameDocRef);
         if (usernameDoc.exists()) {
           throw new Error("Username is already taken.");
         }
-        transaction.set(usernameRef, { uid: user.uid });
+  
+        // Data for usernames collection
+        const usernameData = { uid: user.uid };
+        transaction.set(usernameDocRef, usernameData);
+  
+        // Data for users collection
+        const profileData = {
+          id: user.uid,
+          username: values.username,
+          fullName: values.fullName,
+          gender: values.gender,
+          avatar: "avatar-1", // Default avatar
+        };
+        transaction.set(userProfileDocRef, profileData);
       }).catch(error => {
-          if (error.name !== 'FirebaseError') {
-              throw error;
-          }
-          const permissionError = new FirestorePermissionError({
-            path: `usernames/${values.username}`,
-            operation: 'create',
-            requestResourceData: { uid: user.uid }
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError;
+        // This unified catch block handles both transaction errors and Firestore permission errors
+        if (error.name !== 'FirebaseError') {
+          throw error; // Re-throw non-firestore errors (like "Username is already taken")
+        }
+        
+        // Create a detailed permission error for easier debugging
+        const permissionError = new FirestorePermissionError({
+          path: `Transaction on usernames/${values.username} and users/${user.uid}`,
+          operation: 'create',
+          // Pass the data we attempted to write for both documents
+          requestResourceData: {
+            usernameDoc: { uid: user.uid },
+            userProfileDoc: {
+              id: user.uid,
+              username: values.username,
+              fullName: values.fullName,
+              gender: values.gender,
+              avatar: "avatar-1",
+            }
+          },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError; // Stop execution by re-throwing
       });
-
-      // Step 3: Create the user profile document
-      const userProfileRef = doc(db, 'users', user.uid);
-      const profileData = {
-        id: user.uid,
-        username: values.username,
-        fullName: values.fullName,
-        gender: values.gender,
-        avatar: "avatar-1", // Default avatar
-      };
-      await setDoc(userProfileRef, profileData).catch(error => {
-         if (error.name !== 'FirebaseError') {
-              throw error;
-          }
-          const permissionError = new FirestorePermissionError({
-            path: `users/${user.uid}`,
-            operation: 'create',
-            requestResourceData: profileData
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError;
-      });
-
-
-      // Step 4: Update Auth display name (less critical, can happen after transaction)
+  
+      // Step 4: Update Auth display name
       await updateProfile(user, { displayName: values.username });
-
+  
       // Step 5: Redirect to dashboard
       router.push("/dashboard");
-
+  
     } catch (error: any) {
-      // This is the generic catch block for the entire onSubmit function.
       let description = "Ocurrió un error inesperado.";
+      
       if (error.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro o inicia sesión.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
       } else if (error.name !== 'FirebaseError') {
-         // Only show toast if it's not a permission error we're already handling.
          description = error.message || description;
       }
-
-      // Avoid showing a generic toast if a specific one was already emitted for a permission error.
+  
       if (error.name !== 'FirebaseError') {
         toast({
           title: "Falló el Registro",
@@ -417,3 +420,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
