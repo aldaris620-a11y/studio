@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { useUser, useAuth } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useUser, useAuth, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -21,20 +21,26 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Skeleton } from './ui/skeleton';
+
+type UserProfile = {
+  avatar: string;
+  username: string;
+}
 
 export function UserNav() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-  const [avatarUrl, setAvatarUrl] = useState('');
 
-  useEffect(() => {
-    // We are setting a default avatar, in a real scenario this would
-    // probably come from the user's profile in firestore
-    const defaultAvatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
-    if (defaultAvatar) setAvatarUrl(defaultAvatar.imageUrl);
-  }, []);
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid);
+  }, [user, db]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
 
   const handleSignOut = async () => {
     try {
@@ -51,23 +57,35 @@ export function UserNav() {
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
-    return name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
+
+  const avatarId = userProfile?.avatar || 'avatar-1';
+  const avatarUrl = PlaceHolderImages.find(img => img.id === avatarId)?.imageUrl;
+  const displayName = userProfile?.username || user?.displayName;
+
+  if (isUserLoading || isProfileLoading) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={avatarUrl} alt={user?.displayName || 'Usuario'} />
-            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+             {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName || 'Usuario'} />}
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email}
             </p>

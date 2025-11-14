@@ -12,7 +12,7 @@ import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter 
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +34,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isAvatarLoading, setIsAvatarLoading] = useState(true);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -54,7 +55,6 @@ export default function ProfilePage() {
                 });
                 setSelectedAvatar(userData.avatar || 'avatar-1');
             } else {
-                // Pre-fill from auth if firestore doc doesn't exist
                 form.reset({ 
                     username: user.displayName || '',
                 });
@@ -68,6 +68,7 @@ export default function ProfilePage() {
             setSelectedAvatar('avatar-1');
         }
         setIsPageLoading(false);
+        setIsAvatarLoading(false);
       };
       fetchUserData();
     }
@@ -87,7 +88,6 @@ export default function ProfilePage() {
 
     setDoc(userDocRef, profileData, { merge: true })
         .then(async () => {
-            // Update auth profile display name if it's different
             if (auth.currentUser?.displayName !== newUsername) {
                 await updateAuthProfile(auth.currentUser!, { displayName: newUsername });
             }
@@ -104,11 +104,6 @@ export default function ProfilePage() {
                 requestResourceData: profileData,
             });
             errorEmitter.emit('permission-error', permissionError);
-             toast({
-                title: 'Falló la Actualización',
-                description: 'No se pudo actualizar tu perfil. Verifica tus permisos.',
-                variant: 'destructive',
-            });
         })
         .finally(() => {
             setIsLoading(false);
@@ -129,15 +124,16 @@ export default function ProfilePage() {
                 <Skeleton className="h-10 w-1/2" />
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20" />
-                    <div className="flex gap-4">
-                        <Skeleton className="h-24 w-24 rounded-full" />
-                        <Skeleton className="h-24 w-24 rounded-full" />
-                        <Skeleton className="h-24 w-24 rounded-full" />
-                        <Skeleton className="h-24 w-24 rounded-full" />
+                    <div className="flex flex-wrap gap-4">
+                        {[...Array(avatarImages.length)].map((_, i) => (
+                           <Skeleton key={i} className="h-24 w-24 rounded-full" />
+                        ))}
                     </div>
                 </div>
-                <Skeleton className="h-10 w-32" />
             </CardContent>
+             <CardFooter>
+                <Skeleton className="h-10 w-32" />
+            </CardFooter>
           </Card>
         </div>
     )
@@ -171,40 +167,43 @@ export default function ProfilePage() {
               />
               <div className="space-y-2">
                 <FormLabel>Avatar</FormLabel>
-                <div className="flex flex-wrap gap-4">
-                  {avatarImages.map((image) => (
-                    <button
-                      key={image.id}
-                      type="button"
-                      onClick={() => setSelectedAvatar(image.id)}
-                      className={cn(
-                        'rounded-full ring-offset-background transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                        selectedAvatar === image.id ? 'ring-2 ring-primary ring-offset-2' : ''
-                      )}
-                    >
-                      <Image
-                        src={image.imageUrl}
-                        alt={image.description}
-                        width={96}
-                        height={96}
-                        className="h-24 w-24 rounded-full border-2 border-transparent object-cover hover:border-primary"
-                        data-ai-hint={image.imageHint}
-                      />
-                    </button>
-                  ))}
+                 <div className="flex flex-wrap gap-4">
+                  {isAvatarLoading ? (
+                    [...Array(avatarImages.length)].map((_, i) => <Skeleton key={i} className="h-24 w-24 rounded-full" />)
+                  ) : (
+                    avatarImages.map((image) => (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setSelectedAvatar(image.id)}
+                        className={cn(
+                          'rounded-full ring-offset-background transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                          selectedAvatar === image.id ? 'ring-2 ring-primary ring-offset-2' : ''
+                        )}
+                        aria-label={`Seleccionar ${image.description} como avatar`}
+                      >
+                        <Image
+                          src={image.imageUrl}
+                          alt={image.description}
+                          width={96}
+                          height={96}
+                          className="h-24 w-24 rounded-full border-2 border-transparent object-cover hover:border-primary"
+                          data-ai-hint={image.imageHint}
+                        />
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             </CardContent>
-            <CardContent>
+            <CardFooter>
                  <Button type="submit" disabled={isLoading}>
                     {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
-            </CardContent>
+            </CardFooter>
           </form>
         </Form>
       </Card>
     </div>
   );
 }
-
-    
