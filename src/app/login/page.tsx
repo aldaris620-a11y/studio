@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Gamepad2 } from "lucide-react";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
@@ -64,9 +65,12 @@ export default function LoginPage() {
         variant: "destructive",
       });
       console.error("Login error:", error);
-    } finally {
       setIsLoading(false);
     }
+  }
+
+  if (isLoading) {
+    return <AnimatedLoading text="Verificando identidad..." />;
   }
 
   return (

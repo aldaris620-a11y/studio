@@ -88,10 +88,21 @@ export default {
             height: '0',
           },
         },
+         orbit: {
+          '0%': {
+            transform:
+              'rotate(var(--orbit-offset)) translateY(var(--orbit-radius)) rotate(calc(-1 * var(--orbit-offset)))',
+          },
+          '100%': {
+            transform:
+              'rotate(calc(360deg + var(--orbit-offset))) translateY(var(--orbit-radius)) rotate(calc(-360deg - var(--orbit-offset)))',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        orbit: 'orbit var(--orbit-duration) linear infinite',
       },
     },
   },

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -42,6 +41,7 @@ import { Gamepad2, ShieldCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 const formSchema = z.object({
   username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }),
@@ -102,7 +102,7 @@ export default function SignupPage() {
       const profileData = {
         id: user.uid,
         username: values.username,
-        avatar: "avatar-1", // Default avatar
+        avatar: "🎮", // Default avatar
       };
 
       // Step 2 & 3: Create Firestore profile and update Auth profile concurrently
@@ -116,11 +116,11 @@ export default function SignupPage() {
     } catch (error: any) {
       console.error("Signup error:", error); // For better debugging
       let title = "Falló el Registro";
-      let description = "Ocurrió un error inesperado durante el registro.";
+      let description = "Ocurrió un error inesperado durante el registro. Por favor, inténtalo de nuevo.";
       
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
-      } else if (error?.code === 'permission-denied') {
+      } else if (error.name === 'FirebaseError') {
         title = "Error de Permisos";
         description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
       }
@@ -130,10 +130,13 @@ export default function SignupPage() {
         description: description,
         variant: "destructive",
       });
-
-    } finally {
       setIsLoading(false);
+
     }
+  }
+
+  if (isLoading) {
+    return <AnimatedLoading text="Creando tu cuenta..." />;
   }
 
   return (
