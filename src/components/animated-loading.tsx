@@ -60,15 +60,10 @@ export function AnimatedLoading({ text }: { text?: string }) {
                     className={cn("h-14 w-14 animate-fade-in-out", icons[currentIconIndex].color)}
                 />
             </div>
-
             <p className="text-lg font-semibold text-foreground text-center px-4">
-                {text || randomPhrase}
+                {randomPhrase}
             </p>
-            {text && (
-                 <p className="mt-2 text-sm text-muted-foreground text-center px-4">
-                    {randomPhrase}
-                </p>
-            )}
         </div>
     );
 }
+
