@@ -14,7 +14,7 @@ service cloud.firestore {
       // Allow create only if user is creating their own document
       // and provides all the required fields.
       allow create: if request.auth.uid == userId &&
-                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'gender']) &&
+                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'gender', 'avatar']) &&
                       request.resource.data.id == userId &&
                       request.resource.data.username is string &&
                       request.resource.data.fullName is string &&
@@ -34,12 +34,16 @@ service cloud.firestore {
     }
 
     match /usernames/{username} {
-        // Allow creating a username if the user is authenticated and the username doesn't exist.
-        allow create: if request.auth != null;
+        // Allow creating a username only if the user is authenticated,
+        // the document ID matches the username in the request,
+        // and they are setting their own UID.
+        allow create: if request.auth != null &&
+                      request.resource.data.uid == request.auth.uid &&
+                      request.resource.data.keys().hasAll(['uid']);
         
         // Allow deleting a username if the request comes from the user who owns it.
         // We verify ownership by checking the user's own profile document.
-        allow delete: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.id;
+        allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == username;
 
         // Nobody can list or update usernames directly.
         allow read, list, update: if false;

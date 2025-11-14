@@ -106,53 +106,37 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
   
-      // Step 2 & 3: Run a transaction to claim username and create user profile
+      // Step 2: Use a transaction to atomically claim the username.
       const usernameDocRef = doc(db, 'usernames', values.username);
-      const userProfileDocRef = doc(db, 'users', user.uid);
-  
+      
       await runTransaction(db, async (transaction) => {
         const usernameDoc = await transaction.get(usernameDocRef);
         if (usernameDoc.exists()) {
           throw new Error("Username is already taken.");
         }
+        // If it does not exist, "claim" it by creating the document
+        transaction.set(usernameDocRef, { uid: user.uid });
+      });
   
-        // Data for usernames collection
-        const usernameData = { uid: user.uid };
-        transaction.set(usernameDocRef, usernameData);
-  
-        // Data for users collection
-        const profileData = {
-          id: user.uid,
-          username: values.username,
-          fullName: values.fullName,
-          gender: values.gender,
-          avatar: "avatar-1", // Default avatar
-        };
-        transaction.set(userProfileDocRef, profileData);
-      }).catch(error => {
-        // This unified catch block handles both transaction errors and Firestore permission errors
-        if (error.name !== 'FirebaseError') {
-          throw error; // Re-throw non-firestore errors (like "Username is already taken")
-        }
-        
-        // Create a detailed permission error for easier debugging
-        const permissionError = new FirestorePermissionError({
-          path: `Transaction on usernames/${values.username} and users/${user.uid}`,
-          operation: 'create',
-          // Pass the data we attempted to write for both documents
-          requestResourceData: {
-            usernameDoc: { uid: user.uid },
-            userProfileDoc: {
-              id: user.uid,
-              username: values.username,
-              fullName: values.fullName,
-              gender: values.gender,
-              avatar: "avatar-1",
-            }
-          },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError; // Stop execution by re-throwing
+      // Step 3: Create the user profile document (outside the transaction)
+      const userProfileDocRef = doc(db, 'users', user.uid);
+      const profileData = {
+        id: user.uid,
+        username: values.username,
+        fullName: values.fullName,
+        gender: values.gender,
+        avatar: "avatar-1", // Default avatar
+      };
+
+      // Use setDoc and catch potential permission errors
+      await setDoc(userProfileDocRef, profileData).catch(error => {
+          const permissionError = new FirestorePermissionError({
+            path: userProfileDocRef.path,
+            operation: 'create',
+            requestResourceData: profileData
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError; // Stop execution
       });
   
       // Step 4: Update Auth display name
@@ -172,6 +156,7 @@ export default function SignupPage() {
          description = error.message || description;
       }
   
+      // Only show a toast if it's not a permission error (which is handled globally)
       if (error.name !== 'FirebaseError') {
         toast({
           title: "Falló el Registro",
@@ -420,5 +405,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
