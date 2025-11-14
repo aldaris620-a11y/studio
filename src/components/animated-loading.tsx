@@ -75,20 +75,3 @@ export function AnimatedLoading({ text }: { text?: string }) {
         </div>
     );
 }
-
-// Ensure the keyframes are in globals.css
-// In globals.css:
-/*
-@keyframes orbit {
-  0% {
-    transform: rotate(var(--orbit-offset)) translateY(var(--orbit-radius)) rotate(calc(-1 * var(--orbit-offset)));
-  }
-  100% {
-    transform: rotate(calc(360deg + var(--orbit-offset))) translateY(var(--orbit-radius)) rotate(calc(-360deg - var(--orbit-offset)));
-  }
-}
-
-.animate-orbit {
-  animation: orbit var(--orbit-duration) linear infinite;
-}
-*/
