@@ -3,13 +3,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Menu, Settings, User, Skull, BrainCircuit, BookHeart } from 'lucide-react';
+import { Gamepad2, Menu, Settings, User, Skull, BrainCircuit, BookHeart, LayoutDashboard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const navItems = [
+    { href: '/dashboard', label: 'Panel', icon: LayoutDashboard },
     { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
     { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
     { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
@@ -37,7 +38,7 @@ export function MobileNav() {
                 </SheetHeader>
                 <nav className="grid gap-2 text-lg font-medium">
                   <Link
-                    href="/wumpus"
+                    href="/dashboard"
                     className="flex items-center gap-2 text-lg font-semibold text-primary"
                   >
                     <Gamepad2 className="h-6 w-6" />
@@ -49,7 +50,7 @@ export function MobileNav() {
                             href={item.href}
                             className={cn(
                                 'mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground',
-                                { 'bg-muted text-foreground': pathname.startsWith(item.href) }
+                                { 'bg-muted text-foreground': pathname === item.href }
                             )}
                         >
                             <item.icon className="h-5 w-5" />

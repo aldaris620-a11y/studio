@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Settings, User, Skull, BrainCircuit, BookHeart } from 'lucide-react';
+import { Gamepad2, Settings, User, Skull, BrainCircuit, BookHeart, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 
 const navItems = [
+    { href: '/dashboard', label: 'Panel', icon: LayoutDashboard },
     { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
     { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
     { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
@@ -21,7 +21,7 @@ export function MainNav() {
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link href="/wumpus" className="flex items-center gap-2 font-semibold text-primary">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
             <Gamepad2 className="h-6 w-6" />
             <span className="">Centro de Sincronización</span>
           </Link>
@@ -34,7 +34,7 @@ export function MainNav() {
                 href={item.href}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-                  { 'bg-muted text-primary': pathname.startsWith(item.href) }
+                  { 'bg-muted text-primary': pathname === item.href }
                 )}
               >
                 <item.icon className="h-4 w-4" />

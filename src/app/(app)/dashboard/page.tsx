@@ -1,14 +1,21 @@
 
 'use client';
 import { getGames, getRewards } from '@/lib/data';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Gamepad2, Lock, Trophy, Unlock } from 'lucide-react';
+import { Gamepad2, Lock, Trophy, Unlock, Skull, BrainCircuit, BookHeart, PlayCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Game, Reward } from '@/lib/data';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
+const gameIcons: { [key: string]: React.ElementType } = {
+  'wumpus-1': Skull,
+  'trivial-1': BrainCircuit,
+  'zombie-novel-1': BookHeart,
+};
 
 export default function DashboardPage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -23,7 +30,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Tus Juegos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Tu Panel</h1>
         <p className="text-muted-foreground">Sigue tu progreso y desbloquea recompensas increíbles.</p>
       </div>
 
@@ -32,28 +39,31 @@ export default function DashboardPage() {
             <Gamepad2 className="text-primary"/>
             Tus Juegos
         </h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-          {games.map((game) => (
-            <Card key={game.id} className="overflow-hidden transition-transform hover:scale-105 hover:shadow-xl">
-              <CardHeader className="p-0">
-                <Image 
-                    src={game.imageUrl} 
-                    alt={game.name} 
-                    width={600} height={400} 
-                    className="w-full h-48 object-cover" 
-                    data-ai-hint={game.imageHint}
-                />
-              </CardHeader>
-              <CardContent className="p-4">
-                <CardTitle className="text-xl mb-1">{game.name}</CardTitle>
-                <CardDescription className="mb-4">{game.description}</CardDescription>
-                <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-muted-foreground">{game.progress}%</span>
-                    <Progress value={game.progress} className="w-full" />
+        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+          {games.map((game) => {
+            const Icon = gameIcons[game.id] || Gamepad2;
+            return (
+              <Card key={game.id} className="flex items-center p-4 transition-shadow hover:shadow-md">
+                <div className="flex-shrink-0">
+                  <Icon className="h-10 w-10 text-primary mr-4" />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="flex-grow">
+                  <CardTitle className="text-lg">{game.name}</CardTitle>
+                  <CardDescription className="text-xs mb-2">{game.description}</CardDescription>
+                  <div className="flex items-center gap-2">
+                    <Progress value={game.progress} className="w-full h-2" />
+                    <span className="text-xs font-medium text-muted-foreground">{game.progress}%</span>
+                  </div>
+                </div>
+                <Link href={`/${game.id.split('-')[0]}`} passHref>
+                    <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0">
+                        <PlayCircle className="h-6 w-6"/>
+                        <span className="sr-only">Jugar</span>
+                    </Button>
+                </Link>
+              </Card>
+            );
+        })}
         </div>
       </section>
 
