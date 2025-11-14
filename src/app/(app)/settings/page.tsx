@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AnimatedLoading } from '@/components/animated-loading';
 
 const passwordSchema = z.object({
     currentPassword: z.string().min(1, 'La contraseña actual es requerida.'),
@@ -35,6 +36,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [showDeleteLoading, setShowDeleteLoading] = useState(false);
+
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
@@ -82,6 +85,7 @@ export default function SettingsPage() {
     if (!user || !user.email || !db) return;
   
     setIsDeleteLoading(true);
+    setShowDeleteLoading(true);
   
     try {
       // Re-authenticate user first
@@ -118,9 +122,14 @@ export default function SettingsPage() {
           variant: 'destructive',
         });
       }
+      setShowDeleteLoading(false);
     } finally {
       setIsDeleteLoading(false);
     }
+  }
+  
+  if (showDeleteLoading) {
+    return <AnimatedLoading text="Eliminando tu cuenta..." />;
   }
 
   return (
