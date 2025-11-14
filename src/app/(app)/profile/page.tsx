@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, setDoc, query, where, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, runTransaction } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
-import { useUser, useFirestore, useAuth } from '@/firebase';
+import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [initialUsername, setInitialUsername] = useState('');
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -55,8 +56,8 @@ export default function ProfilePage() {
                     fullName: userData.fullName || '',
                 });
                 setSelectedAvatar(userData.avatar || 'avatar-1');
+                setInitialUsername(userData.username || '');
             } else {
-                // If profile doesn't exist, use auth data and set a default avatar
                 form.reset({ 
                     username: user.displayName || '',
                     fullName: '',
@@ -81,60 +82,66 @@ export default function ProfilePage() {
     if (!user || !db || !auth.currentUser) return;
     setIsLoading(true);
 
-    // Check if new username is already taken by another user
-    if (form.getValues('username') !== values.username) {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("username", "==", values.username));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            let isTaken = false;
-            querySnapshot.forEach(doc => {
-                if (doc.id !== user.uid) {
-                    isTaken = true;
-                }
-            });
-            if (isTaken) {
-                toast({
-                    title: 'Falló la Actualización',
-                    description: 'Este nombre de usuario ya está en uso. Por favor, elige otro.',
-                    variant: 'destructive',
-                });
-                setIsLoading(false);
-                return;
-            }
-        }
-    }
-
+    const newUsername = values.username;
+    const oldUsername = initialUsername;
 
     try {
-      // Update Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, {
-        username: values.username,
-        fullName: values.fullName,
-        avatar: selectedAvatar,
-      }, { merge: true });
+        // Step 1: If username is being changed, handle the username reservation transaction
+        if (newUsername !== oldUsername) {
+            const oldUsernameDocRef = doc(db, "usernames", oldUsername);
+            const newUsernameDocRef = doc(db, "usernames", newUsername);
 
-      // Update Firebase Auth profile
-      if (auth.currentUser.displayName !== values.username) {
-        await updateAuthProfile(auth.currentUser, {
-          displayName: values.username,
+            await runTransaction(db, async (transaction) => {
+                const newUsernameDoc = await transaction.get(newUsernameDocRef);
+                if (newUsernameDoc.exists()) {
+                    throw new Error("Este nombre de usuario ya está en uso. Por favor, elige otro.");
+                }
+                
+                // Delete old username and create new one
+                transaction.delete(oldUsernameDocRef);
+                transaction.set(newUsernameDocRef, { uid: user.uid });
+            });
+        }
+        
+        // Step 2: Update the user profile document in Firestore
+        const userDocRef = doc(db, 'users', user.uid);
+        const profileData = {
+            username: newUsername,
+            fullName: values.fullName,
+            avatar: selectedAvatar,
+        };
+
+        await doc(userDocRef).set(profileData, { merge: true })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: profileData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                throw error; // Re-throw to be caught by the outer catch block
+            });
+
+        // Step 3: Update Firebase Auth profile display name
+        if (auth.currentUser.displayName !== newUsername) {
+            await updateAuthProfile(auth.currentUser, { displayName: newUsername });
+        }
+
+        setInitialUsername(newUsername);
+        toast({
+            title: 'Perfil Actualizado',
+            description: 'Tu perfil ha sido actualizado exitosamente.',
+            variant: 'success',
         });
-      }
 
-      toast({
-        title: 'Perfil Actualizado',
-        description: 'Tu perfil ha sido actualizado exitosamente.',
-        variant: 'success',
-      });
     } catch (error: any) {
-      toast({
-        title: 'Falló la Actualización',
-        description: error.message || 'Ocurrió un error.',
-        variant: 'destructive',
-      });
+        toast({
+            title: 'Falló la Actualización',
+            description: error.message || 'Ocurrió un error inesperado al actualizar tu perfil.',
+            variant: 'destructive',
+        });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   }
   
@@ -243,3 +250,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
