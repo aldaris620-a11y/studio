@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createUserWithEmailAndPassword, updateProfile, type User } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
@@ -93,14 +93,12 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    let user: User | null = null;
 
     try {
       // Step 1: Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      user = userCredential.user;
+      const user = userCredential.user;
 
-      const userProfileDocRef = doc(db, 'users', user.uid);
       const profileData = {
         id: user.uid,
         username: values.username,
@@ -109,27 +107,20 @@ export default function SignupPage() {
 
       // Step 2 & 3: Create Firestore profile and update Auth profile concurrently
       await Promise.all([
-        setDoc(userProfileDocRef, profileData).catch(error => {
-            const permissionError = new FirestorePermissionError({
-                path: userProfileDocRef.path,
-                operation: 'create',
-                requestResourceData: profileData
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw permissionError; // Re-throw to be caught by the outer catch
-        }),
+        setDoc(doc(db, 'users', user.uid), profileData),
         updateProfile(user, { displayName: values.username })
       ]);
       
       router.push("/dashboard");
 
     } catch (error: any) {
+      console.error("Signup error:", error); // For better debugging
       let title = "Falló el Registro";
       let description = "Ocurrió un error inesperado durante el registro.";
       
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
-      } else if (error instanceof FirestorePermissionError) {
+      } else if (error?.code === 'permission-denied') {
         title = "Error de Permisos";
         description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
       }
@@ -317,5 +308,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    

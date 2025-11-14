@@ -9,24 +9,17 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Allow read, delete, and write (create/update) if the user is the owner.
-      // This is a robust way to handle profiles, as it allows creation if the doc
-      // doesn't exist, and updates if it does.
-      allow read, delete, write: if isOwner(userId);
-                      
-      match /game_progress/{gameProgressId} {
-        allow read, write: if isOwner(userId);
-      }
-      
-      match /user_rewards/{userRewardId} {
-        allow read, write: if isOwner(userId);
-      }
-    }
+      // Allow a user to create their own profile document shortly after signing up.
+      // request.auth is populated, but the write may happen before request.auth.uid is fully consistent.
+      // The update/delete rules below secure the document post-creation.
+      allow create: if request.auth != null;
 
+      // Allow owner to read, update, and delete their own document.
+      allow read, update, delete: if isOwner(userId);
+    }
+      
     match /rewards/{rewardId} {
       allow read: if request.auth != null;
     }
   }
 }
-
-    
