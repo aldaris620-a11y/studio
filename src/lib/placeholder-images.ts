@@ -1,3 +1,4 @@
+
 import PlaceHolderImagesData from './placeholder-images.json';
 
 export type ImagePlaceholder = {
@@ -8,5 +9,3 @@ export type ImagePlaceholder = {
 };
 
 export const PlaceHolderImages: ImagePlaceholder[] = PlaceHolderImagesData;
-
-    

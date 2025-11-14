@@ -6,7 +6,6 @@ import { signOut } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { useUser, useAuth, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -55,17 +54,6 @@ export function UserNav() {
     }
   };
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    const nameParts = name.split(' ');
-    if (nameParts.length > 1) {
-      return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
-  const avatarId = userProfile?.avatar || 'avatar-1';
-  const avatarUrl = PlaceHolderImages.find(img => img.id === avatarId)?.imageUrl;
   const displayName = userProfile?.username || user?.displayName;
 
   if (isUserLoading || isProfileLoading) {
@@ -75,10 +63,17 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-9 w-9">
-             {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName || 'Usuario'} />}
-            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9 text-xl">
+             {/* The AvatarImage is not used for emojis, but kept for potential future use */}
+             <AvatarImage src="" alt={displayName || 'Usuario'} />
+            <AvatarFallback className="bg-muted text-foreground">
+              {userProfile?.avatar ? (
+                <span>{userProfile.avatar}</span>
+              ) : (
+                <span>🎮</span> 
+              )}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

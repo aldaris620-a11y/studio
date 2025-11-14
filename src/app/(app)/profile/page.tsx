@@ -9,14 +9,12 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
 import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -24,7 +22,8 @@ const profileSchema = z.object({
   username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
 });
 
-const avatarImages = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
+const avatarEmojis = ["🎮", "👾", "🤖", "👽", "👻", "🎃", "🦁", "🦊", "👑", "🧙", "🧝", "🧑‍🚀", "🦸", "🥷", "💀"];
+
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -32,7 +31,7 @@ export default function ProfilePage() {
   const auth = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('🎮');
   const [isPageLoading, setIsPageLoading] = useState(true);
 
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -52,19 +51,19 @@ export default function ProfilePage() {
                 form.reset({ 
                     username: userData.username || user.displayName || '',
                 });
-                setSelectedAvatar(userData.avatar || 'avatar-1');
+                setSelectedAvatar(userData.avatar || '🎮');
             } else {
                 form.reset({ 
                     username: user.displayName || '',
                 });
-                setSelectedAvatar('avatar-1');
+                setSelectedAvatar('🎮');
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
             form.reset({ 
                 username: user.displayName || '',
             });
-            setSelectedAvatar('avatar-1');
+            setSelectedAvatar('🎮');
         }
         setIsPageLoading(false);
       };
@@ -122,9 +121,9 @@ export default function ProfilePage() {
                 <Skeleton className="h-10 w-1/2" />
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20" />
-                    <div className="flex flex-wrap gap-4">
-                        {[...Array(avatarImages.length)].map((_, i) => (
-                           <Skeleton key={i} className="h-24 w-24 rounded-full" />
+                    <div className="flex flex-wrap gap-2">
+                        {[...Array(avatarEmojis.length)].map((_, i) => (
+                           <Skeleton key={i} className="h-16 w-16 rounded-full" />
                         ))}
                     </div>
                 </div>
@@ -165,32 +164,21 @@ export default function ProfilePage() {
               />
               <div className="space-y-2">
                 <FormLabel>Avatar</FormLabel>
-                 <div className="flex flex-wrap gap-4">
-                  {isPageLoading ? (
-                    [...Array(avatarImages.length)].map((_, i) => <Skeleton key={i} className="h-24 w-24 rounded-full" />)
-                  ) : (
-                    avatarImages.map((image) => (
-                      <button
-                        key={image.id}
-                        type="button"
-                        onClick={() => setSelectedAvatar(image.id)}
-                        className={cn(
-                          'rounded-full ring-offset-background transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                          selectedAvatar === image.id ? 'ring-2 ring-primary ring-offset-2' : ''
-                        )}
-                        aria-label={`Seleccionar ${image.description} como avatar`}
-                      >
-                        <Image
-                          src={image.imageUrl}
-                          alt={image.description}
-                          width={96}
-                          height={96}
-                          className="h-24 w-24 rounded-full border-2 border-transparent object-cover hover:border-primary"
-                          data-ai-hint={image.imageHint}
-                        />
-                      </button>
-                    ))
-                  )}
+                 <div className="flex flex-wrap gap-2">
+                  {avatarEmojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setSelectedAvatar(emoji)}
+                      className={cn(
+                        'h-16 w-16 text-3xl flex items-center justify-center rounded-full bg-muted transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                        selectedAvatar === emoji ? 'ring-2 ring-primary ring-offset-2 bg-primary/20' : 'hover:bg-accent'
+                      )}
+                      aria-label={`Seleccionar ${emoji} como avatar`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
                 </div>
               </div>
             </CardContent>

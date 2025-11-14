@@ -17,7 +17,7 @@
         },
         "avatar": {
           "type": "string",
-          "description": "URL or reference to the user's selected avatar image."
+          "description": "Emoji character representing the user's avatar."
         }
       },
       "required": [
