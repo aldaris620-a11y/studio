@@ -9,11 +9,13 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, update, delete: if isOwner(userId);
+      allow read, delete: if isOwner(userId);
       // Allow create if the user is the owner and provides the required fields.
-      // This is separate from update to enforce which fields are necessary for a new profile.
       allow create: if request.auth.uid == userId && 
-                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'avatar']);
+                      request.resource.data.keys().hasAll(['id', 'username', 'avatar']);
+      // Allow update if the user is the owner. The fields that can be updated
+      // are not restricted here, but are controlled by the app's logic.
+      allow update: if isOwner(userId);
                       
       match /game_progress/{gameProgressId} {
         allow read, write: if isOwner(userId);
@@ -27,21 +29,5 @@ service cloud.firestore {
     match /rewards/{rewardId} {
       allow read: if request.auth != null;
     }
-
-    match /usernames/{username} {
-        // Allow creating a username only if the user is authenticated,
-        // and they are setting their own UID. The document ID must be the username.
-        allow create: if request.auth != null &&
-                      request.resource.data.uid == request.auth.uid &&
-                      request.resource.data.keys().hasAll(['uid']);
-        
-        // Allow deleting a username if the request comes from the user who owns it.
-        allow delete: if request.auth != null && get(/databases/$(database)/documents/usernames/$(username)).data.uid == request.auth.uid;
-
-        // Nobody can list or update usernames directly.
-        allow read, list, update: if false;
-    }
   }
 }
-
-    

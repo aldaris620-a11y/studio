@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, runTransaction, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 
 import { useUser, useFirestore, useAuth, FirestorePermissionError, errorEmitter } from '@/firebase';
@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const profileSchema = z.object({
-  fullName: z.string().min(3, { message: "El nombre completo debe tener al menos 3 caracteres." }),
   username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
 });
 
@@ -35,11 +34,10 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [initialUsername, setInitialUsername] = useState('');
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { username: '', fullName: '' },
+    defaultValues: { username: '' },
   });
 
   useEffect(() => {
@@ -53,14 +51,11 @@ export default function ProfilePage() {
                 const userData = userDoc.data();
                 form.reset({ 
                     username: userData.username || user.displayName || '',
-                    fullName: userData.fullName || '',
                 });
                 setSelectedAvatar(userData.avatar || 'avatar-1');
-                setInitialUsername(userData.username || '');
             } else {
                 form.reset({ 
                     username: user.displayName || '',
-                    fullName: '',
                 });
                 setSelectedAvatar('avatar-1');
             }
@@ -68,7 +63,6 @@ export default function ProfilePage() {
             console.error("Error fetching user data:", error);
             form.reset({ 
                 username: user.displayName || '',
-                fullName: '',
             });
             setSelectedAvatar('avatar-1');
         }
@@ -82,67 +76,39 @@ export default function ProfilePage() {
     if (!user || !db || !auth.currentUser) return;
     setIsLoading(true);
 
-    const newUsername = values.username.toLowerCase();
-    const oldUsername = initialUsername.toLowerCase();
+    const userDocRef = doc(db, 'users', user.uid);
+    const profileData = {
+        username: values.username,
+        avatar: selectedAvatar,
+    };
 
-    try {
-        if (newUsername !== oldUsername) {
-            await runTransaction(db, async (transaction) => {
-                const newUsernameDocRef = doc(db, "usernames", newUsername);
-                const newUsernameDoc = await transaction.get(newUsernameDocRef);
-
-                if (newUsernameDoc.exists()) {
-                    throw new Error("Este nombre de usuario ya está en uso. Por favor, elige otro.");
-                }
-                
-                transaction.set(newUsernameDocRef, { uid: user.uid });
-
-                if (oldUsername) {
-                    const oldUsernameDocRef = doc(db, "usernames", oldUsername);
-                    transaction.delete(oldUsernameDocRef);
-                }
+    setDoc(userDocRef, profileData, { merge: true })
+        .then(async () => {
+            if (auth.currentUser?.displayName !== values.username) {
+                await updateAuthProfile(auth.currentUser!, { displayName: values.username });
+            }
+            toast({
+                title: 'Perfil Actualizado',
+                description: 'Tu perfil ha sido actualizado exitosamente.',
+                variant: 'success',
             });
-        }
-        
-        const userDocRef = doc(db, 'users', user.uid);
-        const profileData = {
-            username: values.username,
-            fullName: values.fullName,
-            avatar: selectedAvatar,
-        };
-
-        setDoc(userDocRef, profileData, { merge: true })
-            .then(async () => {
-                if (auth.currentUser?.displayName !== values.username) {
-                    await updateAuthProfile(auth.currentUser!, { displayName: values.username });
-                }
-                setInitialUsername(values.username);
-                toast({
-                    title: 'Perfil Actualizado',
-                    description: 'Tu perfil ha sido actualizado exitosamente.',
-                    variant: 'success',
-                });
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: profileData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setIsLoading(false);
+        })
+        .catch(error => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: profileData,
             });
-
-    } catch (error: any) {
-        toast({
-            title: 'Falló la Actualización',
-            description: error.message || 'Ocurrió un error inesperado al actualizar tu perfil.',
-            variant: 'destructive',
+            errorEmitter.emit('permission-error', permissionError);
+             toast({
+                title: 'Falló la Actualización',
+                description: 'No se pudo actualizar tu perfil. Verifica tus permisos.',
+                variant: 'destructive',
+            });
+        })
+        .finally(() => {
+            setIsLoading(false);
         });
-        setIsLoading(false);
-    }
   }
   
   if (isPageLoading) {
@@ -156,7 +122,6 @@ export default function ProfilePage() {
                 <CardDescription>Actualiza tu nombre de usuario y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <Skeleton className="h-10 w-1/2" />
                 <Skeleton className="h-10 w-1/2" />
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20" />
@@ -187,19 +152,6 @@ export default function ProfilePage() {
               <CardDescription>Actualiza tu información y elige tu avatar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre Completo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tu nombre completo" {...field} className="max-w-sm" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="username"
@@ -250,5 +202,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    

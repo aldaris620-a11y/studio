@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile, type User } from "firebase/auth";
-import { doc, runTransaction, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,6 @@ import PrivacyContent from "@/components/privacy-content";
 
 const formSchema = z.object({
   username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }).regex(/^[a-zA-Z0-9_]+$/, "Solo se permiten letras, números y guiones bajos."),
-  fullName: z.string().min(3, { message: "El nombre completo debe tener al menos 3 caracteres." }),
   email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   confirmPassword: z.string().min(6, { message: "La confirmación de contraseña debe tener al menos 6 caracteres." }),
@@ -74,7 +73,6 @@ export default function SignupPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
-      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -102,30 +100,31 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       user = userCredential.user;
 
-      // Step 2: Reserve the username in a transaction
-      const usernameDocRef = doc(db, 'usernames', values.username.toLowerCase());
-      await runTransaction(db, async (transaction) => {
-        const usernameDoc = await transaction.get(usernameDocRef);
-        if (usernameDoc.exists()) {
-          throw new Error("Username is already taken.");
-        }
-        transaction.set(usernameDocRef, { uid: user!.uid });
-      });
-
-      // Step 3: Create the user profile document in Firestore
+      // Step 2: Create the user profile document in Firestore
       const userProfileDocRef = doc(db, 'users', user.uid);
       const profileData = {
         id: user.uid,
         username: values.username,
-        fullName: values.fullName,
         avatar: "avatar-1", // Default avatar
       };
-      await setDoc(userProfileDocRef, profileData);
 
-      // Step 4: Update the auth profile's display name
+      await setDoc(userProfileDocRef, profileData)
+        .catch(error => {
+            // If creating the doc fails, emit a detailed error
+            const permissionError = new FirestorePermissionError({
+                path: userProfileDocRef.path,
+                operation: 'create',
+                requestResourceData: profileData
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            // Re-throw the original error to be caught by the outer catch block
+            throw error;
+        });
+
+      // Step 3: Update the auth profile's display name
       await updateProfile(user, { displayName: values.username });
       
-      // Step 5: Navigate to dashboard on full success
+      // Step 4: Navigate to dashboard on full success
       router.push("/dashboard");
 
     } catch (error: any) {
@@ -133,16 +132,9 @@ export default function SignupPage() {
       
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
-      } else if (error.message === "Username is already taken.") {
-        description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
-      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied') && user) {
+      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied')) {
+        // This case is now more robust thanks to the specific catch block above
         description = "Un error de permisos impidió crear tu perfil. Por favor, contacta a soporte.";
-         const permissionError = new FirestorePermissionError({
-          path: `usernames/${values.username} or users/${user.uid}`, 
-          operation: 'create',
-          requestResourceData: { username: values.username, email: values.email }
-        });
-        errorEmitter.emit('permission-error', permissionError);
       }
       
       toast({
@@ -179,19 +171,6 @@ export default function SignupPage() {
                     <FormLabel>Nombre de usuario</FormLabel>
                     <FormControl>
                       <Input placeholder="JugadorUno" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre Completo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

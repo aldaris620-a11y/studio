@@ -13,11 +13,7 @@
         },
         "username": {
           "type": "string",
-          "description": "The user's unique display name (gamertag)."
-        },
-        "fullName": {
-          "type": "string",
-          "description": "The user's full name."
+          "description": "The user's display name (gamertag)."
         },
         "avatar": {
           "type": "string",
@@ -26,23 +22,7 @@
       },
       "required": [
         "id",
-        "username",
-        "fullName"
-      ]
-    },
-    "Username": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Username",
-      "type": "object",
-      "description": "Represents a unique username to prevent duplicates.",
-      "properties": {
-        "uid": {
-          "type": "string",
-          "description": "The UID of the user who owns this username."
-        }
-      },
-      "required": [
-        "uid"
+        "username"
       ]
     },
     "GameProgress": {
@@ -194,18 +174,8 @@
           },
           "description": "Stores the definitions of all available rewards in the application. This is considered public or read-only data."
         }
-      },
-      {
-        "path": "/usernames/{username}",
-        "definition": {
-          "entityName": "Username",
-          "schema": {
-            "$ref": "#/backend/entities/Username"
-          },
-          "description": "Stores a mapping of unique usernames to user UIDs to enforce uniqueness. The document ID is the username itself."
-        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to secure user data, game progress, and rewards. Storing user profiles in a root 'users' collection simplifies querying for unique usernames. User-specific data like 'game_progress' and 'user_rewards' are kept in subcollections under each user's document, ensuring data ownership and security through path-based rules. The public 'rewards' collection is accessible to all authenticated users. A separate 'usernames' collection is used to enforce username uniqueness efficiently during registration."
+    "reasoning": "The Firestore structure is designed to secure user data, game progress, and rewards. Storing user profiles in a root 'users' collection simplifies querying. User-specific data like 'game_progress' and 'user_rewards' are kept in subcollections under each user's document, ensuring data ownership and security through path-based rules. The public 'rewards' collection is accessible to all authenticated users."
   }
 }
