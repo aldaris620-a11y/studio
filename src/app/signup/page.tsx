@@ -123,7 +123,18 @@ export default function SignupPage() {
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.name === 'FirebaseError') {
-        title = "Error de Permisos";
+        // This case is for Firestore security rule errors, which we're handling globally
+        // but can still provide a user-friendly message here.
+        const permissionError = new FirestorePermissionError({
+            path: `users/${error.request.auth?.uid || 'unknown'}`,
+            operation: 'create',
+            requestResourceData: {
+                username: values.username,
+                avatar: '🎮'
+            }
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // The global listener will throw, but we can set a toast as a fallback.
         description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
       }
       
@@ -143,11 +154,11 @@ export default function SignupPage() {
   };
 
   if (isLoading) {
-    return <AnimatedLoading text="Creando tu cuenta..." />;
+    return <AnimatedLoading />;
   }
 
   if (isNavigating) {
-    return <AnimatedLoading text="Cargando página..." />;
+    return <AnimatedLoading />;
   }
 
   return (
