@@ -42,6 +42,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
           {games.map((game) => {
             const Icon = gameIcons[game.id] || Gamepad2;
+            const gameBaseUrl = `/${game.id.split('-')[0]}`;
             return (
               <Card key={game.id} className="flex items-center p-4 transition-shadow hover:shadow-md">
                 <div className="flex-shrink-0">
@@ -55,12 +56,18 @@ export default function DashboardPage() {
                     <span className="text-xs font-medium text-muted-foreground">{game.progress}%</span>
                   </div>
                 </div>
-                <Link href={`/${game.id.split('-')[0]}`} passHref>
-                    <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0">
-                        <PlayCircle className="h-6 w-6"/>
-                        <span className="sr-only">Jugar</span>
-                    </Button>
-                </Link>
+                <div className="flex items-center ml-4 flex-shrink-0">
+                    <Link href={`${gameBaseUrl}/achievements`} passHref>
+                        <Button variant="ghost" size="icon" aria-label="Logros">
+                            <Trophy className="h-6 w-6"/>
+                        </Button>
+                    </Link>
+                    <Link href={gameBaseUrl} passHref>
+                        <Button variant="ghost" size="icon" aria-label="Jugar">
+                            <PlayCircle className="h-6 w-6"/>
+                        </Button>
+                    </Link>
+                </div>
               </Card>
             );
         })}
