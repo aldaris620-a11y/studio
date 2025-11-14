@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, runTransaction, getDoc } from "firebase/firestore";
-import { useAuth, useFirestore } from "@/firebase";
+import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -126,6 +126,15 @@ export default function SignupPage() {
           gender: values.gender,
           avatar: "avatar-1", // Default avatar
         });
+      }).catch(error => {
+          const permissionError = new FirestorePermissionError({
+            path: `usernames/${values.username} and users/${user.uid}`,
+            operation: 'create',
+            requestResourceData: { username: values.username, profile: { id: user.uid, fullName: values.fullName } },
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          // Re-throw the original error to be caught by the outer catch block
+          throw error;
       });
 
       // Step 3: Update Auth display name (less critical, can happen after transaction)
@@ -137,7 +146,7 @@ export default function SignupPage() {
     } catch (error: any) {
       let description = "Ocurrió un error inesperado.";
       if (error.code === 'auth/email-already-in-use') {
-        description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
+        description = "Este correo electrónico ya está en uso. Por favor, intenta con otro o inicia sesión.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
       }
@@ -389,3 +398,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
