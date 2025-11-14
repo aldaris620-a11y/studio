@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { doc, runTransaction, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }),
+  username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }).regex(/^[a-zA-Z0-9_]+$/, "Solo se permiten letras, números y guiones bajos."),
   fullName: z.string().min(3, { message: "El nombre completo debe tener al menos 3 caracteres." }),
   email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
@@ -101,54 +101,47 @@ export default function SignupPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    // Check if username already exists
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("username", "==", values.username));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        toast({
-          title: "Falló el Registro",
-          description: "Este nombre de usuario ya está en uso. Por favor, elige otro.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-    } catch (error) {
-       toast({
-        title: "Falló el Registro",
-        description: "Error al verificar el nombre de usuario.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
-
-    try {
+      // Step 1: Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       
-      await updateProfile(user, { displayName: values.username });
+      // Step 2: Run a transaction to create user profile and claim username
+      await runTransaction(db, async (transaction) => {
+        const usernameRef = doc(db, 'usernames', values.username);
+        const userProfileRef = doc(db, 'users', user.uid);
 
-      // Create user document in Firestore
-      const userProfileRef = doc(db, 'users', user.uid);
-      await setDoc(userProfileRef, {
-        id: user.uid,
-        username: values.username,
-        fullName: values.fullName,
-        gender: values.gender,
-        avatar: "avatar-1", // Default avatar
+        // Check if username document already exists
+        const usernameDoc = await transaction.get(usernameRef);
+        if (usernameDoc.exists()) {
+          throw new Error("Username is already taken.");
+        }
+
+        // If username is available, create the username doc and the user profile doc
+        transaction.set(usernameRef, { uid: user.uid });
+        transaction.set(userProfileRef, {
+          id: user.uid,
+          username: values.username,
+          fullName: values.fullName,
+          gender: values.gender,
+          avatar: "avatar-1", // Default avatar
+        });
       });
 
+      // Step 3: Update Auth display name (less critical, can happen after transaction)
+      await updateProfile(user, { displayName: values.username });
+
+      // Step 4: Redirect to dashboard
       router.push("/dashboard");
+
     } catch (error: any) {
       let description = "Ocurrió un error inesperado.";
       if (error.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
+      } else if (error.message === "Username is already taken.") {
+        description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
       }
+      
       toast({
         title: "Falló el Registro",
         description: description,
@@ -396,5 +389,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
