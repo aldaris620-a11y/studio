@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from 'firebase/auth';
 import { doc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
-import { useUser, useAuth, useFirestore } from '@/firebase';
+import { useUser, useAuth, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,53 +79,66 @@ export default function SettingsPage() {
   }
 
   async function handleDeleteAccount(values: z.infer<typeof deleteSchema>) {
-    if (!user || !user.email) return;
-
+    if (!user || !user.email || !db) return;
+  
     setIsDeleteLoading(true);
+    let username: string | undefined;
+  
     try {
       // Re-authenticate user first
       const credential = EmailAuthProvider.credential(user.email, values.confirmPassword);
       await reauthenticateWithCredential(user, credential);
-      
+  
       // Get the username from the user's profile document
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
-
+  
       if (!userDocSnap.exists()) {
         throw new Error("No se pudo encontrar el perfil de usuario para eliminar.");
       }
-      
-      const username = userDocSnap.data()?.username;
+  
+      username = userDocSnap.data()?.username;
       if (!username) {
         throw new Error("No se pudo encontrar el nombre de usuario para eliminar.");
       }
-
+  
       // Use a batch write to delete user profile and username doc
       const batch = writeBatch(db);
       const usernameDocRef = doc(db, 'usernames', username);
-      
+  
       batch.delete(userDocRef);
       batch.delete(usernameDocRef);
-      
-      await batch.commit();
-
+  
+      await batch.commit().catch(error => {
+        const permissionError = new FirestorePermissionError({
+          path: `users/${user.uid} and usernames/${username}`,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Re-throw to be caught by the outer catch block
+        throw error;
+      });
+  
       // Finally, delete user from Firebase Auth
       await deleteUser(user);
-
+  
       toast({
         title: 'Cuenta Eliminada',
         description: 'Tu cuenta y todos los datos asociados han sido eliminados permanentemente.',
       });
-
+  
       router.push('/login');
     } catch (error: any) {
-      toast({
-        title: 'Error al Eliminar la Cuenta',
-        description: error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.',
-        variant: 'destructive',
-      });
+      // Avoid showing a generic toast if a specific one was emitted
+      if (error.name !== 'FirebaseError') {
+        toast({
+          title: 'Error al Eliminar la Cuenta',
+          description: error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.',
+          variant: 'destructive',
+        });
+      }
     } finally {
-        setIsDeleteLoading(false);
+      setIsDeleteLoading(false);
     }
   }
 
