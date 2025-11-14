@@ -4,40 +4,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check ownership
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Secure user profiles: only the owner can read/write their own profile.
     match /users/{userId} {
       allow read, update, delete: if isOwner(userId);
-      // Allow creation if the user is creating their own profile
       allow create: if request.auth.uid == userId;
 
-      // Game progress is owned by the user
       match /game_progress/{gameProgressId} {
         allow read, write: if isOwner(userId);
       }
       
-      // User rewards are owned by the user
       match /user_rewards/{userRewardId} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // Public rewards collection, readable by any authenticated user
     match /rewards/{rewardId} {
       allow read: if request.auth != null;
     }
 
-    // Username collection to enforce uniqueness
     match /usernames/{username} {
-        // Anyone can attempt to create a username document, but only if it doesn't already exist.
-        // This is used within a transaction to claim a username.
         allow create: if request.auth != null;
-        // No one can read or list usernames to protect privacy
-        allow read, list, update, delete: if false;
+        allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+        allow read, list, update: if false;
     }
   }
 }
