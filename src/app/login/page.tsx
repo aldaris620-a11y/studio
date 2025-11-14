@@ -66,7 +66,6 @@ export default function LoginPage() {
         description: description,
         variant: "destructive",
       });
-      console.error("Login error:", error);
       setIsLoading(false);
     }
   }
