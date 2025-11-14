@@ -1,88 +1,86 @@
-{
-  "placeholderImages": [
-    {
-      "id": "avatar-1",
-      "description": "Pixel art avatar of a knight",
-      "imageUrl": "https://images.unsplash.com/photo-1634322487121-ba84c23cbc78?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art avatar"
-    },
-    {
-      "id": "avatar-2",
-      "description": "Pixel art avatar of a wizard",
-      "imageUrl": "https://images.unsplash.com/photo-1634322259580-4441b0dd5f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art avatar"
-    },
-    {
-      "id": "avatar-3",
-      "description": "Pixel art avatar of a robot",
-      "imageUrl": "https://images.unsplash.com/photo-1606937324721-46012a1eee43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art avatar"
-    },
-    {
-      "id": "avatar-4",
-      "description": "Pixel art avatar of an alien",
-      "imageUrl": "https://images.unsplash.com/photo-1604339566402-51aacfd0e5fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art avatar"
-    },
-    {
-      "id": "avatar-5",
-      "description": "Pixel art avatar of a space marine",
-      "imageUrl": "https://images.unsplash.com/photo-1620499240402-4d57c24f5a34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaXhlbCUyMGFydCUyMHdhcnJpb3J8ZW58MHx8fHwxNzYzNTk1ODUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art warrior"
-    },
-    {
-      "id": "avatar-6",
-      "description": "Pixel art avatar of a fantasy elf",
-      "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art elf"
-    },
-    {
-      "id": "avatar-7",
-      "description": "Pixel art avatar of a cyberpunk hacker",
-      "imageUrl": "https://images.unsplash.com/photo-1611189862327-048c286992bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwaXhlbCUyMGFydCUyMGhackerfGVufDB8fHx8MTc2MzU5NTkyMnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art hacker"
-    },
-    {
-      "id": "avatar-8",
-      "description": "Pixel art avatar of a ninja",
-      "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art ninja"
-    },
-    {
-      "id": "avatar-9",
-      "description": "Pixel art avatar of a powerful mage",
-      "imageUrl": "https://images.unsplash.com/photo-1634322259580-4441b0dd5f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art mage"
-    },
-    {
-      "id": "avatar-10",
-      "description": "Pixel art avatar of a female warrior",
-      "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pixel art warrior"
-    },
-    {
-      "id": "game-1",
-      "description": "Game cover for 'Cosmic Odyssey'",
-      "imageUrl": "https://images.unsplash.com/photo-1572930621288-014e490da469?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzcGFjZSUyMGFkdmVudHVyZXxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "space adventure"
-    },
-    {
-      "id": "game-2",
-      "description": "Game cover for 'Dragon's Breath'",
-      "imageUrl": "https://images.unsplash.com/photo-1761026379965-63f991b94c57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZmFudGFzeSUyMGRyYWdvbnxlbnwwfHx8fDE3NjMwNzEyMzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "fantasy dragon"
-    },
-    {
-      "id": "game-3",
-      "description": "Game cover for 'Neon Racer'",
-      "imageUrl": "https://images.unsplash.com/photo-1677522375375-c035e66971b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjeWJlcnB1bmslMjBjYXJ8ZW58MHx8fHwxNzYzMDcxMjI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "cyberpunk car"
-    },
-    {
-      "id": "game-4",
-      "description": "Game cover for 'Jungle Quest'",
-      "imageUrl": "https://images.unsplash.com/photo-1529292287032-e9f1ac2f1d49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxqdW5nbGUlMjBydWluc3xlbnwwfHx8fDE3NjI5NTM3NDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "jungle ruins"
-    }
-  ]
-}
+[
+  {
+    "id": "avatar-1",
+    "description": "Pixel art avatar of a knight",
+    "imageUrl": "https://images.unsplash.com/photo-1634322487121-ba84c23cbc78?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art avatar"
+  },
+  {
+    "id": "avatar-2",
+    "description": "Pixel art avatar of a wizard",
+    "imageUrl": "https://images.unsplash.com/photo-1634322259580-4441b0dd5f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art avatar"
+  },
+  {
+    "id": "avatar-3",
+    "description": "Pixel art avatar of a robot",
+    "imageUrl": "https://images.unsplash.com/photo-1606937324721-46012a1eee43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art avatar"
+  },
+  {
+    "id": "avatar-4",
+    "description": "Pixel art avatar of an alien",
+    "imageUrl": "https://images.unsplash.com/photo-1604339566402-51aacfd0e5fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art avatar"
+  },
+  {
+    "id": "avatar-5",
+    "description": "Pixel art avatar of a space marine",
+    "imageUrl": "https://images.unsplash.com/photo-1620499240402-4d57c24f5a34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaXhlbCUyMGFydCUyMHdhcnJpb3J8ZW58MHx8fHwxNzYzNTk1ODUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art warrior"
+  },
+  {
+    "id": "avatar-6",
+    "description": "Pixel art avatar of a fantasy elf",
+    "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art elf"
+  },
+  {
+    "id": "avatar-7",
+    "description": "Pixel art avatar of a cyberpunk hacker",
+    "imageUrl": "https://images.unsplash.com/photo-1611189862327-048c286992bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwaXhlbCUyMGFydCUyMGhackerfGVufDB8fHx8MTc2MzU5NTkyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art hacker"
+  },
+  {
+    "id": "avatar-8",
+    "description": "Pixel art avatar of a ninja",
+    "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art ninja"
+  },
+  {
+    "id": "avatar-9",
+    "description": "Pixel art avatar of a powerful mage",
+    "imageUrl": "https://images.unsplash.com/photo-1634322259580-4441b0dd5f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaXhlbCUyMGFydCUyMGF2YXRhcnxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art mage"
+  },
+  {
+    "id": "avatar-10",
+    "description": "Pixel art avatar of a female warrior",
+    "imageUrl": "https://images.unsplash.com/photo-1614728263952-87ea31405e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwaXhlbCUyMGFydCUyMGVsZnxlbnwwfHx8fDE3NjM1OTU4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "pixel art warrior"
+  },
+  {
+    "id": "game-1",
+    "description": "Game cover for 'Cosmic Odyssey'",
+    "imageUrl": "https://images.unsplash.com/photo-1572930621288-014e490da469?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzcGFjZSUyMGFkdmVudHVyZXxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "space adventure"
+  },
+  {
+    "id": "game-2",
+    "description": "Game cover for 'Dragon's Breath'",
+    "imageUrl": "https://images.unsplash.com/photo-1761026379965-63f991b94c57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZmFudGFzeSUyMGRyYWdvbnxlbnwwfHx8fDE3NjMwNzEyMzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "fantasy dragon"
+  },
+  {
+    "id": "game-3",
+    "description": "Game cover for 'Neon Racer'",
+    "imageUrl": "https://images.unsplash.com/photo-1677522375375-c035e66971b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjeWJlcnB1bmslMjBjYXJ8ZW58MHx8fHwxNzYzMDcxMjI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "cyberpunk car"
+  },
+  {
+    "id": "game-4",
+    "description": "Game cover for 'Jungle Quest'",
+    "imageUrl": "https://images.unsplash.com/photo-1529292287032-e9f1ac2f1d49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxqdW5nbGUlMjBydWluc3xlbnwwfHx8fDE3NjI5NTM3NDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "jungle ruins"
+  }
+]
