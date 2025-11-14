@@ -126,7 +126,6 @@ export default function SignupPage() {
         gender: values.gender,
         avatar: "avatar-1", // Default avatar
       };
-      // This setDoc is now outside the transaction
       await setDoc(userProfileDocRef, profileData);
 
       // Step 4: Update the user's auth profile (e.g., display name)
@@ -136,16 +135,20 @@ export default function SignupPage() {
       router.push("/dashboard");
 
     } catch (error: any) {
-      // Centralized error handling
       let description = "Ocurrió un error inesperado durante el registro.";
       
-      if (error.code === 'auth/email-already-in-use') {
+      if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
-        // We could also delete the created auth user here if we wanted to be stricter
       } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied')) {
         description = "Un error de permisos impidió crear tu perfil. Por favor, contacta a soporte.";
+         const permissionError = new FirestorePermissionError({
+          path: `usernames/${values.username} or users/${values.email}`, // Approximate path
+          operation: 'create',
+          requestResourceData: { username: values.username, email: values.email }
+        });
+        errorEmitter.emit('permission-error', permissionError);
       }
       
       toast({
@@ -155,7 +158,6 @@ export default function SignupPage() {
       });
 
     } finally {
-      // Ensure loading state is always turned off
       setIsLoading(false);
     }
   }
@@ -396,3 +398,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
