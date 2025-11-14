@@ -34,7 +34,6 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [isAvatarLoading, setIsAvatarLoading] = useState(true);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -68,7 +67,6 @@ export default function ProfilePage() {
             setSelectedAvatar('avatar-1');
         }
         setIsPageLoading(false);
-        setIsAvatarLoading(false);
       };
       fetchUserData();
     }
@@ -168,7 +166,7 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <FormLabel>Avatar</FormLabel>
                  <div className="flex flex-wrap gap-4">
-                  {isAvatarLoading ? (
+                  {isPageLoading ? (
                     [...Array(avatarImages.length)].map((_, i) => <Skeleton key={i} className="h-24 w-24 rounded-full" />)
                   ) : (
                     avatarImages.map((image) => (
