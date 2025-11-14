@@ -34,7 +34,7 @@ export function UserNav() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -43,13 +43,8 @@ export function UserNav() {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
 
-  const handleNavigation = (path: string) => {
-    setIsNavigating(true);
-    router.push(path);
-  };
-
   const handleSignOut = async () => {
-    setIsNavigating(true);
+    setIsSigningOut(true);
     try {
       await signOut(auth);
       router.push('/login');
@@ -59,13 +54,13 @@ export function UserNav() {
         description: "Ocurrió un error al cerrar la sesión.",
         variant: "destructive",
       });
-       setIsNavigating(false);
+       setIsSigningOut(false);
     }
   };
 
   const displayName = userProfile?.username || user?.displayName;
 
-  if (isNavigating) {
+  if (isSigningOut) {
     return <AnimatedLoading />;
   }
   
@@ -101,11 +96,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+          <DropdownMenuItem onClick={() => router.push('/profile')}>
             <UserIcon className="mr-2 h-4 w-4" />
             <span>Perfil</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleNavigation('/settings')}>
+          <DropdownMenuItem onClick={() => router.push('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Ajustes</span>
           </DropdownMenuItem>
