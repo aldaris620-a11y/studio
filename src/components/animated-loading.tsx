@@ -28,6 +28,10 @@ const phrases = [
 
 export function AnimatedLoading({ text }: { text?: string }) {
     const [currentPhrase, setCurrentPhrase] = useState(text || phrases[0]);
+    const animationDuration = 3.5; // seconds
+    const iconCount = icons.length;
+    const totalAnimationTime = animationDuration * iconCount;
+
 
     useEffect(() => {
         if (text) return; // If a specific text is provided, don't cycle.
@@ -45,23 +49,24 @@ export function AnimatedLoading({ text }: { text?: string }) {
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-background overflow-hidden">
-            <div className="relative w-24 h-48 mb-4 overflow-hidden">
-                <div className="absolute inset-0 flex flex-col items-center">
-                    {icons.map((item, index) => {
-                        const Icon = item.icon;
-                        const animationDelay = `${index * 0.5}s`;
-                        return (
-                            <Icon
-                                key={index}
-                                className={cn(
-                                    "absolute h-8 w-8 animate-carousel-vertical",
-                                    item.color
-                                )}
-                                style={{ animationDelay } as React.CSSProperties}
-                            />
-                        )
-                    })}
-                </div>
+             <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
+                {icons.map((item, index) => {
+                    const Icon = item.icon;
+                    const animationDelay = `${index * (animationDuration / 2)}s`;
+                    return (
+                        <Icon
+                            key={index}
+                            className={cn(
+                                "absolute h-10 w-10 animate-carousel-horizontal",
+                                item.color
+                            )}
+                            style={{ 
+                                animationDuration: `${totalAnimationTime}s`,
+                                animationDelay 
+                            } as React.CSSProperties}
+                        />
+                    )
+                })}
             </div>
 
             <p className="mt-8 text-lg font-semibold text-foreground text-center px-4">
