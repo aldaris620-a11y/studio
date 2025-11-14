@@ -3,14 +3,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Menu, Settings, User } from 'lucide-react';
+import { Gamepad2, Menu, Settings, User, Skull, BrainCircuit, BookHeart } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-    { href: '/dashboard', label: 'Panel', icon: Gamepad2 },
+    { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
+    { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
+    { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
     { href: '/profile', label: 'Perfil', icon: User },
     { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
@@ -35,7 +37,7 @@ export function MobileNav() {
                 </SheetHeader>
                 <nav className="grid gap-2 text-lg font-medium">
                   <Link
-                    href="#"
+                    href="/wumpus"
                     className="flex items-center gap-2 text-lg font-semibold text-primary"
                   >
                     <Gamepad2 className="h-6 w-6" />

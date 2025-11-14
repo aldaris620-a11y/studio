@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Settings, User } from 'lucide-react';
+import { Gamepad2, Settings, User, Skull, BrainCircuit, BookHeart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 const navItems = [
-    { href: '/dashboard', label: 'Panel', icon: Gamepad2 },
+    { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
+    { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
+    { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
     { href: '/profile', label: 'Perfil', icon: User },
     { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
@@ -19,7 +21,7 @@ export function MainNav() {
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
+          <Link href="/wumpus" className="flex items-center gap-2 font-semibold text-primary">
             <Gamepad2 className="h-6 w-6" />
             <span className="">Centro de Sincronización</span>
           </Link>

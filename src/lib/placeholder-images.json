@@ -1,26 +1,20 @@
 [
   {
-    "id": "game-1",
-    "description": "Game cover for 'Cosmic Odyssey'",
-    "imageUrl": "https://images.unsplash.com/photo-1572930621288-014e490da469?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzcGFjZSUyMGFkdmVudHVyZXxlbnwwfHx8fDE3NjMwNzEyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    "imageHint": "space adventure"
+    "id": "wumpus-1",
+    "description": "Game cover for 'Hunt the Wumpus'",
+    "imageUrl": "https://images.unsplash.com/photo-1549499839-a7a531e2f473?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXJrJTIwY2F2ZXxlbnwwfHx8fDE3NjMwNzIwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "dark cave"
   },
   {
-    "id": "game-2",
-    "description": "Game cover for 'Dragon's Breath'",
-    "imageUrl": "https://images.unsplash.com/photo-1761026379965-63f991b94c57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZmFudGFzeSUyMGRyYWdvbnxlbnwwfHx8fDE3NjMwNzEyMzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    "imageHint": "fantasy dragon"
+    "id": "trivial-1",
+    "description": "Game cover for 'Horror Trivial'",
+    "imageUrl": "https://images.unsplash.com/photo-1509744439167-73c3329f6de5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzY2FyeSUyMHRyaXZpYXxlbnwwfHx8fDE3NjMwNzIwMDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "scary trivia"
   },
   {
-    "id": "game-3",
-    "description": "Game cover for 'Neon Racer'",
-    "imageUrl": "https://images.unsplash.com/photo-1677522375375-c035e66971b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjeWJlcnB1bmslMjBjYXJ8ZW58MHx8fHwxNzYzMDcxMjI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    "imageHint": "cyberpunk car"
-  },
-  {
-    "id": "game-4",
-    "description": "Game cover for 'Jungle Quest'",
-    "imageUrl": "https://images.unsplash.com/photo-1529292287032-e9f1ac2f1d49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxqdW5nbGUlMjBydWluc3xlbnwwfHx8fDE3NjI5NTM3NDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    "imageHint": "jungle ruins"
+    "id": "zombie-novel-1",
+    "description": "Game cover for 'Zombie Apocalypse Visual Novel'",
+    "imageUrl": "https://images.unsplash.com/photo-1593339903932-888915155f9e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx6b21iaWUlMjBhcG9jYWx5cHNlfGVufDB8fHx8MTc2MzA3MjAwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageHint": "zombie apocalypse"
   }
 ]

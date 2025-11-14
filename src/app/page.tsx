@@ -12,12 +12,12 @@ export default function HomePage() {
   useEffect(() => {
     if (!isUserLoading) {
       if (user) {
-        router.replace('/dashboard');
+        router.replace('/wumpus');
       } else {
         router.replace('/login');
       }
     }
   }, [user, isUserLoading, router]);
 
-  return <AnimatedLoading text="Cargando Centro de Sincronización de Juegos..." />;
+  return <AnimatedLoading />;
 }
