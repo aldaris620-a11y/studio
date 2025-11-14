@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
@@ -19,8 +20,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { Skeleton } from './ui/skeleton';
+import { AnimatedLoading } from './animated-loading';
 
 type UserProfile = {
   avatar: string;
@@ -33,6 +34,7 @@ export function UserNav() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -41,7 +43,13 @@ export function UserNav() {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
 
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    router.push(path);
+  };
+
   const handleSignOut = async () => {
+    setIsNavigating(true);
     try {
       await signOut(auth);
       router.push('/login');
@@ -51,11 +59,16 @@ export function UserNav() {
         description: "Ocurrió un error al cerrar la sesión.",
         variant: "destructive",
       });
+       setIsNavigating(false);
     }
   };
 
   const displayName = userProfile?.username || user?.displayName;
 
+  if (isNavigating) {
+    return <AnimatedLoading />;
+  }
+  
   if (isUserLoading || isProfileLoading) {
     return <Skeleton className="h-8 w-8 rounded-full" />;
   }
@@ -88,18 +101,14 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href="/profile">
-            <DropdownMenuItem>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Perfil</span>
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/settings">
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Ajustes</span>
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Perfil</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleNavigation('/settings')}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Ajustes</span>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
