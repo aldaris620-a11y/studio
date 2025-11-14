@@ -100,25 +100,24 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    let user;
-
+    
     try {
-      // Step 1: Create user with email and password
+      // Step 1: Create the user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      user = userCredential.user;
+      const user = userCredential.user;
 
-      // Step 2: Use a transaction to atomically claim the username
+      // Step 2: Reserve the username atomically using a transaction
       const usernameDocRef = doc(db, 'usernames', values.username.toLowerCase());
-      
       await runTransaction(db, async (transaction) => {
         const usernameDoc = await transaction.get(usernameDocRef);
         if (usernameDoc.exists()) {
+          // This specific error will be caught by the outer catch block
           throw new Error("Username is already taken.");
         }
         transaction.set(usernameDocRef, { uid: user.uid });
       });
 
-      // Step 3: Create the user profile document (outside the transaction)
+      // Step 3: Create the user profile document in Firestore
       const userProfileDocRef = doc(db, 'users', user.uid);
       const profileData = {
         id: user.uid,
@@ -127,27 +126,28 @@ export default function SignupPage() {
         gender: values.gender,
         avatar: "avatar-1", // Default avatar
       };
+      // This setDoc is now outside the transaction
       await setDoc(userProfileDocRef, profileData);
 
-      // Step 4: Update Auth display name
+      // Step 4: Update the user's auth profile (e.g., display name)
       await updateProfile(user, { displayName: values.username });
-
-      // Step 5: Redirect to dashboard
+      
+      // Step 5: Navigate to the dashboard on full success
       router.push("/dashboard");
 
     } catch (error: any) {
-      let description = "Ocurrió un error inesperado.";
+      // Centralized error handling
+      let description = "Ocurrió un error inesperado durante el registro.";
       
       if (error.code === 'auth/email-already-in-use') {
-        description = "Este correo electrónico ya está en uso. Por favor, intenta con otro o inicia sesión.";
+        description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.message === "Username is already taken.") {
         description = "Este nombre de usuario ya está en uso. Por favor, elige otro.";
-      } else {
-        // For other errors, including potential permission errors from setDoc
-        description = error.message || description;
+        // We could also delete the created auth user here if we wanted to be stricter
+      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied')) {
+        description = "Un error de permisos impidió crear tu perfil. Por favor, contacta a soporte.";
       }
-  
-      // Show toast for any error that occurs
+      
       toast({
         title: "Falló el Registro",
         description: description,
@@ -155,7 +155,7 @@ export default function SignupPage() {
       });
 
     } finally {
-      // This will run regardless of success or failure
+      // Ensure loading state is always turned off
       setIsLoading(false);
     }
   }
