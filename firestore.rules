@@ -12,9 +12,9 @@ service cloud.firestore {
       allow read, update, delete: if isOwner(userId);
       
       // Allow create only if user is creating their own document
-      // and provides all the required fields.
+      // and provides all the required fields, excluding avatar from the check.
       allow create: if request.auth.uid == userId &&
-                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'gender', 'avatar']) &&
+                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'gender']) &&
                       request.resource.data.id == userId &&
                       request.resource.data.username is string &&
                       request.resource.data.fullName is string &&
