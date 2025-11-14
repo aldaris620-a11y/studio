@@ -128,9 +128,9 @@ export default function SignupPage() {
         });
       }).catch(error => {
           const permissionError = new FirestorePermissionError({
-            path: `usernames/${values.username} and users/${user.uid}`,
+            path: `usernames/${values.username}`,
             operation: 'create',
-            requestResourceData: { username: values.username, profile: { id: user.uid, fullName: values.fullName } },
+            requestResourceData: { username: values.username, profile: { id: user.uid, fullName: values.fullName, gender: values.gender } },
           });
           errorEmitter.emit('permission-error', permissionError);
           // Re-throw the original error to be caught by the outer catch block
