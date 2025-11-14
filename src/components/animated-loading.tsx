@@ -28,7 +28,7 @@ const phrases = [
 
 export function AnimatedLoading({ text }: { text?: string }) {
     const [currentPhrase, setCurrentPhrase] = useState(text || phrases[0]);
-    const animationDuration = 3.5; // seconds
+    const animationDuration = 3.5; // seconds for a single icon loop
     const iconCount = icons.length;
     const totalAnimationTime = animationDuration * iconCount;
 
@@ -52,7 +52,7 @@ export function AnimatedLoading({ text }: { text?: string }) {
              <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
                 {icons.map((item, index) => {
                     const Icon = item.icon;
-                    const animationDelay = `${index * (animationDuration / 2)}s`;
+                    const animationDelay = `${index * animationDuration}s`;
                     return (
                         <Icon
                             key={index}
