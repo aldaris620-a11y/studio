@@ -102,16 +102,15 @@ export default function SignupPage() {
     setIsLoading(true);
     
     try {
-      // Step 1: Create the user with Firebase Auth
+      // Step 1: Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Step 2: Reserve the username atomically using a transaction
+      // Step 2: Reserve the username in a transaction
       const usernameDocRef = doc(db, 'usernames', values.username.toLowerCase());
       await runTransaction(db, async (transaction) => {
         const usernameDoc = await transaction.get(usernameDocRef);
         if (usernameDoc.exists()) {
-          // This specific error will be caught by the outer catch block
           throw new Error("Username is already taken.");
         }
         transaction.set(usernameDocRef, { uid: user.uid });
@@ -128,10 +127,10 @@ export default function SignupPage() {
       };
       await setDoc(userProfileDocRef, profileData);
 
-      // Step 4: Update the user's auth profile (e.g., display name)
+      // Step 4: Update the auth profile's display name
       await updateProfile(user, { displayName: values.username });
       
-      // Step 5: Navigate to the dashboard on full success
+      // Step 5: Navigate to dashboard on full success
       router.push("/dashboard");
 
     } catch (error: any) {
