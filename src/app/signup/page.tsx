@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, type User } from "firebase/auth";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
@@ -22,7 +22,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -96,7 +95,7 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    let user;
+    let user: User | null = null;
 
     try {
       // Step 1: Create user with Firebase Auth
@@ -110,7 +109,7 @@ export default function SignupPage() {
         if (usernameDoc.exists()) {
           throw new Error("Username is already taken.");
         }
-        transaction.set(usernameDocRef, { uid: user.uid });
+        transaction.set(usernameDocRef, { uid: user!.uid });
       });
 
       // Step 3: Create the user profile document in Firestore

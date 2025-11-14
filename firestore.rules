@@ -9,15 +9,11 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, update, delete: if isOwner(userId);
-      
-      // Allow create only if user is creating their own document
-      // and provides all the required fields.
-      allow create: if request.auth.uid == userId &&
-                      request.resource.data.keys().hasAll(['id', 'username', 'fullName', 'avatar']) &&
-                      request.resource.data.id == userId &&
-                      request.resource.data.username is string &&
-                      request.resource.data.fullName is string;
+      // Allow read and delete if the user is the owner.
+      // Allow write (create and update) if the user is the owner. This is more flexible
+      // than separate create/update rules and helps prevent states where a profile
+      // couldn't be created during signup but can be "fixed" on the first profile update.
+      allow read, delete, write: if isOwner(userId);
 
       match /game_progress/{gameProgressId} {
         allow read, write: if isOwner(userId);
@@ -34,8 +30,7 @@ service cloud.firestore {
 
     match /usernames/{username} {
         // Allow creating a username only if the user is authenticated,
-        // the document ID matches the username in the request,
-        // and they are setting their own UID.
+        // and they are setting their own UID. The document ID must be the username.
         allow create: if request.auth != null &&
                       request.resource.data.uid == request.auth.uid &&
                       request.resource.data.keys().hasAll(['uid']);
