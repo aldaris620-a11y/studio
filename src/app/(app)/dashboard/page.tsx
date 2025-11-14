@@ -1,29 +1,19 @@
 
 'use client';
-import { getGames, getRewards } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
-import { Gamepad2, Lock, Trophy, Unlock, Skull, BrainCircuit, BookHeart, PlayCircle } from 'lucide-react';
+import { Gamepad2, Lock, Trophy, Unlock, PlayCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Game, Reward } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
-const gameIcons: { [key: string]: React.ElementType } = {
-  'wumpus-1': Skull,
-  'trivial-1': BrainCircuit,
-  'zombie-novel-1': BookHeart,
-};
+import { GAMES, GameDefinition, getRewards, Reward } from '@/games';
 
 export default function DashboardPage() {
-  const [games, setGames] = useState<Game[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
 
   useEffect(() => {
     // TODO: This should come from firestore
-    getGames().then(setGames);
     getRewards().then(setRewards);
   }, []);
 
@@ -40,9 +30,13 @@ export default function DashboardPage() {
             Tus Juegos
         </h2>
         <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-          {games.map((game) => {
-            const Icon = gameIcons[game.id] || Gamepad2;
-            const gameBaseUrl = `/${game.id.split('-')[0]}`;
+          {GAMES.map((game: GameDefinition) => {
+            const Icon = game.icon;
+            const gameUrl = `/games/${game.id}`;
+            const achievementsUrl = `${gameUrl}/achievements`;
+            // TODO: Progress should come from firestore
+            const progress = 0; 
+            
             return (
               <Card key={game.id} className="flex items-center p-4 transition-shadow hover:shadow-md">
                 <div className="flex-shrink-0">
@@ -52,17 +46,17 @@ export default function DashboardPage() {
                   <CardTitle className="text-lg">{game.name}</CardTitle>
                   <CardDescription className="text-xs mb-2">{game.description}</CardDescription>
                   <div className="flex items-center gap-2">
-                    <Progress value={game.progress} className="w-full h-2" />
-                    <span className="text-xs font-medium text-muted-foreground">{game.progress}%</span>
+                    <Progress value={progress} className="w-full h-2" />
+                    <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
                   </div>
                 </div>
                 <div className="flex items-center ml-4 flex-shrink-0">
-                    <Link href={`${gameBaseUrl}/achievements`} passHref>
+                    <Link href={achievementsUrl} passHref>
                         <Button variant="ghost" size="icon" aria-label="Logros">
                             <Trophy className="h-6 w-6"/>
                         </Button>
                     </Link>
-                    <Link href={gameBaseUrl} passHref>
+                    <Link href={gameUrl} passHref>
                         <Button variant="ghost" size="icon" aria-label="Jugar">
                             <PlayCircle className="h-6 w-6"/>
                         </Button>

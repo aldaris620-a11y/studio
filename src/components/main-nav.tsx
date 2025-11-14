@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Settings, User, Skull, BrainCircuit, BookHeart, LayoutDashboard } from 'lucide-react';
+import { Gamepad2, Settings, User, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GAMES } from '@/games';
 
-const navItems = [
+const topNavItems = [
     { href: '/dashboard', label: 'Panel', icon: LayoutDashboard },
-    { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
-    { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
-    { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
+];
+
+const bottomNavItems = [
     { href: '/profile', label: 'Perfil', icon: User },
     { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
@@ -28,7 +29,35 @@ export function MainNav() {
         </div>
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            {navItems.map((item) => (
+            {topNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+                  { 'bg-muted text-primary': pathname === item.href }
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            ))}
+             <hr className="my-2" />
+             {GAMES.map((game) => (
+              <Link
+                key={game.id}
+                href={`/games/${game.id}`}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+                  { 'bg-muted text-primary': pathname === `/games/${game.id}` }
+                )}
+              >
+                <game.icon className="h-4 w-4" />
+                {game.name}
+              </Link>
+            ))}
+             <hr className="my-2" />
+             {bottomNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

@@ -3,17 +3,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Menu, Settings, User, Skull, BrainCircuit, BookHeart, LayoutDashboard } from 'lucide-react';
+import { Gamepad2, Menu, Settings, User, LayoutDashboard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { GAMES } from '@/games';
 
 const navItems = [
     { href: '/dashboard', label: 'Panel', icon: LayoutDashboard },
-    { href: '/wumpus', label: 'Caza del Wumpus', icon: Skull },
-    { href: '/trivial', label: 'Trivial de Miedo', icon: BrainCircuit },
-    { href: '/zombie-novel', label: 'Apocalipsis Z', icon: BookHeart },
+];
+
+const bottomNavItems = [
     { href: '/profile', label: 'Perfil', icon: User },
     { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
@@ -45,6 +46,34 @@ export function MobileNav() {
                     <span>Centro de Sincronización</span>
                   </Link>
                    {navItems.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                                'mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground',
+                                { 'bg-muted text-foreground': pathname === item.href }
+                            )}
+                        >
+                            <item.icon className="h-5 w-5" />
+                            {item.label}
+                        </Link>
+                    ))}
+                    <hr className="my-2" />
+                    {GAMES.map((game) => (
+                         <Link
+                            key={game.id}
+                            href={`/games/${game.id}`}
+                            className={cn(
+                                'mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground',
+                                { 'bg-muted text-foreground': pathname === `/games/${game.id}` }
+                            )}
+                        >
+                            <game.icon className="h-5 w-5" />
+                            {game.name}
+                        </Link>
+                    ))}
+                    <hr className="my-2" />
+                    {bottomNavItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}

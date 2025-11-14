@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { AnimatedLoading } from '@/components/animated-loading';
+import { GAMES } from '@/games';
 
 export default function HomePage() {
   const { user, isUserLoading } = useUser();
@@ -12,7 +13,8 @@ export default function HomePage() {
   useEffect(() => {
     if (!isUserLoading) {
       if (user) {
-        router.replace('/wumpus');
+        // Redirect to the first game in the registry
+        router.replace(`/games/${GAMES[0].id}`);
       } else {
         router.replace('/login');
       }
