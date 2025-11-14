@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -39,6 +40,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -69,8 +71,17 @@ export default function LoginPage() {
     }
   }
 
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    router.push(path);
+  };
+
   if (isLoading) {
     return <AnimatedLoading text="Verificando identidad..." />;
+  }
+
+  if (isNavigating) {
+    return <AnimatedLoading text="Cargando página..." />;
   }
 
   return (
@@ -129,9 +140,9 @@ export default function LoginPage() {
           </Form>
           <div className="mt-4 text-center text-sm">
             ¿No tienes una cuenta?{" "}
-            <Link href="/signup" className="underline text-primary hover:text-primary/80">
+            <button onClick={() => handleNavigation('/signup')} className="underline text-primary hover:text-primary/80">
               Regístrate
-            </Link>
+            </button>
           </div>
         </CardContent>
       </Card>
