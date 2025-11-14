@@ -44,7 +44,7 @@ import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }).regex(/^[a-zA-Z0-9_]+$/, "Solo se permiten letras, números y guiones bajos."),
+  username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres." }),
   email: z.string().email({ message: "Por favor, introduce un correo electrónico válido." }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   confirmPassword: z.string().min(6, { message: "La confirmación de contraseña debe tener al menos 6 caracteres." }),
@@ -100,7 +100,6 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       user = userCredential.user;
 
-      // Step 2: Create the user profile document in Firestore
       const userProfileDocRef = doc(db, 'users', user.uid);
       const profileData = {
         id: user.uid,
@@ -108,37 +107,35 @@ export default function SignupPage() {
         avatar: "avatar-1", // Default avatar
       };
 
-      await setDoc(userProfileDocRef, profileData)
-        .catch(error => {
-            // If creating the doc fails, emit a detailed error
+      // Step 2 & 3: Create Firestore profile and update Auth profile concurrently
+      await Promise.all([
+        setDoc(userProfileDocRef, profileData).catch(error => {
             const permissionError = new FirestorePermissionError({
                 path: userProfileDocRef.path,
                 operation: 'create',
                 requestResourceData: profileData
             });
             errorEmitter.emit('permission-error', permissionError);
-            // Re-throw the original error to be caught by the outer catch block
-            throw error;
-        });
-
-      // Step 3: Update the auth profile's display name
-      await updateProfile(user, { displayName: values.username });
+            throw permissionError; // Re-throw to be caught by the outer catch
+        }),
+        updateProfile(user, { displayName: values.username })
+      ]);
       
-      // Step 4: Navigate to dashboard on full success
       router.push("/dashboard");
 
     } catch (error: any) {
+      let title = "Falló el Registro";
       let description = "Ocurrió un error inesperado durante el registro.";
       
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
-      } else if (error.name === 'FirebaseError' && error.message.includes('permission-denied')) {
-        // This case is now more robust thanks to the specific catch block above
-        description = "Un error de permisos impidió crear tu perfil. Por favor, contacta a soporte.";
+      } else if (error instanceof FirestorePermissionError) {
+        title = "Error de Permisos";
+        description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
       }
       
       toast({
-        title: "Falló el Registro",
+        title: title,
         description: description,
         variant: "destructive",
       });
@@ -320,3 +317,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
