@@ -31,10 +31,10 @@ export default function HomePage() {
           alt="Hero background"
           layout="fill"
           objectFit="cover"
-          className="absolute inset-0 z-0 opacity-20"
+          className="absolute inset-0 z-0 opacity-10"
           data-ai-hint={GAMES[0].imageHint}
         />
-        <div className="relative z-10">
+        <div className="relative z-10 bg-black/50">
           <header className="px-4 lg:px-6 h-14 flex items-center bg-transparent">
             <Link href="#" className="flex items-center justify-center" prefetch={false}>
               <Gamepad2 className="h-6 w-6 text-primary" />
@@ -62,15 +62,15 @@ export default function HomePage() {
                 <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
                   <div className="flex flex-col justify-center space-y-4">
                     <div className="space-y-4">
-                      <h1 className="text-4xl font-bold tracking-tighter sm:text-6xl xl:text-7xl/none text-primary-foreground">
+                      <h1 className="text-4xl font-bold tracking-tighter sm:text-6xl xl:text-7xl/none text-foreground">
                         Tu Universo de Juegos, Sincronizado.
                       </h1>
-                      <p className="max-w-[600px] text-primary-foreground/80 md:text-xl">
+                      <p className="max-w-[600px] text-foreground/80 md:text-xl">
                         El Centro de Sincronización de Juegos es la plataforma definitiva para unificar tu progreso, logros y recompensas en todos tus juegos.
                       </p>
                     </div>
                     <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                      <Button size="lg" variant="default" onClick={handleGetStarted}>
+                      <Button size="lg" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleGetStarted}>
                         ¡Comienza Ahora!
                       </Button>
                     </div>
