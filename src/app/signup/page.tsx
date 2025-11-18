@@ -150,7 +150,7 @@ export default function SignupPage() {
     router.push(path);
   };
 
-  if (isLoading || isNavigating) {
+  if (isNavigating) {
     return <AnimatedLoading />;
   }
 
