@@ -22,7 +22,7 @@ const profileSchema = z.object({
   username: z.string().min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres.' }),
 });
 
-const avatarEmojis = ["🎮", "👾", "🤖", "👽", "👻", "🎃", "🦁", "🦊", "👑", "🧙", "🧝", "🧑‍🚀", "🦸", "🥷", "💀"];
+const avatarEmojis = ["🎮", "👾", "🤖", "👽", "👻", "🎃", "🦁", "🦊", "👑", "🧙", "🧝", "🧑‍🚀", "🦸", "🥷", "💀", "🐲", "🦄", "🧟", "🧛", "🎯", "💎", "🔥", "⚡️", "☠️", "⚔️", "🛡️", "🚀", "🛸"];
 
 
 export default function ProfilePage() {
