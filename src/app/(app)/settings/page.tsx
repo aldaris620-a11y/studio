@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, collection, getDocs, writeBatch } from 'firebase/firestore';
 import { useUser, useAuth, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { AnimatedLoading } from '@/components/animated-loading';
+import { GAMES } from '@/games';
+import { Trash2 } from 'lucide-react';
 
 const passwordSchema = z.object({
     currentPassword: z.string().min(1, 'La contraseña actual es requerida.'),
@@ -41,6 +43,7 @@ export default function SettingsPage() {
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [showDeleteLoading, setShowDeleteLoading] = useState(false);
+  const [isGameProgressLoading, setGameProgressIsLoading] = useState<string | null>(null);
 
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
@@ -85,6 +88,46 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleDeleteGameProgress(gameId: string) {
+    if (!user || !db) return;
+    setGameProgressIsLoading(gameId);
+
+    const gameProgressColRef = collection(db, 'users', user.uid, 'game_progress');
+    const gameQuery = (await getDocs(collection(db, `users/${user.uid}/game_progress`)));
+    const gameDocs = gameQuery.docs.filter(doc => doc.data().gameId === gameId);
+    
+    if (gameDocs.length === 0) {
+        toast({
+            title: 'No hay progreso que borrar',
+            description: `No se encontró progreso para este juego.`,
+            variant: 'default'
+        });
+        setGameProgressIsLoading(null);
+        return;
+    }
+
+    const batch = writeBatch(db);
+    gameDocs.forEach(doc => batch.delete(doc.ref));
+
+    try {
+        await batch.commit();
+        toast({
+            title: 'Progreso Eliminado',
+            description: `Tu progreso en el juego ha sido eliminado exitosamente.`,
+            variant: 'success'
+        });
+    } catch (error) {
+        const permissionError = new FirestorePermissionError({
+          path: gameProgressColRef.path,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
+        setGameProgressIsLoading(null);
+    }
+  }
+
+
   async function handleDeleteAccount(values: z.infer<typeof deleteSchema>) {
     if (!user || !user.email || !db) return;
   
@@ -118,25 +161,24 @@ export default function SettingsPage() {
   
       router.push('/login');
     } catch (error: any) {
-      // Check for specific auth error first
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-        toast({
-          title: 'Error al Eliminar la Cuenta',
-          description: 'La contraseña es incorrecta. No se pudo eliminar la cuenta.',
-          variant: 'destructive',
-        });
-      } 
-      // If it's not a permission error (which is handled globally), show a generic toast
-      else if (error.name !== 'FirebaseError') {
-        toast({
+        setShowDeleteLoading(false);
+        // Check for specific auth error first
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            toast({
             title: 'Error al Eliminar la Cuenta',
-            description: error.message || 'Ocurrió un error. Por favor, verifica tus datos.',
+            description: 'La contraseña es incorrecta. No se pudo eliminar la cuenta.',
             variant: 'destructive',
-        });
-      }
-      // If it IS a FirebaseError but not wrong password, it's likely the permission error, which will be handled by the global listener.
-      
-      setShowDeleteLoading(false);
+            });
+        } 
+        // If it's not a permission error (which is handled globally), show a generic toast
+        else if (error.name !== 'FirebaseError') {
+            toast({
+                title: 'Error al Eliminar la Cuenta',
+                description: error.message || 'Ocurrió un error. Por favor, verifica tus datos.',
+                variant: 'destructive',
+            });
+        }
+        // If it IS a FirebaseError but not wrong password, it's likely the permission error, which will be handled by the global listener.
     } finally {
       setIsDeleteLoading(false);
     }
@@ -189,6 +231,55 @@ export default function SettingsPage() {
           </Form>
         </Card>
 
+        <Card>
+            <CardHeader>
+                <CardTitle>Gestionar Progreso de Juegos</CardTitle>
+                <CardDescription>
+                    Elimina permanentemente tu progreso guardado para un juego específico. Esta acción no se puede deshacer.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {GAMES.map(game => {
+                    const isLoading = isGameProgressLoading === game.id;
+                    return (
+                        <div key={game.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div>
+                                <h3 className="font-semibold">{game.name}</h3>
+                                <p className="text-sm text-muted-foreground">Borrará todos los datos de guardado y logros.</p>
+                            </div>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" disabled={isLoading}>
+                                        <Trash2 className="mr-2 h-4 w-4"/>
+                                        {isLoading ? 'Borrando...' : 'Borrar Progreso'}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Estás a punto de borrar permanentemente todo tu progreso para 
+                                            <span className="font-bold"> {game.name}</span>. Esta acción no se puede deshacer.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() => handleDeleteGameProgress(game.id)}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                            Sí, borrar progreso
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
+
+
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Eliminar Cuenta</CardTitle>
@@ -234,3 +325,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    

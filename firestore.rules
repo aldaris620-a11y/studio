@@ -21,6 +21,11 @@ service cloud.firestore {
         // Allow owner to read and create their own achievements.
         allow read, create, update: if isOwner(userId);
       }
+
+      match /game_progress/{gameProgressId} {
+        // Allow owner to manage their own game progress.
+        allow read, write, delete: if isOwner(userId);
+      }
     }
       
     match /rewards/{rewardId} {
@@ -28,3 +33,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
