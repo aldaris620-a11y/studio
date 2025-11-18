@@ -26,8 +26,8 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Tu Panel</h1>
-        <p className="text-muted-foreground">Sigue tu progreso y desbloquea recompensas increíbles.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Centro de Mando</h1>
+        <p className="text-muted-foreground">Monitoriza tus sistemas, progreso y recompensas activas.</p>
       </div>
 
       <section>
