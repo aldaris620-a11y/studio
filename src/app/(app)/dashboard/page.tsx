@@ -8,13 +8,19 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { GAMES, GameDefinition, getRewards, Reward } from '@/games';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [isLoadingRewards, setIsLoadingRewards] = useState(true);
 
   useEffect(() => {
     // TODO: This should come from firestore
-    getRewards().then(setRewards);
+    setIsLoadingRewards(true);
+    getRewards().then(rewards => {
+        setRewards(rewards);
+        setIsLoadingRewards(false);
+    });
   }, []);
 
   return (
@@ -74,30 +80,44 @@ export default function DashboardPage() {
             Recompensas Entre Juegos
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {rewards.map((reward) => (
-            <Card key={reward.id} className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{reward.name}</CardTitle>
-                    {reward.unlocked ? (
-                         <Badge variant="default" className="bg-accent hover:bg-accent/80 text-accent-foreground">
-                            <Unlock className="mr-1 h-4 w-4"/> Desbloqueado
-                        </Badge>
-                    ) : (
-                        <Badge variant="secondary">
-                            <Lock className="mr-1 h-4 w-4"/> Bloqueado
-                        </Badge>
-                    )}
-                </div>
-                <CardDescription>{reward.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground italic">
-                  Cómo desbloquear: {reward.gameToUnlock}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+          {isLoadingRewards ? (
+            [...Array(3)].map((_, i) => (
+                <Card key={i}>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-4 w-full" />
+                    </CardContent>
+                </Card>
+            ))
+          ) : (
+            rewards.map((reward) => (
+                <Card key={reward.id} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-xl">{reward.name}</CardTitle>
+                        {reward.unlocked ? (
+                             <Badge variant="default" className="bg-accent hover:bg-accent/80 text-accent-foreground">
+                                <Unlock className="mr-1 h-4 w-4"/> Desbloqueado
+                            </Badge>
+                        ) : (
+                            <Badge variant="secondary">
+                                <Lock className="mr-1 h-4 w-4"/> Bloqueado
+                            </Badge>
+                        )}
+                    </div>
+                    <CardDescription>{reward.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-sm text-muted-foreground italic">
+                      Cómo desbloquear: {reward.gameToUnlock}
+                    </p>
+                  </CardContent>
+                </Card>
+            ))
+          )}
         </div>
       </section>
     </div>
