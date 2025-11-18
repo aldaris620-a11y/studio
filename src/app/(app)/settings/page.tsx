@@ -118,13 +118,20 @@ export default function SettingsPage() {
   
       router.push('/login');
     } catch (error: any) {
-      // Avoid showing a generic toast if a specific one was emitted
+      let description = 'Ocurrió un error. Por favor, inténtalo de nuevo.';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+        description = 'La contraseña es incorrecta. No se pudo eliminar la cuenta.';
+      } else if (error.name !== 'FirebaseError') {
+        description = error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.';
+      }
+
+      // Avoid showing a generic toast if a specific one was emitted from Firestore
       if (error.name !== 'FirebaseError') {
-        toast({
-          title: 'Error al Eliminar la Cuenta',
-          description: error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.',
-          variant: 'destructive',
-        });
+          toast({
+              title: 'Error al Eliminar la Cuenta',
+              description: description,
+              variant: 'destructive',
+          });
       }
       setShowDeleteLoading(false);
     } finally {
