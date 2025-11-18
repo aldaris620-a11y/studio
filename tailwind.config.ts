@@ -105,6 +105,9 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-out': 'fade-in-out 1.5s ease-in-out infinite',
       },
+      boxShadow: {
+        'glow-primary': '0 0 15px 5px hsl(var(--primary) / 0.2)',
+      }
     },
   },
   plugins: [require('tailwindcss-animate')],
