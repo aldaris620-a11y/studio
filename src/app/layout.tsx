@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Centro de Sincronización de Juegos',
+  title: 'Save Point',
   description: 'Sincroniza tu progreso de juego y recompensas sin problemas.',
 };
 

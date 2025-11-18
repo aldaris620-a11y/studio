@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gamepad2 } from 'lucide-react';
+import { Save } from 'lucide-react';
 import TermsContent from '@/components/terms-content';
 
 
@@ -12,7 +12,7 @@ export default function TermsPage() {
       <Card className="mx-auto w-full max-w-2xl">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center mb-4">
-            <Gamepad2 className="h-8 w-8 text-primary" />
+            <Save className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">Términos y Servicios (La Letra Pequeña para Gamers)</CardTitle>
         </CardHeader>

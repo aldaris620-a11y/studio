@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Settings, User, LayoutDashboard } from 'lucide-react';
+import { Save, Settings, User, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GAMES } from '@/games';
 
@@ -23,8 +23,8 @@ export function MainNav() {
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
-            <Gamepad2 className="h-6 w-6" />
-            <span className="">Centro de Sincronización</span>
+            <Save className="h-6 w-6" />
+            <span className="">Save Point</span>
           </Link>
         </div>
         <div className="flex-1">

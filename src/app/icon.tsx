@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { Gamepad2 } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 export const runtime = 'edge';
 export const size = { width: 32, height: 32 };
@@ -11,7 +11,7 @@ export default function Icon() {
       <div
         style={{
           fontSize: 24,
-          background: '#4682B4',
+          background: 'hsl(262 84% 59%)',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -21,7 +21,7 @@ export default function Icon() {
           borderRadius: '6px',
         }}
       >
-        <Gamepad2 size={20} />
+        <Save size={20} />
       </div>
     ),
     {

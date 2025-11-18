@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, Menu, Settings, User, LayoutDashboard } from 'lucide-react';
+import { Save, Menu, Settings, User, LayoutDashboard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -42,8 +42,8 @@ export function MobileNav() {
                     href="/dashboard"
                     className="flex items-center gap-2 text-lg font-semibold text-primary"
                   >
-                    <Gamepad2 className="h-6 w-6" />
-                    <span>Centro de Sincronización</span>
+                    <Save className="h-6 w-6" />
+                    <span>Save Point</span>
                   </Link>
                    {navItems.map((item) => (
                         <Link

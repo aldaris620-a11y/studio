@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, Trophy, Crosshair, Sparkles } from 'lucide-react';
+import { Save, Trophy, Crosshair, Sparkles } from 'lucide-react';
 import { GAMES } from '@/games';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -24,8 +24,8 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="px-4 lg:px-6 h-14 flex items-center z-10">
         <Link href="#" className="flex items-center justify-center" prefetch={false}>
-          <Gamepad2 className="h-6 w-6 text-primary" />
-          <span className="sr-only">Centro de Sincronización de Juegos</span>
+          <Save className="h-6 w-6 text-primary" />
+          <span className="sr-only">Save Point</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link
@@ -47,11 +47,11 @@ export default function HomePage() {
         <section className="w-full py-20 md:py-32 lg:py-40 text-center">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-6">
-                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none text-foreground">
-                        Tu Universo de Juegos, Sincronizado.
+                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary to-fuchsia-500">
+                        Save Point
                     </h1>
                     <p className="max-w-[700px] text-foreground/80 md:text-xl">
-                        El Centro de Sincronización de Juegos es la plataforma definitiva para unificar tu progreso, logros y recompensas en todos tus juegos.
+                        La plataforma definitiva para unificar tu progreso, logros y recompensas en todos tus juegos.
                     </p>
                     <div className="flex flex-col gap-2 min-[400px]:flex-row">
                       <Button size="lg" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleGetStarted}>
@@ -139,7 +139,7 @@ export default function HomePage() {
       </main>
 
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-card/80">
-        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Centro de Sincronización de Juegos. Todos los derechos reservados.</p>
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Save Point. Todos los derechos reservados.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="/terms" className="text-xs hover:underline underline-offset-4" prefetch={false}>
             Términos de Servicio

@@ -38,7 +38,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, ShieldCheck, Home } from "lucide-react";
+import { Save, ShieldCheck, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
@@ -165,9 +165,9 @@ export default function SignupPage() {
       <Card className="mx-auto w-full max-w-lg">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
-             <Gamepad2 className="h-8 w-8 text-primary" />
+             <Save className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Únete al Centro</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">Crea tu Save Point</CardTitle>
           <CardDescription>
             Crea una cuenta para empezar a sincronizar tus juegos.
           </CardDescription>
@@ -251,7 +251,7 @@ export default function SignupPage() {
                           <DialogContent className="sm:max-w-[425px] md:max-w-xl">
                             <DialogHeader>
                               <DialogTitle className="flex items-center gap-2">
-                                <Gamepad2 className="h-6 w-6" />
+                                <Save className="h-6 w-6" />
                                 Términos y Servicios (La Letra Pequeña para Gamers)
                               </DialogTitle>
                             </DialogHeader>

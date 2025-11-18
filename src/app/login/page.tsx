@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, Home } from "lucide-react";
+import { Save, Home } from "lucide-react";
 import { AnimatedLoading } from "@/components/animated-loading";
 
 const formSchema = z.object({
@@ -93,11 +93,11 @@ export default function LoginPage() {
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
-             <Gamepad2 className="h-8 w-8 text-primary" />
+             <Save className="h-8 w-8 text-primary" />
             </div>
           <CardTitle className="text-2xl font-bold tracking-tight">¡Bienvenido de Nuevo!</CardTitle>
           <CardDescription>
-            Introduce tus credenciales para acceder a tu Centro de Sincronización de Juegos.
+            Introduce tus credenciales para acceder a tu Save Point.
           </CardDescription>
         </CardHeader>
         <CardContent>
