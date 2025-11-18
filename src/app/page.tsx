@@ -27,7 +27,7 @@ export default function HomePage() {
           <Save className="h-6 w-6 text-primary" />
           <span className="sr-only">Save Point</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
           <Link
             href="/login"
             className="text-sm font-medium text-foreground/80 hover:text-foreground hover:underline underline-offset-4"
