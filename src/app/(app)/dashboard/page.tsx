@@ -29,7 +29,7 @@ export default function DashboardPage() {
             <Gamepad2 className="text-primary"/>
             Tus Juegos
         </h2>
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
           {GAMES.map((game: GameDefinition) => {
             const Icon = game.icon;
             const gameUrl = `/games/${game.id}`;
