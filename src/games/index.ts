@@ -4,9 +4,10 @@ import type { LucideIcon } from 'lucide-react';
 import { Skull, BrainCircuit, BookHeart } from 'lucide-react';
 
 // Game-specific page components
-const WumpusGamePage = React.lazy(() => import('./wumpus/page'));
-const TrivialGamePage = React.lazy(() => import('./trivial/page'));
-const ZombieNovelGamePage = React.lazy(() => import('./zombie-novel/page'));
+import WumpusGamePage from './wumpus/page';
+import TrivialGamePage from './trivial/page';
+import ZombieNovelGamePage from './zombie-novel/page';
+
 
 export interface GameDefinition {
   id: string;

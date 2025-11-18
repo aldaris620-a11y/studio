@@ -1,9 +1,8 @@
 
 'use client';
 import { useParams } from 'next/navigation';
-import React, { Suspense } from 'react';
+import React from 'react';
 import { GAMES } from '@/games';
-import { AnimatedLoading } from '@/components/animated-loading';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 
@@ -31,8 +30,6 @@ export default function GamePage() {
   const GameComponent = game.component;
 
   return (
-    <Suspense fallback={<AnimatedLoading />}>
       <GameComponent />
-    </Suspense>
   );
 }
