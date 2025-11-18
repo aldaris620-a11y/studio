@@ -2,14 +2,11 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Skull, BrainCircuit, BookHeart } from 'lucide-react';
-import { PlaceHolderImages } from './placeholder-images';
 
 // Game-specific page components
 const WumpusGamePage = React.lazy(() => import('./wumpus/page'));
 const TrivialGamePage = React.lazy(() => import('./trivial/page'));
 const ZombieNovelGamePage = React.lazy(() => import('./zombie-novel/page'));
-
-const findImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || '';
 
 export interface GameDefinition {
   id: string;
@@ -17,8 +14,6 @@ export interface GameDefinition {
   description: string;
   icon: LucideIcon;
   component: React.ComponentType;
-  imageUrl: string;
-  imageHint: string;
 };
 
 export type Reward = {
@@ -36,8 +31,6 @@ export const GAMES: GameDefinition[] = [
     description: 'Caza al Wumpus en una cueva oscura y peligrosa.',
     icon: Skull,
     component: WumpusGamePage,
-    imageUrl: findImage('wumpus-1'),
-    imageHint: 'dark cave',
   },
   {
     id: 'trivial',
@@ -45,8 +38,6 @@ export const GAMES: GameDefinition[] = [
     description: 'Demuestra tu conocimiento sobre el género de terror.',
     icon: BrainCircuit,
     component: TrivialGamePage,
-    imageUrl: findImage('trivial-1'),
-    imageHint: 'scary trivia',
   },
   {
     id: 'zombie-novel',
@@ -54,8 +45,6 @@ export const GAMES: GameDefinition[] = [
     description: 'Sobrevive a un apocalipsis zombie tomando decisiones cruciales.',
     icon: BookHeart,
     component: ZombieNovelGamePage,
-    imageUrl: findImage('zombie-novel-1'),
-    imageHint: 'zombie apocalypse',
   },
 ];
 
