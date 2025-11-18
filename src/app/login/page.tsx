@@ -55,11 +55,14 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
+      setIsNavigating(true);
       router.push("/dashboard");
     } catch (error: any) {
        let description = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         description = "El correo electrónico o la contraseña son incorrectos. Por favor, verifica tus credenciales.";
+      } else {
+        description = "Falló el Inicio de Sesión: " + error.message;
       }
       toast({
         title: "Falló el Inicio de Sesión",
@@ -75,17 +78,13 @@ export default function LoginPage() {
     router.push(path);
   };
 
-  if (isLoading) {
-    return <AnimatedLoading />;
-  }
-
-  if (isNavigating) {
+  if (isLoading || isNavigating) {
     return <AnimatedLoading />;
   }
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
-       <Button asChild variant="outline" className="absolute top-4 left-4">
+       <Button asChild variant="outline" className="absolute top-4 left-4" onClick={() => handleNavigation('/')}>
         <Link href="/">
           <Home className="mr-2 h-4 w-4" />
           Inicio

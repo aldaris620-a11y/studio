@@ -113,6 +113,7 @@ export default function SignupPage() {
         updateProfile(user, { displayName: values.username })
       ]);
       
+      setIsNavigating(true);
       router.push("/dashboard");
 
     } catch (error: any) {
@@ -149,17 +150,13 @@ export default function SignupPage() {
     router.push(path);
   };
 
-  if (isLoading) {
-    return <AnimatedLoading />;
-  }
-
-  if (isNavigating) {
+  if (isLoading || isNavigating) {
     return <AnimatedLoading />;
   }
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4 py-12">
-       <Button asChild variant="outline" className="absolute top-4 left-4">
+       <Button asChild variant="outline" className="absolute top-4 left-4" onClick={() => handleNavigation('/')}>
         <Link href="/">
           <Home className="mr-2 h-4 w-4" />
           Inicio
