@@ -1,44 +1,55 @@
 
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Save, Trophy, Crosshair, Sparkles } from 'lucide-react';
 import { GAMES } from '@/games';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { AnimatedLoading } from '@/components/animated-loading';
 
 export default function HomePage() {
   const { user } = useUser();
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
 
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    router.push(path);
+  };
+  
   const handleGetStarted = () => {
     if (user) {
-      router.push('/dashboard');
+      handleNavigation('/dashboard');
     } else {
-      router.push('/signup');
+      handleNavigation('/signup');
     }
   };
+
+  if (isNavigating) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="px-4 lg:px-6 h-14 flex items-center z-10">
-        <Link href="#" className="flex items-center justify-center" prefetch={false}>
+        <button onClick={() => handleNavigation('/')} className="flex items-center justify-center">
           <Save className="h-6 w-6 text-primary" />
           <span className="sr-only">Save Point</span>
-        </Link>
+        </button>
         <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-          <Link
-            href="/login"
+          <button
+            onClick={() => handleNavigation('/login')}
             className="text-sm font-medium text-foreground/80 hover:text-foreground hover:underline underline-offset-4"
-            prefetch={false}
           >
             Iniciar Sesión
-          </Link>
+          </button>
           <Button asChild size="sm" variant="secondary">
-            <Link href="/signup" prefetch={false}>
+            <button onClick={() => handleNavigation('/signup')}>
                 Regístrate
-            </Link>
+            </button>
           </Button>
         </nav>
       </header>
@@ -152,3 +163,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
