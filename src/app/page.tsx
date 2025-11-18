@@ -21,11 +21,7 @@ export default function HomePage() {
   };
   
   const handleGetStarted = () => {
-    if (user) {
-      handleNavigation('/dashboard');
-    } else {
-      handleNavigation('/signup');
-    }
+    handleNavigation('/login');
   };
 
   if (isNavigating) {
@@ -66,7 +62,7 @@ export default function HomePage() {
                     </p>
                     <div className="flex flex-col gap-2 min-[400px]:flex-row">
                       <Button size="lg" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleGetStarted}>
-                        ¡Comienza Ahora!
+                        ¡Comenzar la Aventura!
                       </Button>
                     </div>
                 </div>
@@ -163,5 +159,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
