@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2 } from "lucide-react";
+import { Gamepad2, Home } from "lucide-react";
 import { AnimatedLoading } from "@/components/animated-loading";
 
 const formSchema = z.object({
@@ -76,15 +76,21 @@ export default function LoginPage() {
   };
 
   if (isLoading) {
-    return <AnimatedLoading text="Verificando identidad..." />;
+    return <AnimatedLoading />;
   }
 
   if (isNavigating) {
-    return <AnimatedLoading text="Cargando página..." />;
+    return <AnimatedLoading />;
   }
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
+       <Button asChild variant="outline" className="absolute top-4 left-4">
+        <Link href="/">
+          <Home className="mr-2 h-4 w-4" />
+          Inicio
+        </Link>
+      </Button>
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">

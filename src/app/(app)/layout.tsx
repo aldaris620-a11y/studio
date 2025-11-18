@@ -5,10 +5,12 @@ import { MobileNav } from '@/components/mobile-nav';
 import { UserNav } from '@/components/user-nav';
 import { Suspense } from 'react';
 import { AnimatedLoading } from '@/components/animated-loading';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
+      <FirebaseErrorListener />
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <MainNav />
         <div className="flex flex-col">

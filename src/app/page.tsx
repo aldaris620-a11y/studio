@@ -1,25 +1,164 @@
+
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
-import { AnimatedLoading } from '@/components/animated-loading';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Gamepad2, Trophy, Crosshair, Sparkles } from 'lucide-react';
 import { GAMES } from '@/games';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (user) {
-        // Redirect to the first game in the registry
-        router.replace(`/games/${GAMES[0].id}`);
-      } else {
-        router.replace('/login');
-      }
+  const handleGetStarted = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/signup');
     }
-  }, [user, isUserLoading, router]);
+  };
 
-  return <AnimatedLoading />;
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <header className="px-4 lg:px-6 h-14 flex items-center bg-card border-b">
+        <Link href="#" className="flex items-center justify-center" prefetch={false}>
+          <Gamepad2 className="h-6 w-6 text-primary" />
+          <span className="sr-only">Centro de Sincronización de Juegos</span>
+        </Link>
+        <nav className="ml-auto flex gap-4 sm:gap-6">
+          <Link
+            href="/login"
+            className="text-sm font-medium hover:underline underline-offset-4"
+            prefetch={false}
+          >
+            Iniciar Sesión
+          </Link>
+          <Button asChild size="sm">
+            <Link href="/signup" prefetch={false}>
+                Regístrate
+            </Link>
+          </Button>
+        </nav>
+      </header>
+      <main className="flex-1">
+        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-card/50">
+          <div className="container px-4 md:px-6">
+            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+              <div className="flex flex-col justify-center space-y-4">
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                    Tu Universo de Juegos, Sincronizado.
+                  </h1>
+                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                    El Centro de Sincronización de Juegos es la plataforma definitiva para unificar tu progreso, logros y recompensas en todos tus juegos.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                  <Button size="lg" onClick={handleGetStarted}>
+                    ¡Comienza Ahora!
+                  </Button>
+                </div>
+              </div>
+               <Image
+                    src={GAMES[0].imageUrl}
+                    alt="Hero Game"
+                    width={600}
+                    height={400}
+                    className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
+                    data-ai-hint={GAMES[0].imageHint}
+                />
+            </div>
+          </div>
+        </section>
+        <section id="games" className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Juegos Destacados</h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Explora nuestra creciente biblioteca de juegos compatibles. Tu progreso te sigue a donde vayas.
+                </p>
+              </div>
+            </div>
+            <div className="mx-auto grid grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-12">
+              {GAMES.map((game) => (
+                <Card key={game.id} className="transform transition-all hover:scale-105 hover:shadow-xl">
+                  <CardHeader>
+                     <Image
+                        src={game.imageUrl}
+                        alt={`Cover art for ${game.name}`}
+                        width={600}
+                        height={400}
+                        className="rounded-t-lg object-cover aspect-video"
+                        data-ai-hint={game.imageHint}
+                    />
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <CardTitle className="text-xl font-bold">{game.name}</CardTitle>
+                    <CardDescription className="mt-2 text-sm">{game.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-card/50">
+          <div className="container grid items-center gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-10">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">
+                Eleva tu Experiencia de Juego.
+              </h2>
+              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Nunca pierdas tu progreso. Gana recompensas que trascienden los juegos individuales. Demuestra tu maestría.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                <Crosshair className="mt-1 h-8 w-8 flex-shrink-0 text-primary" />
+                <div>
+                  <h3 className="text-xl font-bold">Sincronización de Progreso</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Tu nivel, puntuación y avances se guardan en la nube y están siempre disponibles.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Trophy className="mt-1 h-8 w-8 flex-shrink-0 text-primary" />
+                <div>
+                  <h3 className="text-xl font-bold">Logros Unificados</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Consigue logros y presume de tus hazañas en tu perfil de jugador global.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Sparkles className="mt-1 h-8 w-8 flex-shrink-0 text-primary" />
+                <div>
+                  <h3 className="text-xl font-bold">Recompensas Entre Juegos</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Desbloquea contenido en un juego al alcanzar hitos en otro.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-card">
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Centro de Sincronización de Juegos. Todos los derechos reservados.</p>
+        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+          <Link href="/terms" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+            Términos de Servicio
+          </Link>
+          <Link href="/privacy" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+            Política de Privacidad
+          </Link>
+        </nav>
+      </footer>
+    </div>
+  );
 }

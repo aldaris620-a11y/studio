@@ -38,7 +38,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Gamepad2, ShieldCheck } from "lucide-react";
+import { Gamepad2, ShieldCheck, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import TermsContent from "@/components/terms-content";
 import PrivacyContent from "@/components/privacy-content";
@@ -122,8 +122,6 @@ export default function SignupPage() {
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.name === 'FirebaseError') {
-        // This case is for Firestore security rule errors, which we're handling globally
-        // but can still provide a user-friendly message here.
         const permissionError = new FirestorePermissionError({
             path: `users/${error.request?.auth?.uid || 'unknown'}`,
             operation: 'create',
@@ -133,10 +131,7 @@ export default function SignupPage() {
             }
         });
         errorEmitter.emit('permission-error', permissionError);
-        // The global listener will throw, but we can set a toast as a fallback.
         description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
-      } else {
-        console.error("Signup error:", error); // For other unexpected errors
       }
       
       toast({
@@ -164,6 +159,12 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4 py-12">
+       <Button asChild variant="outline" className="absolute top-4 left-4">
+        <Link href="/">
+          <Home className="mr-2 h-4 w-4" />
+          Inicio
+        </Link>
+      </Button>
       <Card className="mx-auto w-full max-w-lg">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
@@ -334,5 +335,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
