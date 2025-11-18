@@ -22,6 +22,10 @@ import { AnimatedLoading } from '@/components/animated-loading';
 const passwordSchema = z.object({
     currentPassword: z.string().min(1, 'La contraseña actual es requerida.'),
     newPassword: z.string().min(6, 'La nueva contraseña debe tener al menos 6 caracteres.'),
+    confirmNewPassword: z.string().min(6, 'La confirmación de contraseña debe tener al menos 6 caracteres.')
+}).refine(data => data.newPassword === data.confirmNewPassword, {
+    message: "Las nuevas contraseñas no coinciden.",
+    path: ["confirmNewPassword"],
 });
 
 const deleteSchema = z.object({
@@ -41,7 +45,7 @@ export default function SettingsPage() {
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { currentPassword: '', newPassword: '' },
+    defaultValues: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
   });
 
   const deleteForm = useForm<z.infer<typeof deleteSchema>>({
@@ -159,6 +163,13 @@ export default function SettingsPage() {
                     <FormControl><Input type="password" {...field} className="max-w-sm" /></FormControl>
                     <FormMessage />
                   </FormItem>
+                )} />
+                <FormField control={passwordForm.control} name="confirmNewPassword" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Repite Nueva Contraseña</FormLabel>
+                        <FormControl><Input type="password" {...field} className="max-w-sm" /></FormControl>
+                        <FormMessage />
+                    </FormItem>
                 )} />
               </CardContent>
               <CardContent>
