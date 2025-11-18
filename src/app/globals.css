@@ -10,19 +10,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 100% 56%;
+    --primary: 204 56% 56%; /* Steel Blue -> Cyan Electric */
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 330 100% 56%;
+    --accent: 120 61% 50%; /* Lime Green */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 56%;
+    --ring: 204 56% 56%;
     --radius: 0.5rem;
   }
 
@@ -33,19 +33,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 100% 56%;
+    --primary: 204 56% 56%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 330 100% 56%;
+    --accent: 120 61% 50%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 56%;
+    --ring: 204 56% 56%;
   }
 }
 
