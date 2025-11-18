@@ -47,15 +47,20 @@ export function AnimatedLoading({ text }: { text?: string }) {
             setCurrentIconIndex(prevIndex => (prevIndex + 1) % icons.length);
         }, 1500);
 
-        const textInterval = setInterval(() => {
-            setCurrentTextIndex(prevIndex => (prevIndex + 1) % loadingTexts.length);
-        }, 2000);
+        let textInterval: NodeJS.Timeout | null = null;
+        if (!text) {
+            textInterval = setInterval(() => {
+                setCurrentTextIndex(prevIndex => (prevIndex + 1) % loadingTexts.length);
+            }, 2000);
+        }
 
         return () => {
             clearInterval(iconInterval);
-            clearInterval(textInterval);
+            if (textInterval) {
+                clearInterval(textInterval);
+            }
         };
-    }, []);
+    }, [text]);
 
     const CurrentIcon = icons[currentIconIndex].icon;
     const displayText = text || loadingTexts[currentTextIndex];
