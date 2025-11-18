@@ -118,21 +118,24 @@ export default function SettingsPage() {
   
       router.push('/login');
     } catch (error: any) {
-      let description = 'Ocurrió un error. Por favor, inténtalo de nuevo.';
+      // Check for specific auth error first
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-        description = 'La contraseña es incorrecta. No se pudo eliminar la cuenta.';
-      } else if (error.name !== 'FirebaseError') {
-        description = error.message || 'Ocurrió un error. Por favor, verifica tu contraseña.';
+        toast({
+          title: 'Error al Eliminar la Cuenta',
+          description: 'La contraseña es incorrecta. No se pudo eliminar la cuenta.',
+          variant: 'destructive',
+        });
+      } 
+      // If it's not a permission error (which is handled globally), show a generic toast
+      else if (error.name !== 'FirebaseError') {
+        toast({
+            title: 'Error al Eliminar la Cuenta',
+            description: error.message || 'Ocurrió un error. Por favor, verifica tus datos.',
+            variant: 'destructive',
+        });
       }
-
-      // Avoid showing a generic toast if a specific one was emitted from Firestore
-      if (error.name !== 'FirebaseError') {
-          toast({
-              title: 'Error al Eliminar la Cuenta',
-              description: description,
-              variant: 'destructive',
-          });
-      }
+      // If it IS a FirebaseError but not wrong password, it's likely the permission error, which will be handled by the global listener.
+      
       setShowDeleteLoading(false);
     } finally {
       setIsDeleteLoading(false);
