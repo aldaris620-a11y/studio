@@ -26,7 +26,7 @@ const phrases = [
     "Esquivando bugs...",
 ];
 
-export function AnimatedLoading({ text }: { text?: string }) {
+export function AnimatedLoading() {
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
     const [randomPhrase, setRandomPhrase] = useState(phrases[0]);
 
@@ -66,4 +66,3 @@ export function AnimatedLoading({ text }: { text?: string }) {
         </div>
     );
 }
-

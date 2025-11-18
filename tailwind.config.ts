@@ -92,9 +92,11 @@ export default {
         'fade-in-out': {
           '0%, 100%': {
             opacity: '0',
+            transform: 'scale(0.9)',
           },
-          '50%': {
+          '20%, 80%': {
             opacity: '1',
+            transform: 'scale(1)',
           },
         },
       },
