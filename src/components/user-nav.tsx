@@ -65,7 +65,7 @@ export function UserNav() {
   }
   
   if (isUserLoading || isProfileLoading) {
-    return <Skeleton className="h-8 w-8 rounded-full" />;
+    return <Skeleton className="h-9 w-9 rounded-full" />;
   }
 
   return (
