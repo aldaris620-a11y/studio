@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
+    --background: 220 13% 10%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 220 13% 15%;
     --card-foreground: 210 40% 98%;
-    --popover: 210 40% 3.9%;
+    --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 84% 59%;
+    --primary: 210 100% 56%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142 71% 45%;
-    --accent-foreground: 222.2 47.4% 1.2%;
+    --accent: 330 100% 56%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262 84% 59%;
+    --ring: 210 100% 56%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 13% 10%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 220 13% 15%;
     --card-foreground: 210 40% 98%;
-    --popover: 210 40% 3.9%;
+    --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 84% 59%;
+    --primary: 210 100% 56%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142 71% 45%;
-    --accent-foreground: 222.2 47.4% 1.2%;
+    --accent: 330 100% 56%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262 84% 59%;
+    --ring: 210 100% 56%;
   }
 }
 
@@ -55,6 +55,25 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  body.scanlines::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 2px;
+    z-index: 9999;
+    pointer-events: none;
+    animation: scanlines 10s linear infinite;
   }
   
   /* Fix for autofill background color in browsers */

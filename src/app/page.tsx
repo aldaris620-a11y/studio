@@ -2,13 +2,13 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Save, Trophy, Crosshair, Sparkles } from 'lucide-react';
 import { GAMES } from '@/games';
 import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
 import { AnimatedLoading } from '@/components/animated-loading';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { user } = useUser();
@@ -58,7 +58,7 @@ export default function HomePage() {
         <section className="w-full py-20 md:py-32 lg:py-40 text-center">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-6">
-                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary to-fuchsia-500">
+                    <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                         Save Point
                     </h1>
                     <p className="max-w-[700px] text-foreground/80 md:text-xl">
@@ -163,5 +163,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
