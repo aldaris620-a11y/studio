@@ -15,20 +15,38 @@ const icons = [
     { icon: Crown, color: 'text-yellow-500' },
 ];
 
+const loadingTexts = [
+    "Compilando shaders...",
+    "Generando terreno...",
+    "Desplegando mapas...",
+    "Invocando esbirros...",
+    "Buscando Easter Eggs...",
+    "Afilando espadas...",
+    "Cargando logros...",
+    "Pulverizando píxeles...",
+];
+
 export function AnimatedLoading({ text }: { text?: string }) {
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
+    const [currentTextIndex, setCurrentTextIndex] = useState(0);
 
     useEffect(() => {
         const iconInterval = setInterval(() => {
             setCurrentIconIndex(prevIndex => (prevIndex + 1) % icons.length);
         }, 1500);
 
+        const textInterval = setInterval(() => {
+            setCurrentTextIndex(prevIndex => (prevIndex + 1) % loadingTexts.length);
+        }, 2000);
+
         return () => {
             clearInterval(iconInterval);
+            clearInterval(textInterval);
         };
     }, []);
 
     const CurrentIcon = icons[currentIconIndex].icon;
+    const displayText = text || loadingTexts[currentTextIndex];
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-background overflow-hidden">
@@ -38,9 +56,9 @@ export function AnimatedLoading({ text }: { text?: string }) {
                     className={cn("h-14 w-14 animate-fade-in-out", icons[currentIconIndex].color)}
                 />
             </div>
-            {text && <p className="text-lg font-semibold text-foreground text-center px-4">
-                {text}
-            </p>}
+            <p className="text-lg font-semibold text-foreground text-center px-4">
+                {displayText}
+            </p>
         </div>
     );
 }
