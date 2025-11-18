@@ -34,7 +34,7 @@ export default function HomePage() {
           className="absolute inset-0 z-0 opacity-10"
           data-ai-hint={GAMES[0].imageHint}
         />
-        <div className="relative z-10 bg-black/50">
+        <div className="relative z-10 bg-background/50">
           <header className="px-4 lg:px-6 h-14 flex items-center bg-transparent">
             <Link href="#" className="flex items-center justify-center" prefetch={false}>
               <Gamepad2 className="h-6 w-6 text-primary" />
@@ -95,7 +95,7 @@ export default function HomePage() {
             </div>
             <div className="mx-auto grid grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
               {GAMES.map((game) => (
-                <Card key={game.id} className="transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-2xl overflow-hidden group">
+                <Card key={game.id} className="transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-2xl overflow-hidden group border-border">
                    <CardHeader className="p-0">
                      <Image
                         src={game.imageUrl}
@@ -106,7 +106,7 @@ export default function HomePage() {
                         data-ai-hint={game.imageHint}
                     />
                   </CardHeader>
-                  <CardContent className="p-4 bg-card">
+                  <CardContent className="p-4 bg-card/80">
                     <CardTitle className="text-xl font-bold">{game.name}</CardTitle>
                     <CardDescription className="mt-2 text-sm text-muted-foreground">{game.description}</CardDescription>
                   </CardContent>
@@ -139,8 +139,8 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                    <Trophy className="h-6 w-6 text-primary" />
+                <div className="bg-accent/10 p-3 rounded-full">
+                    <Trophy className="h-6 w-6 text-accent" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">Logros Unificados</h3>
@@ -150,7 +150,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full">
+                 <div className="bg-primary/10 p-3 rounded-full">
                     <Sparkles className="h-6 w-6 text-primary" />
                 </div>
                 <div>
@@ -165,7 +165,7 @@ export default function HomePage() {
         </section>
       </div>
 
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-card">
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-card/80">
         <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Centro de Sincronización de Juegos. Todos los derechos reservados.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="/terms" className="text-xs hover:underline underline-offset-4" prefetch={false}>
