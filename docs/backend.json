@@ -123,6 +123,42 @@
         "rewardId",
         "dateEarned"
       ]
+    },
+    "UserAchievement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAchievement",
+      "type": "object",
+      "description": "Represents a specific achievement a user has unlocked in a game.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserAchievement entity (can be the achievementId)."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile."
+        },
+        "achievementId": {
+          "type": "string",
+          "description": "Identifier for the specific achievement (e.g., 'first_boss_defeated')."
+        },
+        "gameId": {
+          "type": "string",
+          "description": "Identifier for the game this achievement belongs to."
+        },
+        "dateEarned": {
+          "type": "string",
+          "description": "The date the achievement was earned.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "achievementId",
+        "gameId",
+        "dateEarned"
+      ]
     }
   },
   "auth": {
@@ -160,6 +196,16 @@
                   "$ref": "#/backend/entities/UserReward"
                 },
                 "description": "Stores rewards earned by a user."
+              }
+            },
+            {
+              "path": "user_achievements/{achievementId}",
+              "definition": {
+                "entityName": "UserAchievement",
+                "schema": {
+                  "$ref": "#/backend/entities/UserAchievement"
+                },
+                "description": "Stores achievements earned by a user across all games."
               }
             }
           ]

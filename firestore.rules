@@ -16,6 +16,11 @@ service cloud.firestore {
 
       // Allow owner to read, update, and delete their own document.
       allow read, update, delete: if isOwner(userId);
+      
+      match /user_achievements/{achievementId} {
+        // Allow owner to read and create their own achievements.
+        allow read, create, update: if isOwner(userId);
+      }
     }
       
     match /rewards/{rewardId} {
