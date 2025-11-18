@@ -24,6 +24,18 @@ const loadingTexts = [
     "Afilando espadas...",
     "Cargando logros...",
     "Pulverizando píxeles...",
+    "Invocando al jefe final...",
+    "Buscando el botín legendario...",
+    "Aplicando buffs...",
+    "Ajustando la física cuántica...",
+    "Renderizando explosiones épicas...",
+    "Negociando con los NPCs...",
+    "Evitando trampas mortales...",
+    "Descifrando runas antiguas...",
+    "Calibrando el motor de saltos...",
+    "Contando polígonos...",
+    "Activando el modo turbo...",
+    "Alimentando al hámster del servidor...",
 ];
 
 export function AnimatedLoading({ text }: { text?: string }) {
