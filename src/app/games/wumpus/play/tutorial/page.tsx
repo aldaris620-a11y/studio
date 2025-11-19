@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -58,19 +58,45 @@ export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
-  const [droneEvent, setDroneEvent] = useState<boolean>(false);
+  const [alertModal, setAlertModal] = useState<{title: string, description: string, onConfirm: () => void} | null>(null);
   const [arrowsLeft, setArrowsLeft] = useState<number>(1);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
+
+  const handleDroneTransport = useCallback(() => {
+    let randomRoomId;
+    let newRoom;
+    do {
+      randomRoomId = Math.floor(Math.random() * tutorialMapLayout.length) + 1;
+      newRoom = getRoomById(randomRoomId);
+    } while (randomRoomId === playerRoomId || !newRoom);
+    
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+    setPlayerRoomId(newRoom.id);
+
+    // Check hazards in the new room after state update
+    setTimeout(() => {
+        if (newRoom.hasWumpus) {
+          setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
+        } else if (newRoom.hasPit) {
+          setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
+        } else if (newRoom.hasBat) {
+           setAlertModal({
+              title: "Dron de Transporte Activado",
+              description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para otra reubicación forzada!",
+              onConfirm: () => setPendingAction('transportByDrone')
+          });
+        }
+    }, 0);
+  }, [playerRoomId]);
 
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
       handleDroneTransport();
       setPendingAction(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAction]);
+  }, [pendingAction, handleDroneTransport]);
 
   const handleMove = (newRoomId: number) => {
     if (gameOver) return;
@@ -97,27 +123,11 @@ export default function TutorialPage() {
         variant: 'defeat',
       });
     } else if (newRoom.hasBat) {
-      setDroneEvent(true);
-    }
-  };
-
-  const handleDroneTransport = () => {
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * tutorialMapLayout.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
-    
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
-
-    if (newRoom.hasWumpus) {
-      setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
-    } else if (newRoom.hasPit) {
-      setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
-    } else if (newRoom.hasBat) {
-      setDroneEvent(true);
+      setAlertModal({
+          title: "Dron de Transporte Activado",
+          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada a una sección aleatoria de los túneles!",
+          onConfirm: () => setPendingAction('transportByDrone')
+      });
     }
   };
   
@@ -156,6 +166,8 @@ export default function TutorialPage() {
     setIsShooting(false);
     setArrowsLeft(1);
     setVisitedRooms(new Set([1]));
+    setAlertModal(null);
+    setPendingAction(null);
   };
 
   const { connectedRooms, senses } = useMemo(() => {
@@ -201,6 +213,18 @@ export default function TutorialPage() {
     return { connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
 
+  const getSensePositionClass = (senseId: string) => {
+    switch (senseId) {
+      case 'wumpus': return 'absolute top-1 left-1';
+      case 'pit': return 'absolute top-1 right-1';
+      case 'bat': return 'absolute bottom-1 left-1';
+      case 'static': return 'absolute bottom-1 right-1';
+      case 'lockdown': return 'absolute bottom-1 right-1';
+      case 'ghost': return 'absolute top-1 right-1';
+      default: return 'absolute';
+    }
+  }
+
   return (
     <>
     <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
@@ -208,8 +232,8 @@ export default function TutorialPage() {
           <LogOut className="h-6 w-6" />
       </Button>
       
-      <div className="flex flex-col items-center justify-center gap-4">
-        <div className="w-full max-w-md">
+      <div className="flex flex-col items-center justify-center gap-4 w-full max-w-md">
+        <div className="w-full">
             <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
@@ -273,16 +297,11 @@ export default function TutorialPage() {
                     {isPlayerInRoom ? (
                       <>
                         <UserCog className="h-8 w-8" />
-                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                        <div className="absolute top-0 left-0 right-0 bottom-0">
                            {senses.map(sense => {
                                 const SenseIcon = sense.icon;
                                 return (
-                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
-                                    // This is a simplification, you might need a better way to position them
-                                    sense.id === 'wumpus' && 'items-start justify-start',
-                                    sense.id === 'pit' && 'items-start justify-end',
-                                    sense.id === 'bat' && 'items-end justify-start',
-                                    )}>
+                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
                                         <SenseIcon className="h-3 w-3" />
                                     </div>
                                 )
@@ -308,7 +327,7 @@ export default function TutorialPage() {
       </div>
     </div>
     
-      {/* Modal de Game Over */}
+      {/* Game Over Modal */}
       <AlertDialog open={!!gameOver}>
         <AlertDialogContent className={cn(
           "bg-wumpus-card text-wumpus-foreground border-wumpus-primary",
@@ -341,22 +360,22 @@ export default function TutorialPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Modal de Dron */}
-      <AlertDialog open={droneEvent}>
+      {/* Generic Alert Modal (Drones, etc.) */}
+      <AlertDialog open={!!alertModal}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
             <Shuffle className="h-12 w-12 mx-auto text-wumpus-accent" />
-            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">Dron de Transporte Activado</AlertDialogTitle>
+            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada a una sección aleatoria de los túneles!
+              {alertModal?.description}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction 
               onClick={() => {
-                setDroneEvent(false);
-                setPendingAction('transportByDrone');
-              }} 
+                alertModal?.onConfirm();
+                setAlertModal(null);
+              }}
               className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
             >
               Continuar

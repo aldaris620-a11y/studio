@@ -79,6 +79,14 @@ type GameOverReason = {
   variant: 'victory' | 'defeat';
 } | null;
 
+type AlertModalReason = {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    buttonText: string;
+    onConfirm: () => void;
+} | null;
+
 type PendingAction = 'transportByDrone' | null;
 
 export default function EasyPracticePage() {
@@ -86,7 +94,7 @@ export default function EasyPracticePage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
-  const [droneEvent, setDroneEvent] = useState<boolean>(false);
+  const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
   const [arrowsLeft, setArrowsLeft] = useState<number>(3);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -95,14 +103,6 @@ export default function EasyPracticePage() {
 
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
   
-  useEffect(() => {
-    if (pendingAction === 'transportByDrone') {
-      handleDroneTransport();
-      setPendingAction(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAction]);
-
   const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
       setGameOver({
@@ -123,13 +123,18 @@ export default function EasyPracticePage() {
       return true;
     }
     if (room.hasBat) {
-      setDroneEvent(true);
+      setAlertModal({
+          icon: Shuffle, title: "Dron de Transporte Activado",
+          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
+          buttonText: "Continuar",
+          onConfirm: () => setPendingAction('transportByDrone'),
+      });
       return false; // Not a game over, but triggers an event
     }
     return false;
   }, []);
 
-  const handleDroneTransport = () => {
+  const handleDroneTransport = useCallback(() => {
     setGameMap(currentMap => {
         let randomRoomId;
         let newRoom;
@@ -141,12 +146,18 @@ export default function EasyPracticePage() {
         setVisitedRooms(prev => new Set(prev).add(newRoom.id));
         setPlayerRoomId(newRoom.id);
         
-        // This needs to be called after the state updates have been queued
         setTimeout(() => checkHazards(newRoom!), 0);
         
         return currentMap;
     });
-  };
+  }, [playerRoomId, getRoomById, checkHazards]);
+
+  useEffect(() => {
+    if (pendingAction === 'transportByDrone') {
+      handleDroneTransport();
+      setPendingAction(null);
+    }
+  }, [pendingAction, handleDroneTransport]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver) return;
@@ -197,7 +208,7 @@ export default function EasyPracticePage() {
     setIsShooting(false);
     setArrowsLeft(3);
     setVisitedRooms(new Set([1]));
-    setDroneEvent(false);
+    setAlertModal(null);
     setPendingAction(null);
   }, []);
   
@@ -248,6 +259,18 @@ export default function EasyPracticePage() {
     return { connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId, gameMap, getRoomById]);
 
+  const getSensePositionClass = (senseId: string) => {
+    switch (senseId) {
+      case 'wumpus': return 'absolute top-1 left-1';
+      case 'pit': return 'absolute top-1 right-1';
+      case 'bat': return 'absolute bottom-1 left-1';
+      case 'static': return 'absolute bottom-1 right-1';
+      case 'lockdown': return 'absolute bottom-1 right-1';
+      case 'ghost': return 'absolute top-1 right-1';
+      default: return 'absolute';
+    }
+  }
+
   if (gameMap.length === 0) {
     return null; // Or a loading indicator
   }
@@ -255,14 +278,12 @@ export default function EasyPracticePage() {
   return (
     <>
     <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
-       {/* Botón de Salir */}
       <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
           <LogOut className="h-6 w-6" />
       </Button>
       
-      <div className="flex flex-col items-center justify-center gap-4">
-        {/* Panel de Información */}
-        <div className="w-full max-w-md">
+      <div className="flex flex-col items-center justify-center gap-4 w-full max-w-md">
+        <div className="w-full">
             <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
@@ -293,7 +314,6 @@ export default function EasyPracticePage() {
             </Card>
         </div>
 
-        {/* Mapa de Cuadrícula */}
         <div className="grid grid-cols-4 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
             {gameMap.map(room => {
             const isPlayerInRoom = playerRoomId === room.id;
@@ -327,28 +347,17 @@ export default function EasyPracticePage() {
                     {isPlayerInRoom ? (
                       <>
                         <UserCog className="h-8 w-8" />
-                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                        <div className="absolute top-0 left-0 right-0 bottom-0">
                            {senses.map(sense => {
                                 const SenseIcon = sense.icon;
                                 return (
-                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
-                                    // This is a simplification, you might need a better way to position them
-                                    sense.id === 'wumpus' && 'items-start justify-start',
-                                    sense.id === 'pit' && 'items-start justify-end',
-                                    sense.id === 'bat' && 'items-end justify-start',
-                                    )}>
+                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
                                         <SenseIcon className="h-3 w-3" />
                                     </div>
                                 )
                            })}
                         </div>
                       </>
-                    ) : room.hasWumpus ? (
-                        <Skull className="h-8 w-8 text-wumpus-danger" />
-                    ) : room.hasPit ? (
-                        <AlertTriangle className="h-8 w-8 text-wumpus-warning" />
-                    ) : room.hasBat ? (
-                        <Shuffle className="h-8 w-8 text-wumpus-accent" />
                     ) : isVisited ? (
                         <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
                     ) : null}
@@ -394,24 +403,24 @@ export default function EasyPracticePage() {
       </AlertDialog>
 
       {/* Modal de Dron */}
-      <AlertDialog open={droneEvent}>
+      <AlertDialog open={!!alertModal}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
-            <Shuffle className="h-12 w-12 mx-auto text-wumpus-accent" />
-            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">Dron de Transporte Activado</AlertDialogTitle>
+            {alertModal?.icon && <alertModal.icon className="h-12 w-12 mx-auto text-wumpus-accent" />}
+            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada a una sección aleatoria de los túneles!
+              {alertModal?.description}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction 
               onClick={() => {
-                setDroneEvent(false);
-                setPendingAction('transportByDrone');
-              }} 
+                alertModal?.onConfirm();
+                setAlertModal(null);
+              }}
               className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
             >
-              Continuar
+              {alertModal?.buttonText}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

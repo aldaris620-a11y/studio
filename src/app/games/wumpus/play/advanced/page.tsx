@@ -117,18 +117,6 @@ export default function AdvancedPracticePage() {
   
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
 
-  useEffect(() => {
-    if (pendingAction === 'transportByDrone') {
-        handleDroneTransport();
-        setPendingAction(null);
-    } else if (pendingAction === 'moveWumpus') {
-        moveWumpus();
-        setPendingAction(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAction]);
-
-
   const moveWumpus = useCallback(() => {
     setGameMap(currentMap => {
         const wumpusRoom = currentMap.find(r => r.hasWumpus);
@@ -179,7 +167,6 @@ export default function AdvancedPracticePage() {
     });
   }, [playerRoomId]);
 
-
   const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
       setGameOver({
@@ -213,7 +200,7 @@ export default function AdvancedPracticePage() {
     return false;
   }, []);
 
-  const handleDroneTransport = () => {
+  const handleDroneTransport = useCallback(() => {
     setGameMap(currentMap => {
         let randomRoomId;
         let newRoom;
@@ -229,7 +216,18 @@ export default function AdvancedPracticePage() {
         
         return currentMap;
     });
-  };
+  }, [playerRoomId, getRoomById, checkHazards]);
+
+  useEffect(() => {
+    if (pendingAction === 'transportByDrone') {
+        handleDroneTransport();
+        setPendingAction(null);
+    } else if (pendingAction === 'moveWumpus') {
+        moveWumpus();
+        setPendingAction(null);
+    }
+  }, [pendingAction, handleDroneTransport, moveWumpus]);
+
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -370,6 +368,18 @@ export default function AdvancedPracticePage() {
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
+  const getSensePositionClass = (senseId: string) => {
+    switch (senseId) {
+      case 'wumpus': return 'absolute top-1 left-1';
+      case 'pit': return 'absolute top-1 right-1';
+      case 'bat': return 'absolute bottom-1 left-1';
+      case 'static': return 'absolute bottom-1 right-1';
+      case 'lockdown': return 'absolute bottom-1 right-1';
+      case 'ghost': return 'absolute top-1 right-1';
+      default: return 'absolute';
+    }
+  }
+
   if (gameMap.length === 0) return null;
 
   return (
@@ -379,7 +389,7 @@ export default function AdvancedPracticePage() {
           <LogOut className="h-6 w-6" />
       </Button>
       
-      <div className="flex flex-col items-center justify-center gap-4">
+      <div className="flex flex-col items-center justify-center gap-4 w-full max-w-md">
         <div className="w-full max-w-md md:max-w-xl flex flex-col md:flex-row gap-4">
             <Card className="flex-1 bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
             <CardHeader className="pb-4">
@@ -459,37 +469,17 @@ export default function AdvancedPracticePage() {
                      {isPlayerInRoom ? (
                       <>
                         <UserCog className="h-6 w-6 md:h-8 md:w-8" />
-                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                        <div className="absolute top-0 left-0 right-0 bottom-0">
                            {senses.map(sense => {
                                 const SenseIcon = sense.icon;
                                 return (
-                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
-                                    // This is a simplification, you might need a better way to position them
-                                    sense.id === 'wumpus' && 'items-start justify-start',
-                                    sense.id === 'pit' && 'items-start justify-end',
-                                    sense.id === 'bat' && 'items-end justify-start',
-                                    sense.id === 'static' && 'items-end justify-end',
-                                    sense.id === 'lockdown' && 'items-start justify-center',
-                                    sense.id === 'ghost' && 'items-end justify-center',
-                                    )}>
+                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
                                         <SenseIcon className="h-3 w-3" />
                                     </div>
                                 )
                            })}
                         </div>
                       </>
-                    ) : room.hasWumpus ? (
-                        <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />
-                    ) : room.hasPit ? (
-                        <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />
-                    ) : room.hasBat ? (
-                        <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />
-                    ) : room.hasStatic ? (
-                        <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />
-                    ) : room.hasLockdown ? (
-                        <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />
-                    ) : room.hasGhost ? (
-                        <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />
                     ) : isVisited ? (
                         <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
                     ) : null}
