@@ -158,7 +158,7 @@ export default function AdvancedPracticePage() {
 }, [playerRoomId]);
 
 
-  const checkHazards = useCallback((room: Room, map: Room[]): boolean => {
+  const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
       setGameOver({
         icon: Skull, title: "Neutralizado por Activo Hostil",
@@ -178,7 +178,7 @@ export default function AdvancedPracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
-          onConfirm: () => { setAlertModal(null); handleDroneTransport(map); }
+          onConfirm: () => handleDroneTransport()
       });
       return false;
     }
@@ -191,17 +191,18 @@ export default function AdvancedPracticePage() {
     return false;
   }, []);
 
-  const handleDroneTransport = (currentMap: Room[]) => {
+  const handleDroneTransport = () => {
+    setAlertModal(null);
     let randomRoomId;
     let newRoom;
     do {
-      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
       newRoom = getRoomById(randomRoomId);
     } while (randomRoomId === playerRoomId || !newRoom);
     
     setVisitedRooms(prev => new Set(prev).add(newRoom.id));
     setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom, currentMap);
+    checkHazards(newRoom);
   };
 
   const handleMove = useCallback((newRoomId: number) => {
@@ -226,7 +227,7 @@ export default function AdvancedPracticePage() {
         }
     }
     
-    checkHazards(newRoom, currentMap);
+    checkHazards(newRoom);
   }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
   
   const handleShootClick = () => {
@@ -241,7 +242,7 @@ export default function AdvancedPracticePage() {
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
-    setWumpusStatus('DORMIDO');
+    
   
     if (targetRoom?.hasWumpus) {
       setGameOver({
@@ -253,32 +254,9 @@ export default function AdvancedPracticePage() {
       return;
     }
   
-    if (targetRoom?.hasStatic) {
-      // 1. Update map to remove static icon immediately
-      const mapWithoutStatic = gameMap.map(r =>
-        r.id === targetRoomId ? { ...r, hasStatic: false } : r
-      );
-      setGameMap(mapWithoutStatic);
-  
-      // 2. Show modal with confirmation. Wumpus moves on confirm.
-      setAlertModal({
-        icon: Zap,
-        title: "Interferencia Eliminada",
-        description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
-        buttonText: "Entendido",
-        onConfirm: () => {
-          setAlertModal(null);
-          const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(mapWithoutStatic);
-          if (!wumpusFell) {
-            setGameMap(movedWumpusMap);
-          }
-        },
-      });
-      return;
-    }
-  
     // Wumpus moves if shot is missed
     const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
+    setWumpusStatus('EN MOVIMIENTO');
     if (!wumpusFell) {
       setGameMap(movedMap);
       if (arrowsLeft - 1 === 0 && !gameOver) {

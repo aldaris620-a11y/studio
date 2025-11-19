@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -128,21 +127,26 @@ export default function EasyPracticePage() {
     }
   };
 
-  const handleDroneTransport = (currentMap: Room[]) => {
-    if (!droneEvent) return;
-  
+  const handleDroneTransport = () => {
+    setDroneEvent(false);
     let randomRoomId;
     let newRoom;
     do {
-      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
       newRoom = getRoomById(randomRoomId);
     } while (randomRoomId === playerRoomId || !newRoom);
     
-    setDroneEvent(false);
     setVisitedRooms(prev => new Set(prev).add(newRoom.id));
     setPlayerRoomId(newRoom.id);
-    // You might want to check for hazards in the new room as well.
-    // For now, it just moves the player.
+    // Check for hazards in the new landing spot
+    if (newRoom.hasWumpus) {
+      setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
+    } else if (newRoom.hasPit) {
+      setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
+    } else if (newRoom.hasBat) {
+      // Landed on another bat, trigger again!
+      setDroneEvent(true);
+    }
   };
   
   const handleShootClick = () => {
@@ -362,7 +366,7 @@ export default function EasyPracticePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => handleDroneTransport(gameMap)} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+            <AlertDialogAction onClick={handleDroneTransport} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
               Continuar
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -371,5 +375,3 @@ export default function EasyPracticePage() {
     </>
   );
 }
-
-    

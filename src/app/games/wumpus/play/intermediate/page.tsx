@@ -165,7 +165,7 @@ export default function IntermediatePracticePage() {
     return { newMap: tempMap, wumpusFell: false, moved: true };
 }, [playerRoomId]);
 
-  const checkHazards = useCallback((room: Room, map: Room[]): boolean => {
+  const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
       setGameOver({
         icon: Skull,
@@ -189,9 +189,9 @@ export default function IntermediatePracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
-          onConfirm: () => { setAlertModal(null); handleDroneTransport(map); }
+          onConfirm: () => handleDroneTransport()
       });
-      return false; // El evento de dron no es una derrota inmediata
+      return false;
     }
     if (room.hasLockdown) {
       setLockdownEvent(true);
@@ -202,17 +202,18 @@ export default function IntermediatePracticePage() {
     return false;
   }, []);
 
-  const handleDroneTransport = (currentMap: Room[]) => {
+  const handleDroneTransport = () => {
+    setAlertModal(null);
     let randomRoomId;
     let newRoom;
     do {
-      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
       newRoom = getRoomById(randomRoomId);
     } while (randomRoomId === playerRoomId || !newRoom);
     
     setVisitedRooms(prev => new Set(prev).add(newRoom.id));
     setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom, currentMap);
+    checkHazards(newRoom);
   };
 
   const handleMove = useCallback((newRoomId: number) => {
@@ -238,7 +239,7 @@ export default function IntermediatePracticePage() {
         }
     }
     
-    checkHazards(newRoom, currentMap);
+    checkHazards(newRoom);
 
   }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
   
