@@ -51,11 +51,11 @@ export default function TrainingSelectionPage() {
   }
 
   return (
-    <main className="flex h-full w-full items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
+    <main className="flex min-h-screen w-full items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
       <div className="flex flex-col items-center">
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-wumpus-primary">Protocolo de Entrenamiento</h1>
-            <p className="text-wumpus-foreground/70 mt-2">Selecciona la simulación para afinar tus habilidades de caza.</p>
+            <h1 className="text-2xl font-bold text-wumpus-primary">Protocolo de Entrenamiento</h1>
+            <p className="text-wumpus-foreground/70 mt-1 text-sm">Selecciona la simulación para afinar tus habilidades de caza.</p>
           </div>
 
           <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -68,13 +68,13 @@ export default function TrainingSelectionPage() {
                 )}
                 onClick={() => level.enabled && handleLevelSelect(level.id)}
               >
-                <CardHeader className="flex-row items-center gap-4 space-y-0 pb-2">
+                <CardHeader className="flex-row items-center gap-4 space-y-0 p-3 pb-2">
                   <div className="p-2 bg-wumpus-primary/10 rounded-lg border border-wumpus-primary/20">
                     <level.icon className="h-5 w-5 text-wumpus-primary" />
                   </div>
                   <CardTitle className="text-lg font-headline">{level.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow pt-0">
+                <CardContent className="flex-grow p-3 pt-0">
                   <p className="text-wumpus-foreground/70 text-sm">
                     {level.description}
                   </p>
