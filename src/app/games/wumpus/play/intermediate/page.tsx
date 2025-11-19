@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -96,6 +96,8 @@ type AlertModalReason = {
     onConfirm: () => void;
 } | null;
 
+type WumpusStatus = 'DORMIDO' | 'EN MOVIMIENTO' | 'REUBICADO POR DRON';
+
 export default function IntermediatePracticePage() {
   const [gameMap, setGameMap] = useState<Room[]>([]);
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
@@ -106,7 +108,7 @@ export default function IntermediatePracticePage() {
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(4);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
-  const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
+  const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const router = useRouter();
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
@@ -141,6 +143,7 @@ export default function IntermediatePracticePage() {
     }
 
     if (newWumpusRoom.hasBat) {
+        setWumpusStatus('REUBICADO POR DRON');
         let finalRoomId;
         do {
             finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
@@ -155,6 +158,7 @@ export default function IntermediatePracticePage() {
         }
         tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
     } else {
+        setWumpusStatus('EN MOVIMIENTO');
         tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
     }
 
@@ -196,7 +200,7 @@ export default function IntermediatePracticePage() {
       return false;
     }
     return false;
-  }, [getRoomById]);
+  }, []);
 
   const handleDroneTransport = (currentMap: Room[]) => {
     let randomRoomId;
@@ -217,7 +221,7 @@ export default function IntermediatePracticePage() {
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
-    setWumpusAlert(null);
+    setWumpusStatus('DORMIDO');
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
@@ -226,12 +230,9 @@ export default function IntermediatePracticePage() {
 
     // 25% chance for Wumpus to move
     if (Math.random() < 0.25) {
-        const { newMap, wumpusFell, moved } = moveWumpus(currentMap);
+        const { newMap, wumpusFell } = moveWumpus(currentMap);
         currentMap = newMap;
         setGameMap(newMap);
-        if (moved && !wumpusFell) {
-            setWumpusAlert("¡Temblor detectado! El activo se ha movido.");
-        }
         if (wumpusFell) {
             return;
         }
@@ -252,7 +253,7 @@ export default function IntermediatePracticePage() {
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
-    setWumpusAlert(null);
+    setWumpusStatus('DORMIDO');
 
     if (targetRoom?.hasWumpus) {
       setGameOver({
@@ -262,12 +263,9 @@ export default function IntermediatePracticePage() {
         variant: 'victory',
       });
     } else {
-        const { newMap: movedMap, wumpusFell, moved } = moveWumpus(gameMap);
+        const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
         if (!wumpusFell) {
             setGameMap(movedMap);
-            if (moved) {
-                setWumpusAlert("¡Disparo fallido! El activo se ha reposicionado.");
-            }
             if (arrowsLeft - 1 === 0 && !gameOver) {
                  setGameOver({
                     icon: Skull, title: "Munición Agotada",
@@ -287,7 +285,7 @@ export default function IntermediatePracticePage() {
     setArrowsLeft(4);
     setLockdownEvent(false);
     setAlertModal(null);
-    setWumpusAlert(null);
+    setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
   }, []);
 
@@ -317,9 +315,7 @@ export default function IntermediatePracticePage() {
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
 
-    if (wumpusAlert) {
-        senses_warnings.push({ text: wumpusAlert, icon: AlertTriangle, color: 'text-wumpus-danger', id: 'wumpus-alert' });
-    } else if (!inStatic) {
+    if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId);
             if (connectedRoom) {
@@ -333,7 +329,7 @@ export default function IntermediatePracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
-  }, [playerRoomId, gameMap, getRoomById, lockdownEvent, wumpusAlert]);
+  }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) {
     return null; // O un indicador de carga
@@ -346,7 +342,7 @@ export default function IntermediatePracticePage() {
           <LogOut className="h-6 w-6" />
       </Button>
       
-      <div className="w-full md:w-1/4 max-w-sm">
+      <div className="w-full md:w-1/4 max-w-sm flex flex-col gap-4">
         <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
@@ -373,6 +369,19 @@ export default function IntermediatePracticePage() {
                 <Crosshair className="mr-2 h-4 w-4" />
                 {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
              </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm text-wumpus-danger"><Activity />Estado del Activo 734</CardTitle>
+          </CardHeader>
+          <CardContent>
+             <div className="space-y-1 text-xs font-code min-h-[20px]">
+                <div className={cn("flex items-center gap-2", wumpusStatus !== 'DORMIDO' ? 'text-wumpus-danger' : 'text-wumpus-foreground/70' )}>
+                   <Typewriter text={`ESTADO: ${wumpusStatus}`} />
+                </div>
+             </div>
           </CardContent>
         </Card>
       </div>
