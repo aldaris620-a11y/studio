@@ -55,27 +55,3 @@
 .hover\:bg-wumpus-primary\/90:hover { background-color: hsl(var(--wumpus-primary) / 0.9); }
 
 .ring-wumpus-primary {--tw-ring-color: hsl(var(--wumpus-primary));}
-
-
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: hsl(var(--wumpus-accent)); }
-}
-
-.typing-effect {
-  display: block; /* Prevents inline collapsing and wrapping issues */
-  width: 0;
-  overflow: hidden;
-  border-right: .15em solid hsl(var(--wumpus-accent));
-  white-space: normal; /* Allow text to wrap on multiple lines */
-  animation: 
-    typing 2s steps(40, end) forwards,
-    blink-caret .75s step-end 3 forwards;
-  animation-delay: inherit; /* Inherit delay from parent for sequencing */
-  max-width: 100%;
-}
