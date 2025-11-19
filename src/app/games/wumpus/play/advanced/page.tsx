@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -111,6 +111,48 @@ export default function AdvancedPracticePage() {
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
+  const moveWumpus = useCallback((currentMap: Room[]) => {
+    const wumpusRoom = currentMap.find(r => r.hasWumpus);
+    if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false };
+
+    const wumpusConnections = wumpusRoom.connections;
+    const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
+    
+    let tempMap = currentMap.map(r => r.id === wumpusRoom.id ? { ...r, hasWumpus: false } : r);
+    
+    const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
+
+    if (newWumpusRoom.hasPit) {
+        setGameOver({
+            icon: Trophy, title: "Activo Neutralizado por el Entorno",
+            description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
+        });
+        return { newMap: tempMap, wumpusFell: true };
+    }
+
+    if (newWumpusRoom.hasBat) {
+        let finalRoomId;
+        do {
+            finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
+        } while (finalRoomId === newWumpusRoomId);
+
+        if (finalRoomId === playerRoomId) {
+            setGameOver({
+                icon: Skull, title: "Entrega Mortal",
+                description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat',
+            });
+             return { newMap: tempMap, wumpusFell: true };
+        }
+        
+        tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
+    } else {
+        tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
+    }
+
+    return { newMap: tempMap, wumpusFell: false };
+}, [playerRoomId]);
+
+
   const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
       setGameOver({
@@ -142,7 +184,7 @@ export default function AdvancedPracticePage() {
       return false;
     }
     return false;
-  }, []);
+  }, [moveWumpus]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -177,34 +219,42 @@ export default function AdvancedPracticePage() {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
 
     const targetRoom = getRoomById(targetRoomId);
-    const wumpusRoom = gameMap.find(r => r.hasWumpus)!;
-    
+    setArrowsLeft(prev => prev - 1);
+    setIsShooting(false);
+
     if (targetRoom?.hasWumpus) {
       setGameOver({
         icon: Trophy, title: "Activo Neutralizado",
         description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.", variant: 'victory',
       });
-    } else {
-        // Wumpus moves
-        const wumpusConnections = wumpusRoom.connections;
-        const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
-        
-        const newMap = gameMap.map(r => {
-            if (r.id === wumpusRoom.id) return { ...r, hasWumpus: false };
-            if (r.id === newWumpusRoomId) return { ...r, hasWumpus: true };
-            return r;
-        });
-        setGameMap(newMap);
-        setArrowsLeft(prev => prev - 1);
-        setIsShooting(false);
+      return;
+    } 
+    
+    if (targetRoom?.hasStatic) {
+        const newMap = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
+        const { newMap: movedWumpusMap } = moveWumpus(newMap);
+        setGameMap(movedWumpusMap);
 
+        setAlertModal({
+            icon: Zap, title: "Interferencia Eliminada",
+            description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
+            buttonText: "Entendido",
+            onConfirm: () => { setAlertModal(null); }
+        });
+        return;
+    }
+
+    // Wumpus moves if shot is missed
+    const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
+    if (!wumpusFell) {
+        setGameMap(movedMap);
         setAlertModal({
             icon: Skull, title: "Disparo Fallido: ¡El Activo se Mueve!",
             description: "Has fallado. El activo, alertado, se ha reposicionado. La caza continúa, pero ahora eres la presa.",
             buttonText: "Entendido",
-            onConfirm: () => { 
+            onConfirm: () => {
                 setAlertModal(null);
-                if (arrowsLeft - 1 === 0) {
+                if (arrowsLeft - 1 === 0 && !gameOver) {
                      setGameOver({
                         icon: Skull, title: "Munición Agotada",
                         description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.", variant: 'defeat',
@@ -252,11 +302,23 @@ export default function AdvancedPracticePage() {
     const detectedSenses = new Set();
     let nearGhost = false;
 
-    if (!inStatic) {
+    // Check for ghost in current room or adjacent rooms
+     for (const connectedId of room.connections) {
+        const connectedRoom = getRoomById(connectedId);
+        if (connectedRoom?.hasGhost) {
+            nearGhost = true;
+            break;
+        }
+    }
+    if (room.hasGhost) nearGhost = true;
+
+
+    if (nearGhost) {
+        senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
+    } else if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId);
             if (connectedRoom) {
-                if (connectedRoom.hasGhost) nearGhost = true;
                 if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
                 if (connectedRoom.hasPit && !detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
                 if (connectedRoom.hasBat && !detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
@@ -265,10 +327,6 @@ export default function AdvancedPracticePage() {
                 if (connectedRoom.hasGhost && !detectedSenses.has('ghost')) { senses_warnings.push(senseTypes.ghost); detectedSenses.add('ghost'); }
             }
         }
-    }
-
-    if (nearGhost) {
-        senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
