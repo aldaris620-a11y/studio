@@ -1,10 +1,10 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network, MoveRight, User, Mountain, Wind, Skull } from 'lucide-react';
+import { Network, User, Wind, Skull } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
@@ -47,8 +47,22 @@ export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const router = useRouter();
 
-  const currentRoom = tutorialMap.find(room => room.id === playerRoomId);
-  const connectedRooms = currentRoom?.connections.map(id => tutorialMap.find(room => room.id === id)).filter(Boolean) as Room[] || [];
+  const handleMove = (roomId: number) => {
+    setPlayerRoomId(roomId);
+  };
+  
+  const { currentRoom, connectedRooms } = useMemo(() => {
+    const room = tutorialMap.find(r => r.id === playerRoomId);
+    if (!room) {
+      // This should not happen in the tutorial
+      setPlayerRoomId(1); // Reset to start
+      return { currentRoom: tutorialMap[0], connectedRooms: [] };
+    }
+    const connections = room.connections
+      .map(id => tutorialMap.find(r => r.id === id))
+      .filter((r): r is Room => r !== undefined);
+    return { currentRoom: room, connectedRooms: connections };
+  }, [playerRoomId]);
 
   return (
     <div className="h-full w-full bg-background text-foreground p-4 flex flex-col md:flex-row gap-4">
@@ -69,20 +83,6 @@ export default function TutorialPage() {
              </div>
           </CardContent>
         </Card>
-
-        <Card className="bg-card/50 flex-grow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><MoveRight className="text-primary"/>Moverse</CardTitle>
-            <CardDescription>Selecciona una cueva adyacente para moverte.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            {connectedRooms.map(room => (
-              <Button key={room.id} variant="outline">
-                Ir a la Habitación {room.id}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Columna del Mapa */}
@@ -90,22 +90,38 @@ export default function TutorialPage() {
         <Card className="bg-card/50 h-full">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Network className="text-primary"/>Mapa de la Caverna (Nivel de Entrenamiento)</CardTitle>
+                 <CardDescription>Haz clic en una habitación adyacente resaltada para moverte.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3 text-center">
-                {tutorialMap.map(room => (
-                    <div
-                        key={room.id}
-                        className={cn(
-                            "aspect-square rounded-md flex items-center justify-center p-1 border-2",
-                            playerRoomId === room.id ? "bg-primary/20 border-primary shadow-glow-primary" : "bg-muted/30 border-muted",
-                        )}
-                    >
-                        <div className="flex flex-col items-center">
-                             <span className="font-bold text-sm md:text-base">{room.id}</span>
-                             {playerRoomId === room.id && <User className="h-4 w-4 text-primary" />}
-                        </div>
-                    </div>
-                ))}
+                {tutorialMap.map(room => {
+                    const isPlayerInRoom = playerRoomId === room.id;
+                    const isConnected = connectedRooms.some(connectedRoom => connectedRoom.id === room.id);
+
+                    return (
+                        <button
+                            key={room.id}
+                            onClick={() => isConnected && handleMove(room.id)}
+                            disabled={!isConnected && !isPlayerInRoom}
+                            className={cn(
+                                "aspect-square rounded-md flex items-center justify-center p-1 border-2 transition-colors",
+                                isPlayerInRoom 
+                                    ? "bg-primary/20 border-primary shadow-glow-primary" 
+                                    : "bg-muted/30 border-muted",
+                                isConnected 
+                                    ? "cursor-pointer border-primary/50 hover:bg-primary/10 hover:border-primary" 
+                                    : "cursor-not-allowed",
+                            )}
+                        >
+                            <div className="flex flex-col items-center">
+                                 <span className={cn(
+                                    "font-bold text-sm md:text-base",
+                                    isPlayerInRoom ? "text-primary-foreground" : "text-foreground"
+                                 )}>{room.id}</span>
+                                 {isPlayerInRoom && <User className="h-4 w-4 text-primary" />}
+                            </div>
+                        </button>
+                    );
+                })}
             </CardContent>
         </Card>
       </div>
