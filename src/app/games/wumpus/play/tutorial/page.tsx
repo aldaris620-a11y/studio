@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ const tutorialMapLayout: Room[] = [
   { id: 5, connections: [1, 6, 9], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 6, connections: [2, 5, 7, 10], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 7, connections: [3, 6, 8, 11], hasWumpus: true, hasPit: false, hasBat: false }, // Wumpus is here
-  { id: 8, connections: [4, 7, 12], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 8, connections: [4, 7, 12], hasWumpos: false, hasPit: false, hasBat: false },
   // Row 3
   { id: 9, connections: [5, 10, 13], hasWumpus: false, hasPit: true, hasBat: false },
   { id: 10, connections: [6, 9, 11, 14], hasWumpus: false, hasPit: false, hasBat: false },
@@ -49,6 +49,7 @@ type GameOverReason = {
   icon: React.ElementType;
   title: string;
   description: string;
+  variant: 'victory' | 'defeat';
 } | null;
 
 
@@ -57,6 +58,7 @@ export default function TutorialPage() {
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [droneEvent, setDroneEvent] = useState<Room | null>(null);
+  const [arrowsLeft, setArrowsLeft] = useState<number>(1);
   const router = useRouter();
 
 
@@ -75,12 +77,14 @@ export default function TutorialPage() {
         icon: Skull,
         title: "Neutralizado por Activo Hostil",
         description: "El Activo 734 te ha encontrado. Misión fracasada.",
+        variant: 'defeat',
       });
     } else if (newRoom.hasPit) {
       setGameOver({
         icon: AlertTriangle,
         title: "Peligro Estructural Fatal",
         description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.",
+        variant: 'defeat',
       });
     } else if (newRoom.hasBat) {
       setDroneEvent(newRoom);
@@ -100,14 +104,40 @@ export default function TutorialPage() {
   };
   
   const handleShootClick = () => {
-    if (gameOver) return;
+    if (gameOver || arrowsLeft === 0) return;
     setIsShooting(prev => !prev);
+  };
+
+  const handleShoot = (targetRoomId: number) => {
+    if (!isShooting || arrowsLeft === 0 || gameOver) return;
+
+    const targetRoom = getRoomById(targetRoomId);
+    setArrowsLeft(prev => prev - 1);
+    setIsShooting(false);
+
+    if (targetRoom?.hasWumpus) {
+      setGameOver({
+        icon: Trophy,
+        title: "Activo Neutralizado",
+        description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.",
+        variant: 'victory',
+      });
+    } else {
+      // Since arrows are now 0, this will trigger the loss condition.
+       setGameOver({
+        icon: Skull,
+        title: "Munición Agotada",
+        description: "Has fallado tu disparo. El activo, alertado, te ha localizado. Misión fracasada.",
+        variant: 'defeat',
+      });
+    }
   };
 
   const restartGame = () => {
     setPlayerRoomId(1);
     setGameOver(null);
     setIsShooting(false);
+    setArrowsLeft(1);
   };
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
@@ -164,7 +194,7 @@ export default function TutorialPage() {
             <CardDescription className="text-wumpus-foreground/60">Simulación de Entrenamiento</CardDescription>
           </CardHeader>
           <CardContent>
-             <div className="text-xs font-code min-h-[50px]">
+             <div className="space-y-1 text-xs font-code min-h-[60px]">
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
@@ -176,7 +206,11 @@ export default function TutorialPage() {
                   </p>
                 )}
              </div>
-             <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
+             <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
+                <Crosshair className="h-4 w-4" />
+                <span>Cañón de Pulso: {arrowsLeft}</span>
+            </div>
+             <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
                 <Crosshair className="mr-2 h-4 w-4" />
                 {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
              </Button>
@@ -199,10 +233,7 @@ export default function TutorialPage() {
               onClick={() => {
                 if (!isClickable) return;
                 if (isClickableForMove) handleMove(room.id);
-                if (isClickableForShoot) {
-                  // Lógica de disparo irá aquí
-                  setIsShooting(false);
-                }
+                if (isClickableForShoot) handleShoot(room.id);
               }}
               role="button"
               tabIndex={isClickable ? 0 : -1}
@@ -235,10 +266,20 @@ export default function TutorialPage() {
     
       {/* Modal de Game Over */}
       <AlertDialog open={!!gameOver}>
-        <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-danger shadow-glow-wumpus-primary">
+        <AlertDialogContent className={cn(
+          "bg-wumpus-card text-wumpus-foreground border-wumpus-primary",
+           gameOver?.variant === 'defeat' && "border-wumpus-danger shadow-glow-wumpus-primary",
+           gameOver?.variant === 'victory' && "border-green-500 shadow-glow-wumpus-primary"
+        )}>
           <AlertDialogHeader>
-            {gameOver?.icon && <gameOver.icon className="h-12 w-12 mx-auto text-wumpus-danger" />}
-            <AlertDialogTitle className="text-center text-2xl text-wumpus-danger">{gameOver?.title}</AlertDialogTitle>
+            {gameOver?.icon && <gameOver.icon className={cn("h-12 w-12 mx-auto", {
+                'text-wumpus-danger': gameOver.variant === 'defeat',
+                'text-green-500': gameOver.variant === 'victory',
+            })} />}
+            <AlertDialogTitle className={cn("text-center text-2xl", {
+                'text-wumpus-danger': gameOver.variant === 'defeat',
+                'text-green-500': gameOver.variant === 'victory',
+            })}>{gameOver?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-wumpus-foreground/80">
               {gameOver?.description}
             </AlertDialogDescription>
@@ -250,7 +291,7 @@ export default function TutorialPage() {
             </Button>
             <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
                 <RotateCcw className="mr-2"/>
-                Reiniciar Misión
+                {gameOver?.variant === 'victory' ? 'Jugar de Nuevo' : 'Reiniciar Misión'}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -276,3 +317,5 @@ export default function TutorialPage() {
     </>
   );
 }
+
+    
