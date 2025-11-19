@@ -111,15 +111,16 @@ export default function AdvancedPracticePage() {
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
-  const moveWumpus = useCallback((currentMap: Room[]) => {
+  const moveWumpus = useCallback((currentMap: Room[], alertPlayer = false) => {
     const wumpusRoom = currentMap.find(r => r.hasWumpus);
-    if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false };
+    if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false, moved: false };
 
     const wumpusConnections = wumpusRoom.connections;
+    if (wumpusConnections.length === 0) return { newMap: currentMap, wumpusFell: false, moved: false };
+
     const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
     
     let tempMap = currentMap.map(r => r.id === wumpusRoom.id ? { ...r, hasWumpus: false } : r);
-    
     const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
 
     if (newWumpusRoom.hasPit) {
@@ -127,33 +128,43 @@ export default function AdvancedPracticePage() {
             icon: Trophy, title: "Activo Neutralizado por el Entorno",
             description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
         });
-        return { newMap: tempMap, wumpusFell: true };
+        return { newMap: tempMap, wumpusFell: true, moved: true };
     }
+     if (newWumpusRoom.id === playerRoomId) {
+        setGameOver({
+            icon: Skull, title: "¡Te ha encontrado!",
+            description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat',
+        });
+        return { newMap: tempMap, wumpusFell: true, moved: true };
+    }
+
 
     if (newWumpusRoom.hasBat) {
         let finalRoomId;
         do {
             finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
-        } while (finalRoomId === newWumpusRoomId);
-
-        if (finalRoomId === playerRoomId) {
-            setGameOver({
-                icon: Skull, title: "Entrega Mortal",
-                description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat',
-            });
-             return { newMap: tempMap, wumpusFell: true };
-        }
+        } while (finalRoomId === newWumpusRoomId || finalRoomId === playerRoomId);
         
         tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
     } else {
         tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
     }
+    
+    if (alertPlayer) {
+         setAlertModal({
+            icon: AlertTriangle,
+            title: "¡Temblor Detectado!",
+            description: "Sientes un temblor en la estructura. El activo podría haberse movido.",
+            buttonText: "Entendido",
+            onConfirm: () => setAlertModal(null)
+        });
+    }
 
-    return { newMap: tempMap, wumpusFell: false };
+    return { newMap: tempMap, wumpusFell: false, moved: true };
 }, [playerRoomId]);
 
 
-  const checkHazards = useCallback((room: Room) => {
+  const checkHazards = useCallback((room: Room, map: Room[]): boolean => {
     if (room.hasWumpus) {
       setGameOver({
         icon: Skull, title: "Neutralizado por Activo Hostil",
@@ -173,7 +184,7 @@ export default function AdvancedPracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
-          onConfirm: () => { setAlertModal(null); handleDroneTransport(); }
+          onConfirm: () => { setAlertModal(null); handleDroneTransport(map); }
       });
       return false;
     }
@@ -184,7 +195,20 @@ export default function AdvancedPracticePage() {
       return false;
     }
     return false;
-  }, [moveWumpus]);
+  }, [getRoomById]);
+
+  const handleDroneTransport = (currentMap: Room[]) => {
+    let randomRoomId;
+    let newRoom;
+    do {
+      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      newRoom = getRoomById(randomRoomId);
+    } while (randomRoomId === playerRoomId || !newRoom);
+    
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+    setPlayerRoomId(newRoom.id);
+    checkHazards(newRoom, currentMap);
+  };
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -194,21 +218,22 @@ export default function AdvancedPracticePage() {
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
-    checkHazards(newRoom);
-  }, [gameOver, gameMap.length, getRoomById, checkHazards]);
-  
-  const handleDroneTransport = () => {
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
+
+    let currentMap = gameMap;
+    let wumpusMoved = false;
+
+    // 50% chance for Wumpus to move
+    if (Math.random() < 0.5) {
+        const { newMap, wumpusFell } = moveWumpus(currentMap, true);
+        currentMap = newMap;
+        setGameMap(newMap);
+        if (wumpusFell) {
+            return; // Wumpus fell or game over, no need to check other hazards
+        }
+    }
     
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom);
-  };
+    checkHazards(newRoom, currentMap);
+  }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -232,15 +257,17 @@ export default function AdvancedPracticePage() {
     
     if (targetRoom?.hasStatic) {
         const newMap = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
-        const { newMap: movedWumpusMap } = moveWumpus(newMap);
+        const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(newMap);
         setGameMap(movedWumpusMap);
 
-        setAlertModal({
-            icon: Zap, title: "Interferencia Eliminada",
-            description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
-            buttonText: "Entendido",
-            onConfirm: () => { setAlertModal(null); }
-        });
+        if (!wumpusFell) {
+            setAlertModal({
+                icon: Zap, title: "Interferencia Eliminada",
+                description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
+                buttonText: "Entendido",
+                onConfirm: () => { setAlertModal(null); }
+            });
+        }
         return;
     }
 
@@ -494,5 +521,3 @@ export default function AdvancedPracticePage() {
     </>
   );
 }
-
-    

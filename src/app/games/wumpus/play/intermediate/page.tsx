@@ -89,12 +89,20 @@ type GameOverReason = {
   variant: 'victory' | 'defeat';
 } | null;
 
+type AlertModalReason = {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    buttonText: string;
+    onConfirm: () => void;
+} | null;
+
 export default function IntermediatePracticePage() {
   const [gameMap, setGameMap] = useState<Room[]>([]);
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
-  const [droneEvent, setDroneEvent] = useState<boolean>(false);
+  const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
   const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(4);
@@ -103,23 +111,57 @@ export default function IntermediatePracticePage() {
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
-  const restartGame = useCallback(() => {
-    const newMap = generateMap();
-    setGameMap(newMap);
-    setPlayerRoomId(1);
-    setGameOver(null);
-    setIsShooting(false);
-    setArrowsLeft(4);
-    setDroneEvent(false);
-    setLockdownEvent(false);
-    setVisitedRooms(new Set([1]));
-  }, []);
+  const moveWumpus = useCallback((currentMap: Room[]) => {
+    const wumpusRoom = currentMap.find(r => r.hasWumpus);
+    if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false };
 
-  useEffect(() => {
-    restartGame();
-  }, [restartGame]);
+    const wumpusConnections = wumpusRoom.connections;
+    if (wumpusConnections.length === 0) return { newMap: currentMap, wumpusFell: false };
+    
+    const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
+    
+    let tempMap = currentMap.map(r => r.id === wumpusRoom.id ? { ...r, hasWumpus: false } : r);
+    
+    const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
 
-  const checkHazards = useCallback((room: Room) => {
+    if (newWumpusRoom.hasPit) {
+        setGameOver({
+            icon: Trophy, title: "Activo Neutralizado por el Entorno",
+            description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
+        });
+        return { newMap: tempMap, wumpusFell: true };
+    }
+
+    if (newWumpusRoom.id === playerRoomId) {
+        setGameOver({
+            icon: Skull, title: "¡Te ha encontrado!",
+            description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat',
+        });
+        return { newMap: tempMap, wumpusFell: true };
+    }
+
+    if (newWumpusRoom.hasBat) {
+        let finalRoomId;
+        do {
+            finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
+        } while (finalRoomId === newWumpusRoomId || finalRoomId === playerRoomId);
+
+        if (finalRoomId === playerRoomId) {
+            setGameOver({
+                icon: Skull, title: "Entrega Mortal",
+                description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat',
+            });
+             return { newMap: tempMap, wumpusFell: true };
+        }
+        tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
+    } else {
+        tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
+    }
+
+    return { newMap: tempMap, wumpusFell: false };
+}, [playerRoomId]);
+
+  const checkHazards = useCallback((room: Room, map: Room[]): boolean => {
     if (room.hasWumpus) {
       setGameOver({
         icon: Skull,
@@ -139,7 +181,12 @@ export default function IntermediatePracticePage() {
       return true;
     }
     if (room.hasBat) {
-      setDroneEvent(true);
+      setAlertModal({
+          icon: Shuffle, title: "Dron de Transporte Activado",
+          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
+          buttonText: "Continuar",
+          onConfirm: () => { setAlertModal(null); handleDroneTransport(map); }
+      });
       return false; // El evento de dron no es una derrota inmediata
     }
     if (room.hasLockdown) {
@@ -149,7 +196,20 @@ export default function IntermediatePracticePage() {
       return false;
     }
     return false;
-  }, []);
+  }, [getRoomById]);
+
+  const handleDroneTransport = (currentMap: Room[]) => {
+    let randomRoomId;
+    let newRoom;
+    do {
+      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      newRoom = getRoomById(randomRoomId);
+    } while (randomRoomId === playerRoomId || !newRoom);
+    
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+    setPlayerRoomId(newRoom.id);
+    checkHazards(newRoom, currentMap);
+  };
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -160,24 +220,36 @@ export default function IntermediatePracticePage() {
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
-    checkHazards(newRoom);
-  }, [gameOver, gameMap.length, getRoomById, checkHazards]);
-
-  const handleDroneTransport = () => {
-    if (!droneEvent) return;
-
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
     
-    setDroneEvent(false);
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom);
-  };
+    let currentMap = gameMap;
+    let wumpusMoved = false;
+
+    // 25% chance for Wumpus to move
+    if (Math.random() < 0.25) {
+        const { newMap, wumpusFell } = moveWumpus(currentMap);
+        currentMap = newMap;
+        setGameMap(newMap);
+        if (!wumpusFell) {
+            wumpusMoved = true;
+        } else {
+             // Wumpus fell or game over, no need to check other hazards
+            return;
+        }
+    }
+    
+    const isGameOver = checkHazards(newRoom, currentMap);
+
+    if (!isGameOver && wumpusMoved) {
+        setAlertModal({
+            icon: AlertTriangle,
+            title: "¡Temblor Detectado!",
+            description: "Sientes un temblor en la estructura. El activo podría haberse movido.",
+            buttonText: "Entendido",
+            onConfirm: () => setAlertModal(null)
+        });
+    }
+
+  }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -198,20 +270,48 @@ export default function IntermediatePracticePage() {
         description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.",
         variant: 'victory',
       });
-    } else if (arrowsLeft - 1 === 0) {
-       setGameOver({
-        icon: Skull,
-        title: "Munición Agotada",
-        description: "Has fallado tu último disparo. El activo, alertado, te ha localizado. Misión fracasada.",
-        variant: 'defeat',
-      });
+    } else {
+        const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
+        if (!wumpusFell) {
+            setGameMap(movedMap);
+            setAlertModal({
+                icon: Skull, title: "Disparo Fallido: ¡El Activo se Mueve!",
+                description: "Has fallado. El activo, alertado, se ha reposicionado. La caza continúa, pero ahora eres la presa.",
+                buttonText: "Entendido",
+                onConfirm: () => {
+                    setAlertModal(null);
+                    if (arrowsLeft - 1 === 0 && !gameOver) {
+                        setGameOver({
+                            icon: Skull, title: "Munición Agotada",
+                            description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.", variant: 'defeat',
+                        });
+                    }
+                }
+            });
+        }
     }
   };
 
-  const { currentRoom, connectedRooms, senses, isInStatic } = useMemo(() => {
-    if (gameMap.length === 0) return { currentRoom: null, connectedRooms: [], senses: [], isInStatic: false };
+  const restartGame = useCallback(() => {
+    const newMap = generateMap();
+    setGameMap(newMap);
+    setPlayerRoomId(1);
+    setGameOver(null);
+    setIsShooting(false);
+    setArrowsLeft(4);
+    setLockdownEvent(false);
+    setAlertModal(null);
+    setVisitedRooms(new Set([1]));
+  }, []);
+
+  useEffect(() => {
+    restartGame();
+  }, [restartGame]);
+
+  const { connectedRooms, senses, isInStatic } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false };
     const room = getRoomById(playerRoomId);
-    if (!room) return { currentRoom: getRoomById(1)!, connectedRooms: [], senses: [], isInStatic: false };
+    if (!room) return { connectedRooms: [], senses: [], isInStatic: false };
     
     const inStatic = room.hasStatic;
     let connections = room.connections;
@@ -243,7 +343,7 @@ export default function IntermediatePracticePage() {
         }
     }
 
-    return { currentRoom: room, connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
+    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) {
@@ -372,18 +472,18 @@ export default function IntermediatePracticePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={droneEvent}>
+      <AlertDialog open={!!alertModal}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
-            <Shuffle className="h-12 w-12 mx-auto text-wumpus-accent" />
-            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">Dron de Transporte Activado</AlertDialogTitle>
+            {alertModal?.icon && <alertModal.icon className="h-12 w-12 mx-auto text-wumpus-accent" />}
+            <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!
+              {alertModal?.description}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleDroneTransport} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
-              Continuar
+            <AlertDialogAction onClick={alertModal?.onConfirm} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+              {alertModal?.buttonText}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -408,5 +508,3 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
-
-    
