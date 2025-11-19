@@ -12,19 +12,19 @@ const gameModes = [
     id: 'tutorial',
     title: 'Protocolo de Entrenamiento',
     icon: GraduationCap,
-    description: 'Una simulación segura para nuevos cazadores. Aprende las mecánicas básicas y a interpretar las señales de la cueva sin riesgos.',
+    description: 'Una simulación segura para nuevos cazadores. Aprende las mecánicas básicas y a interpretar las señales.',
   },
   {
     id: 'caceria',
     title: 'Protocolo de Cacería',
     icon: Crosshair,
-    description: 'La caza en su forma más pura. Entra en una caverna generada proceduralmente y da caza a la bestia. Rápido y altamente rejugable.',
+    description: 'La caza en su forma más pura. Entra en una caverna generada proceduralmente y da caza a la bestia.',
   },
   {
     id: 'historia',
     title: 'Investigación Narrativa',
     icon: FileText,
-    description: 'Descubre la verdad tras el Proyecto Wumpus. Sigue una historia a través de una serie de cavernas y desvela sus secretos.',
+    description: 'Descubre la verdad tras el Proyecto Wumpus. Sigue una historia a través de una serie de cavernas.',
   },
 ];
 
@@ -42,10 +42,10 @@ export default function GameModeSelectionPage() {
     <div className="flex h-full w-full flex-col items-center justify-center bg-background text-foreground p-4">
       <div className="text-center my-2 md:my-4">
         <h1 className="text-2xl md:text-4xl font-bold md:tracking-widest text-primary uppercase">Tablero de Misiones</h1>
-        <p className="text-muted-foreground mt-2 text-sm md:text-base">Selecciona tu próximo contrato, cazador.</p>
+        <p className="text-muted-foreground mt-2 text-xs md:text-base">Selecciona tu próximo contrato, cazador.</p>
       </div>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-2">
         {gameModes.map((mode) => (
           <Card 
             key={mode.id}
@@ -56,11 +56,11 @@ export default function GameModeSelectionPage() {
             )}
             onClick={() => handleModeSelect(mode.id as GameModeId)}
           >
-            <CardHeader className="items-center text-center p-4">
-              <div className="p-3 bg-primary/10 rounded-full mb-2 border border-primary/20">
-                <mode.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+            <CardHeader className="items-center text-center p-2">
+              <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+                <mode.icon className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
-              <CardTitle className="text-lg md:text-xl font-headline">{mode.title}</CardTitle>
+              <CardTitle className="text-base md:text-lg font-headline">{mode.title}</CardTitle>
             </CardHeader>
             <CardContent className="text-center flex-grow p-4 pt-0">
               <p className="text-muted-foreground text-xs md:text-sm">
