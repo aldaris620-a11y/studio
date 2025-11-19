@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TypewriterProps {
@@ -19,23 +19,21 @@ export function Typewriter({
 }: TypewriterProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
-  const index = useRef(0);
 
   useEffect(() => {
-    // Reset state when text changes
     setDisplayedText('');
-    index.current = 0;
     setShowCursor(true);
-
+    
     const intervalId = setInterval(() => {
-      if (index.current < text.length) {
-        setDisplayedText((prev) => prev + text.charAt(index.current));
-        index.current += 1;
-      } else {
-        clearInterval(intervalId);
-        // Hide cursor after a delay when typing is done
-        setTimeout(() => setShowCursor(false), 800);
-      }
+      setDisplayedText((prev) => {
+        if (prev.length < text.length) {
+          return text.slice(0, prev.length + 1);
+        } else {
+          clearInterval(intervalId);
+          setTimeout(() => setShowCursor(false), 800);
+          return prev;
+        }
+      });
     }, speed);
 
     return () => {
@@ -46,7 +44,7 @@ export function Typewriter({
   return (
     <span className={cn(className)}>
       {displayedText}
-      {showCursor && (
+      {showCursor && displayedText.length === text.length && (
         <span className={cn('animate-pulse', cursorClassName)}>_</span>
       )}
     </span>
