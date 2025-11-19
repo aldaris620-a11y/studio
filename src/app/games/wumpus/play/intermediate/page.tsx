@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Typewriter } from '@/components/typewriter';
 
 // Definición de la estructura de una habitación
 type Room = {
@@ -265,14 +266,14 @@ export default function IntermediatePracticePage() {
           <CardContent>
              <div className="space-y-1 text-xs font-code min-h-[90px]">
                 {isInStatic ? (
-                  <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> ERROR: Interferencia de sensor.</p>
+                  <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> <Typewriter text="ERROR: Interferencia de sensor." /></p>
                 ) : senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <p>{sense.text}</p>
+                        <Typewriter text={sense.text} />
                     </div>
                 )) : (
-                  <p className="text-wumpus-foreground/70 italic">Sistemas estables. No hay peligros inmediatos.</p>
+                  <p className="text-wumpus-foreground/70 italic"><Typewriter text="Sistemas estables. No hay peligros inmediatos." /></p>
                 )}
              </div>
              <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
@@ -407,5 +408,3 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
-
-    

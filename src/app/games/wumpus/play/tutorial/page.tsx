@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Typewriter } from '@/components/typewriter';
 
 
 // Definición de la estructura de una habitación
@@ -201,11 +202,11 @@ export default function TutorialPage() {
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <p>{sense.text}</p>
+                        <Typewriter text={sense.text} />
                     </div>
                 )) : (
                   <p key="no-senses" className="text-wumpus-foreground/70 italic">
-                    Sistemas estables. No hay peligros inmediatos.
+                    <Typewriter text="Sistemas estables. No hay peligros inmediatos." />
                   </p>
                 )}
              </div>
