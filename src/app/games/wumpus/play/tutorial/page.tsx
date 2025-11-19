@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network, User, Wind, Skull, ArrowLeft } from 'lucide-react';
+import { User, Wind, Skull, ArrowLeft, VenetianMask, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -11,47 +11,39 @@ import { Button } from '@/components/ui/button';
 // Definición de la estructura de una habitación
 type Room = {
   id: number;
-  name: string;
   connections: number[];
   hasWumpus: boolean;
   hasPit: boolean;
   hasBat: boolean;
 };
 
-// Coordenadas para el mapa holográfico (distribución circular)
-const roomCoordinates = [
-  { id: 1, x: 50, y: 10 }, { id: 2, x: 75, y: 15 }, { id: 3, x: 90, y: 30 },
-  { id: 4, x: 90, y: 50 }, { id: 5, x: 75, y: 65 }, { id: 6, x: 50, y: 70 },
-  { id: 7, x: 25, y: 65 }, { id: 8, x: 10, y: 50 }, { id: 9, x: 10, y: 30 },
-  { id: 10, x: 25, y: 15 }, { id: 11, x: 40, y: 25 }, { id: 12, x: 60, y: 25 },
-  { id: 13, x: 70, y: 40 }, { id: 14, x: 60, y: 55 }, { id: 15, x: 40, y: 55 },
-  { id: 16, x: 30, y: 40 }, { id: 17, x: 20, y: 50 }, { id: 18, x: 20, y: 30 },
-  { id: 19, x: 35, y: 20 }, { id: 20, x: 65, y: 20 },
+// Mapa estático para el tutorial con una disposición de 20 habitaciones
+const tutorialMapLayout: Room[] = [
+  { id: 1, connections: [2, 5, 8], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 2, connections: [1, 3, 10], hasWumpus: false, hasPit: false, hasBat: true },
+  { id: 3, connections: [2, 4, 12], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 4, connections: [3, 5, 14], hasWumpus: false, hasPit: false, hasBat: false }, // Wumpus will be here
+  { id: 5, connections: [1, 4, 6], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 6, connections: [5, 7, 15], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 7, connections: [6, 8, 17], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 8, connections: [1, 7, 9], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 9, connections: [8, 10, 18], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 10, connections: [2, 9, 11], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 11, connections: [10, 12, 19], hasWumpus: false, hasPit: false, hasBat: true },
+  { id: 12, connections: [3, 11, 13], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 13, connections: [12, 14, 20], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 14, connections: [4, 13, 15], hasWumpus: true, hasPit: false, hasBat: false },
+  { id: 15, connections: [6, 14, 16], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 16, connections: [15, 17, 20], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 17, connections: [7, 16, 18], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 18, connections: [9, 17, 19], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 19, connections: [11, 18, 20], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 20, connections: [13, 16, 19], hasWumpus: false, hasPit: false, hasBat: false },
 ];
 
-// Mapa estático para el tutorial
-const tutorialMap: Room[] = [
-  { id: 1, name: 'Entrada de la Caverna', connections: [2, 5, 8], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 2, name: 'Encrucijada Húmeda', connections: [1, 3, 10], hasWumpus: false, hasPit: false, hasBat: true },
-  { id: 3, name: 'Cámara del Eco', connections: [2, 4, 12], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 4, name: 'Galería Estrecha', connections: [3, 5, 14], hasWumpus: true, hasPit: false, hasBat: false },
-  { id: 5, name: 'Caverna de Cristales', connections: [1, 4, 6], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 6, name: 'Pozo de Huesos', connections: [5, 7, 15], hasWumpus: false, hasPit: true, hasBat: false },
-  { id: 7, name: 'Sima Ventosa', connections: [6, 8, 17], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 8, name: 'Túnel Desmoronado', connections: [1, 7, 9], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 9, name: 'Guarida Silenciosa', connections: [8, 10, 18], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 10, name: 'Mirador Oscuro', connections: [2, 9, 11], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 11, name: 'Nido de Murciélagos', connections: [10, 12, 19], hasWumpus: false, hasPit: false, hasBat: true },
-  { id: 12, name: 'Cámara Olvidada', connections: [3, 11, 13], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 13, name: 'Fisura Profunda', connections: [12, 14, 20], hasWumpus: false, hasPit: true, hasBat: false },
-  { id: 14, name: 'Guarida del Wumpus', connections: [4, 13, 15], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 15, name: 'Sala del Sacrificio', connections: [6, 14, 16], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 16, name: 'Río Subterráneo', connections: [15, 17, 20], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 17, name: 'Vientos Aulladores', connections: [7, 16, 18], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 18, name: 'Cruce Inestable', connections: [9, 17, 19], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 19, name: 'La Gran Bóveda', connections: [11, 18, 20], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 20, name: 'Abismo Sin Fondo', connections: [13, 16, 19], hasWumpus: false, hasPit: true, hasBat: false },
-];
+// Helper para obtener una habitación por su ID
+const getRoomById = (id: number) => tutorialMapLayout.find(r => r.id === id);
+
 
 export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
@@ -61,121 +53,89 @@ export default function TutorialPage() {
     setPlayerRoomId(roomId);
   };
 
-  const { currentRoom, connectedRooms } = useMemo(() => {
-    const room = tutorialMap.find(r => r.id === playerRoomId);
+  const { currentRoom, connectedRooms, senses } = useMemo(() => {
+    const room = getRoomById(playerRoomId);
     if (!room) {
-      setPlayerRoomId(1); // Reset to start on error
-      return { currentRoom: tutorialMap[0], connectedRooms: tutorialMap[0].connections };
+      // Fallback en caso de error, volver al inicio
+      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [] };
     }
-    return { currentRoom: room, connectedRooms: room.connections };
+    const connections = room.connections;
+    
+    let wumpusNearby = false;
+    let pitNearby = false;
+    let batNearby = false;
+
+    for (const connectedId of connections) {
+        const connectedRoom = getRoomById(connectedId);
+        if (connectedRoom) {
+            if (connectedRoom.hasWumpus) wumpusNearby = true;
+            if (connectedRoom.hasPit) pitNearby = true;
+            if (connectedRoom.hasBat) batNearby = true;
+        }
+    }
+
+    const senses_warnings: { text: string; icon: React.ElementType }[] = [];
+    if (wumpusNearby) senses_warnings.push({ text: 'Huele a algo terrible cerca.', icon: Skull });
+    if (pitNearby) senses_warnings.push({ text: 'Sientes una ligera brisa.', icon: Wind });
+    if (batNearby) senses_warnings.push({ text: 'Oyes un aleteo cercano.', icon: VenetianMask });
+
+    return { currentRoom: room, connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
 
   return (
-    <div className="h-full w-full bg-background text-foreground relative overflow-hidden">
-      {/* HUD de Información */}
-      <div className="absolute top-4 left-4 z-10 w-full max-w-xs">
+    <div className="h-full w-full bg-background text-foreground flex flex-col md:flex-row items-center justify-center gap-8 p-4">
+      {/* Panel de Información */}
+      <div className="w-full md:w-1/4 max-w-sm">
         <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-primary"><User />Estado del Cazador</CardTitle>
             <CardDescription>Protocolo de Entrenamiento</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">Posición: <span className="font-bold text-primary">{currentRoom?.name}</span> (Nodo {currentRoom?.id})</p>
-            <p className="mt-2 text-xs text-muted-foreground">Analizando el entorno...</p>
-             <div className="mt-1 space-y-1 text-xs">
-                {/* Lógica de pistas irá aquí */}
-                <div className="flex items-center gap-2"><Wind className="h-3 w-3"/> Sientes una ligera brisa.</div>
-                <div className="flex items-center gap-2"><Skull className="h-3 w-3" /> Huele a algo terrible cerca.</div>
+            <p className="text-sm">Posición: <span className="font-bold text-primary">Habitación {currentRoom?.id}</span></p>
+            <p className="mt-4 text-xs text-muted-foreground">Analizando el entorno...</p>
+             <div className="mt-2 space-y-2 text-sm">
+                {senses.length > 0 ? senses.map(sense => (
+                    <div key={sense.text} className="flex items-center gap-2">
+                        <sense.icon className="h-4 w-4 text-amber-400"/> {sense.text}
+                    </div>
+                )) : <p className="text-sm text-muted-foreground italic">No hay peligros inmediatos.</p>}
              </div>
           </CardContent>
         </Card>
-        <Button variant="ghost" onClick={() => router.back()} className="mt-2 text-muted-foreground">
+        <Button variant="ghost" onClick={() => router.back()} className="mt-4 text-muted-foreground w-full">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Salir de la Simulación
         </Button>
       </div>
 
-      {/* Mapa Holográfico SVG */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg viewBox="0 0 100 80" className="w-full h-full">
-            {/* Renderizar todas las conexiones en gris */}
-            {tutorialMap.map(room => {
-                const startPos = roomCoordinates.find(c => c.id === room.id);
-                return room.connections.map(connId => {
-                    const endPos = roomCoordinates.find(c => c.id === connId);
-                    if (!startPos || !endPos || startPos.id > endPos.id) return null; // Evita duplicar líneas
+      {/* Mapa de Cuadrícula */}
+      <div className="grid grid-cols-5 gap-1 bg-black/20 p-2 rounded-lg border border-primary/20">
+        {tutorialMapLayout.map(room => {
+          const isPlayerInRoom = playerRoomId === room.id;
+          const isConnected = connectedRooms.includes(room.id);
+          const isClickable = isConnected && !isPlayerInRoom;
 
-                     const isPathActive = (playerRoomId === startPos.id && connectedRooms.includes(endPos.id)) ||
-                                       (playerRoomId === endPos.id && connectedRooms.includes(startPos.id));
-                    
-                    return (
-                       <line 
-                          key={`${room.id}-${connId}`}
-                          x1={startPos.x} y1={startPos.y}
-                          x2={endPos.x} y2={endPos.y}
-                          className={cn(
-                            "stroke-muted/30 transition-all duration-300",
-                            isPathActive && "stroke-primary/80"
-                          )}
-                          strokeWidth="0.2"
-                        />
-                    )
-                })
-            })}
-
-            {/* Renderizar Nodos (Habitaciones) */}
-            {roomCoordinates.map(coord => {
-              const isPlayerInRoom = playerRoomId === coord.id;
-              const isConnected = connectedRooms.includes(coord.id);
-              const isClickable = isConnected && !isPlayerInRoom;
-
-              return (
-                <g key={coord.id}>
-                    {/* Anillo exterior para la habitación actual */}
-                    {isPlayerInRoom && (
-                         <circle
-                            cx={coord.x}
-                            cy={coord.y}
-                            r="3"
-                            className="fill-none stroke-primary/80"
-                            strokeWidth="0.3"
-                          >
-                            <animate
-                                attributeName="stroke-width"
-                                values="0.3;0.6;0.3"
-                                dur="2s"
-                                repeatCount="indefinite"
-                            />
-                         </circle>
-                    )}
-                    <circle
-                      onClick={() => isClickable && handleMove(coord.id)}
-                      cx={coord.x}
-                      cy={coord.y}
-                      r={isPlayerInRoom ? "2" : "1.5"}
-                      className={cn(
-                        "fill-muted/50 stroke-primary/50 transition-all duration-300",
-                        isPlayerInRoom ? "fill-primary/70 stroke-primary" : "stroke-muted",
-                        isClickable ? "cursor-pointer pointer-events-auto fill-primary/30 hover:fill-primary" : "",
-                      )}
-                      strokeWidth="0.2"
-                    >
-                     {isClickable && (
-                        <animate
-                            attributeName="r"
-                            values="1.5;2;1.5"
-                            dur="1.5s"
-                            repeatCount="indefinite"
-                         />
-                     )}
-                    </circle>
-                     <text x={coord.x} y={coord.y + 0.5} textAnchor="middle" dy="0.1em" className="fill-foreground text-[1px] font-sans pointer-events-none">
-                        {coord.id}
-                    </text>
-                </g>
-              );
-            })}
-          </svg>
+          return (
+            <div
+              key={room.id}
+              onClick={() => isClickable && handleMove(room.id)}
+              className={cn(
+                'relative flex items-center justify-center w-20 h-20 border border-primary/30 text-primary',
+                'transition-all duration-200',
+                isPlayerInRoom && 'bg-primary/30 ring-2 ring-primary',
+                isClickable && 'bg-primary/10 hover:bg-primary/20 cursor-pointer',
+                !isClickable && 'bg-background/80'
+              )}
+            >
+              <span className="absolute top-1 left-1 text-xs font-bold">{room.id}</span>
+              {isPlayerInRoom && <User className="h-8 w-8" />}
+              {room.hasWumpus && <Skull className="h-8 w-8 text-destructive" />}
+              {room.hasPit && <Circle className="h-8 w-8 text-blue-500 fill-current" />}
+              {room.hasBat && <VenetianMask className="h-8 w-8 text-purple-400" />}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
