@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -29,9 +28,9 @@ export default function NarrativeStartPage() {
             &gt; OBJETIVOS DE LA MISIÓN: ACTIVO 734
           </h1>
           <div className="mt-6 border-t border-wumpus-accent/20 pt-6 space-y-4 text-base text-wumpus-foreground/80">
-            <p className="typing-effect"><span className="text-wumpus-accent">PARA:</span> EXTRACTOR_7</p>
-            <p className="typing-effect" style={{animationDelay: '1s'}}><span className="text-wumpus-accent">DE:</span> AETHELRED INDUSTRIES - DIVISIÓN DE CONTENCIÓN</p>
-            <p className="typing-effect" style={{animationDelay: '2s'}}><span className="text-wumpus-accent">ASUNTO:</span> Operación de Neutralización Urgente</p>
+            <p><span className="text-wumpus-accent">PARA:</span> <span className="typing-effect" style={{animationDelay: '0s'}}>EXTRACTOR_7</span></p>
+            <p><span className="text-wumpus-accent">DE:</span> <span className="typing-effect" style={{animationDelay: '1s'}}>AETHELRED INDUSTRIES - DIVISIÓN DE CONTENCIÓN</span></p>
+            <p><span className="text-wumpus-accent">ASUNTO:</span> <span className="typing-effect" style={{animationDelay: '2s'}}>Operación de Neutralización Urgente</span></p>
             <p className="typing-effect mt-4" style={{animationDelay: '3s'}}>
               Se ha detectado una brecha de contención. El Activo 734, un arma biológica clase Tiamat, se ha liberado en los túneles de mantenimiento del Sector Gamma-9 de Neo-Arcadia.
             </p>
