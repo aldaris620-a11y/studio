@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -96,12 +95,19 @@ export default function TutorialPage() {
           <CardContent>
             <p className="text-sm">Posición: <span className="font-bold text-primary">Habitación {currentRoom?.id}</span></p>
             <p className="mt-4 text-xs text-muted-foreground">Analizando el entorno...</p>
-             <div className="mt-2 space-y-2 text-sm">
+             <div className="mt-2 space-y-2 text-sm font-code">
                 {senses.length > 0 ? senses.map((sense, index) => (
-                    <div key={sense.text} className={cn("flex items-center gap-2 animate-text-in", sense.color)} style={{ animationDelay: `${index * 150}ms` }}>
-                        <sense.icon className="h-4 w-4"/> {sense.text}
+                    <div key={sense.text} className={cn("flex items-center gap-2", sense.color)}>
+                        <sense.icon className="h-4 w-4 flex-shrink-0"/>
+                        <div className="typing-effect overflow-hidden whitespace-nowrap border-r-2 border-r-transparent" style={{ animation: `typing 2s steps(${sense.text.length}, end) forwards, blink-caret .75s step-end infinite` }}>
+                          {sense.text}
+                        </div>
                     </div>
-                )) : <p className="text-sm text-muted-foreground italic animate-text-in">No hay peligros inmediatos.</p>}
+                )) : (
+                  <div className="typing-effect overflow-hidden whitespace-nowrap border-r-2 border-r-transparent text-muted-foreground italic" style={{ animation: `typing 2s steps(28, end) forwards, blink-caret .75s step-end infinite` }}>
+                    No hay peligros inmediatos.
+                  </div>
+                )}
              </div>
           </CardContent>
         </Card>
