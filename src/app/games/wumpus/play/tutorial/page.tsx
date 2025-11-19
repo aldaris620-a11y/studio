@@ -47,10 +47,16 @@ const getRoomById = (id: number) => tutorialMapLayout.find(r => r.id === id);
 
 export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
+  const [isShooting, setIsShooting] = useState<boolean>(false);
   const router = useRouter();
 
   const handleMove = (roomId: number) => {
     setPlayerRoomId(roomId);
+    setIsShooting(false); // Salir del modo de disparo al moverse
+  };
+
+  const handleShootClick = () => {
+    setIsShooting(true);
   };
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
@@ -121,7 +127,7 @@ export default function TutorialPage() {
                   </p>
                 )}
              </div>
-             <Button className="w-full mt-4" variant="outline">
+             <Button className="w-full mt-4" variant="outline" onClick={handleShootClick}>
                 <Crosshair className="mr-2 h-4 w-4" />
                 Disparar
              </Button>
@@ -134,21 +140,26 @@ export default function TutorialPage() {
         {tutorialMapLayout.map(room => {
           const isPlayerInRoom = playerRoomId === room.id;
           const isConnected = connectedRooms.includes(room.id);
-          const isClickable = isConnected && !isPlayerInRoom;
+          const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
+          const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
+
 
           return (
             <div
               key={room.id}
-              onClick={() => isClickable && handleMove(room.id)}
+              onClick={() => {
+                if (isClickableForMove) handleMove(room.id);
+                // Lógica de disparo irá aquí
+              }}
               role="button"
-              tabIndex={isClickable ? 0 : -1}
-              onKeyDown={(e) => isClickable && (e.key === 'Enter' || e.key === ' ') && handleMove(room.id)}
+              tabIndex={isClickableForMove || isClickableForShoot ? 0 : -1}
               className={cn(
                 'relative flex items-center justify-center w-20 h-20 border border-primary/30 text-primary',
                 'transition-all duration-200',
                 isPlayerInRoom && 'bg-primary/30 ring-2 ring-primary',
-                isClickable && 'bg-primary/10 hover:bg-primary/20 cursor-pointer',
-                !isClickable && !isPlayerInRoom && 'bg-background/80'
+                isClickableForMove && 'bg-primary/10 hover:bg-primary/20 cursor-pointer',
+                isClickableForShoot && 'bg-destructive/50 hover:bg-destructive/40 cursor-crosshair',
+                !isClickableForMove && !isClickableForShoot && !isPlayerInRoom && 'bg-background/80'
               )}
             >
               <div className="flex flex-col items-center justify-center">
@@ -177,5 +188,3 @@ export default function TutorialPage() {
     </div>
   );
 }
-
-    
