@@ -15,18 +15,21 @@ const gameModes = [
     title: 'Protocolo de Entrenamiento',
     icon: GraduationCap,
     description: 'Una simulación segura para nuevos cazadores. Aprende las mecánicas básicas y a interpretar las señales.',
+    enabled: true,
   },
   {
     id: 'caceria',
     title: 'Protocolo de Cacería',
     icon: Crosshair,
     description: 'La caza en su forma más pura. Entra en una caverna generada proceduralmente y da caza a la bestia.',
+    enabled: false,
   },
   {
     id: 'historia',
     title: 'Investigación Narrativa',
     icon: FileText,
     description: 'Descubre la verdad tras el Proyecto Wumpus. Sigue una historia a través de una serie de cavernas.',
+    enabled: true,
   },
 ];
 
@@ -36,23 +39,29 @@ export default function GameModeSelectionPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<GameModeId | null>(null);
   
-  const handleModeSelect = (modeId: GameModeId) => {
-    setIsLoading(modeId);
-    if (modeId === 'tutorial') {
+  const handleModeSelect = (mode: (typeof gameModes)[number]) => {
+    if (!mode.enabled) return;
+
+    setIsLoading(mode.id as GameModeId);
+    
+    if (mode.id === 'tutorial') {
       router.push('/games/wumpus/play/training');
+    } else if (mode.id === 'historia') {
+      router.push('/games/wumpus/play/narrative');
     } else {
       // TODO: Navigate to the actual game screen for the selected mode
-      console.log(`Modo seleccionado: ${modeId}`);
+      console.log(`Modo seleccionado: ${mode.id}`);
       setTimeout(() => setIsLoading(null), 1000); // For now, just reset loading state
     }
   }
 
   if (isLoading) {
-    return <AnimatedLoading text={`Cargando ${isLoading}...`} />;
+    const loadingText = gameModes.find(m => m.id === isLoading)?.title || 'Cargando';
+    return <AnimatedLoading text={`Cargando ${loadingText}...`} />;
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
+    <main className="flex min-h-screen w-full items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
       <div className="flex flex-col items-center">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold md:tracking-widest text-wumpus-primary uppercase">Tablero de Misiones</h1>
@@ -64,15 +73,16 @@ export default function GameModeSelectionPage() {
             <Card 
               key={mode.id}
               className={cn(
-                  "bg-wumpus-card/80 border-wumpus-primary/20 flex flex-col cursor-pointer text-wumpus-foreground",
-                  "transition-all duration-300 ease-in-out",
-                  "hover:scale-105 hover:shadow-glow-wumpus-primary hover:border-wumpus-primary"
+                  "bg-wumpus-card/80 border-wumpus-primary/20 flex flex-col text-wumpus-foreground",
+                  mode.enabled 
+                    ? "cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-glow-wumpus-primary hover:border-wumpus-primary" 
+                    : "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => handleModeSelect(mode.id as GameModeId)}
+              onClick={() => handleModeSelect(mode)}
             >
               <CardHeader className="items-center text-center p-4">
                 <div className="p-3 bg-wumpus-primary/10 rounded-full border border-wumpus-primary/20">
-                  <mode.icon className="h-10 w-10 text-wumpus-primary" />
+                  <mode.icon className={cn("h-10 w-10", mode.enabled ? "text-wumpus-primary" : "text-wumpus-foreground/50")} />
                 </div>
                 <CardTitle className="text-xl font-headline mt-2">{mode.title}</CardTitle>
               </CardHeader>
@@ -90,6 +100,6 @@ export default function GameModeSelectionPage() {
           Volver al Menú Principal
         </Button>
       </div>
-    </div>
+    </main>
   );
 }
