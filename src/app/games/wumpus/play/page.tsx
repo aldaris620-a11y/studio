@@ -62,7 +62,9 @@ export default function GameModeSelectionPage() {
               onClick={() => handleModeSelect(mode.id as GameModeId)}
             >
               <mode.icon className="h-6 w-6 mr-4 flex-shrink-0 text-primary" />
-              <span className="text-lg font-semibold flex-shrink">{mode.title}</span>
+              <div className="flex-1">
+                <span className="text-lg font-semibold">{mode.title}</span>
+              </div>
             </Button>
           ))}
             <Button variant="ghost" onClick={() => router.back()} className="mt-6 self-start">
