@@ -418,7 +418,7 @@ export default function AdvancedPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost;
+            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost || room.hasWumpus;
 
             return (
                 <div
@@ -451,7 +451,7 @@ export default function AdvancedPracticePage() {
                         {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
                         {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
                         {room.hasGhost && <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />}
-                        {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
+                        {isVisited && !hasVisibleHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
                     </>
                     )}
                 </div>
