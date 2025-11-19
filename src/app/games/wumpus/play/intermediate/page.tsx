@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -115,7 +116,7 @@ export default function IntermediatePracticePage() {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
-  const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
+  const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
 
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
@@ -216,16 +217,21 @@ export default function IntermediatePracticePage() {
   }, []);
 
   const handleDroneTransport = () => {
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
-    
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom);
+    setGameMap(currentMap => {
+        let randomRoomId;
+        let newRoom;
+        do {
+            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+            newRoom = getRoomById(randomRoomId, currentMap);
+        } while (randomRoomId === playerRoomId || !newRoom);
+
+        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+        setPlayerRoomId(newRoom.id);
+        
+        setTimeout(() => checkHazards(newRoom!), 0);
+        
+        return currentMap;
+    });
   };
 
   const handleMove = useCallback((newRoomId: number) => {
@@ -235,7 +241,7 @@ export default function IntermediatePracticePage() {
       setIsGameStarted(true);
     }
 
-    const newRoom = getRoomById(newRoomId);
+    const newRoom = getRoomById(newRoomId, gameMap);
     if (!newRoom) return;
 
     setWumpusStatus('DORMIDO');
@@ -247,9 +253,7 @@ export default function IntermediatePracticePage() {
         setPendingAction('moveWumpus');
     }
     
-    if (!checkHazards(newRoom)) {
-      // no hazards found
-    }
+    checkHazards(newRoom);
 
   }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted]);
   
@@ -261,7 +265,7 @@ export default function IntermediatePracticePage() {
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
 
-    const targetRoom = getRoomById(targetRoomId);
+    const targetRoom = getRoomById(targetRoomId, gameMap);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
 
@@ -295,6 +299,7 @@ export default function IntermediatePracticePage() {
     setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
     setIsGameStarted(false);
+    setPendingAction(null);
   }, []);
 
   useEffect(() => {
@@ -303,7 +308,7 @@ export default function IntermediatePracticePage() {
 
   const { connectedRooms, senses, isInStatic } = useMemo(() => {
     if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false };
-    const room = getRoomById(playerRoomId);
+    const room = getRoomById(playerRoomId, gameMap);
     if (!room) return { connectedRooms: [], senses: [], isInStatic: false };
     
     const inStatic = room.hasStatic;
@@ -325,7 +330,7 @@ export default function IntermediatePracticePage() {
     
     if (!inStatic) {
         for (const connectedId of room.connections) {
-            const connectedRoom = getRoomById(connectedId);
+            const connectedRoom = getRoomById(connectedId, gameMap);
             if (connectedRoom) {
                 if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
                 if (connectedRoom.hasPit && !detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
@@ -404,7 +409,7 @@ export default function IntermediatePracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasWumpus;
+            const isHazard = room.hasWumpus || room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
 
             return (
                 <div
@@ -432,12 +437,12 @@ export default function IntermediatePracticePage() {
                     
                     {!isPlayerInRoom && (
                     <>
-                        {room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
-                        {room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
-                        {room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
-                        {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
-                        {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
-                        {isVisited && !hasVisibleHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
+                        {isPlayerInRoom && room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
+                        {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
+                        {isPlayerInRoom && room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
+                        {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
+                        {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
+                        {isVisited && !isHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
                     </>
                     )}
                 </div>

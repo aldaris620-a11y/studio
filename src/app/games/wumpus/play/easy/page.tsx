@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -94,68 +94,73 @@ export default function EasyPracticePage() {
   const router = useRouter();
 
 
+  const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
+  
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
       handleDroneTransport();
       setPendingAction(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAction]);
 
-  const getRoomById = (id: number) => gameMap.find(r => r.id === id);
-
-
-  const handleMove = (newRoomId: number) => {
-    if (gameOver || gameMap.length === 0) return;
-
-    const newRoom = getRoomById(newRoomId);
-    if (!newRoom) return;
-
-    setVisitedRooms(prev => new Set(prev).add(newRoomId));
-    setPlayerRoomId(newRoom.id);
-    setIsShooting(false);
-
-    // Check for hazards in the new room
-    if (newRoom.hasWumpus) {
+  const checkHazards = useCallback((room: Room) => {
+    if (room.hasWumpus) {
       setGameOver({
         icon: Skull,
         title: "Neutralizado por Activo Hostil",
         description: "El Activo 734 te ha encontrado. Misión fracasada.",
         variant: 'defeat',
       });
-    } else if (newRoom.hasPit) {
+      return true;
+    }
+    if (room.hasPit) {
       setGameOver({
         icon: AlertTriangle,
         title: "Peligro Estructural Fatal",
         description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.",
         variant: 'defeat',
       });
-    } else if (newRoom.hasBat) {
-      setDroneEvent(true);
+      return true;
     }
-  };
+    if (room.hasBat) {
+      setDroneEvent(true);
+      return false; // Not a game over, but triggers an event
+    }
+    return false;
+  }, []);
 
   const handleDroneTransport = () => {
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
-    
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
+    setGameMap(currentMap => {
+        let randomRoomId;
+        let newRoom;
+        do {
+            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+            newRoom = getRoomById(randomRoomId, currentMap);
+        } while (randomRoomId === playerRoomId || !newRoom);
 
-    // Check for hazards in the new landing spot
-    if (newRoom.hasWumpus) {
-      setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
-    } else if (newRoom.hasPit) {
-      setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
-    } else if (newRoom.hasBat) {
-      // Landed on another bat, trigger again!
-      setDroneEvent(true);
-    }
+        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+        setPlayerRoomId(newRoom.id);
+        
+        // This needs to be called after the state updates have been queued
+        setTimeout(() => checkHazards(newRoom!), 0);
+        
+        return currentMap;
+    });
   };
+
+  const handleMove = useCallback((newRoomId: number) => {
+    if (gameOver) return;
+
+    const newRoom = getRoomById(newRoomId, gameMap);
+    if (!newRoom) return;
+
+    setVisitedRooms(prev => new Set(prev).add(newRoomId));
+    setPlayerRoomId(newRoom.id);
+    setIsShooting(false);
+
+    checkHazards(newRoom);
+  }, [gameOver, getRoomById, gameMap, checkHazards]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -165,7 +170,7 @@ export default function EasyPracticePage() {
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
 
-    const targetRoom = getRoomById(targetRoomId);
+    const targetRoom = getRoomById(targetRoomId, gameMap);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
 
@@ -186,7 +191,7 @@ export default function EasyPracticePage() {
     }
   };
 
-  const restartGame = () => {
+  const restartGame = useCallback(() => {
     setGameMap(generateMap());
     setPlayerRoomId(1);
     setGameOver(null);
@@ -194,19 +199,18 @@ export default function EasyPracticePage() {
     setArrowsLeft(3);
     setVisitedRooms(new Set([1]));
     setDroneEvent(false);
-  };
+    setPendingAction(null);
+  }, []);
   
   useEffect(() => {
     restartGame();
-  }, []);
+  }, [restartGame]);
 
   const { connectedRooms, senses } = useMemo(() => {
-    if (gameMap.length === 0) return { currentRoom: null, connectedRooms: [], senses: [] };
-    const room = getRoomById(playerRoomId);
-    if (!room) {
-      // Fallback
-      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [] };
-    }
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [] };
+    const room = getRoomById(playerRoomId, gameMap);
+    if (!room) return { connectedRooms: [], senses: [] };
+    
     const connections = room.connections;
     
     const senseTypes = {
@@ -219,7 +223,7 @@ export default function EasyPracticePage() {
     const detectedSenses = new Set();
 
     for (const connectedId of connections) {
-        const connectedRoom = getRoomById(connectedId);
+        const connectedRoom = getRoomById(connectedId, gameMap);
         if (connectedRoom) {
             if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) {
                 senses_warnings.push(senseTypes.wumpus);
@@ -237,8 +241,7 @@ export default function EasyPracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerRoomId, gameMap]);
+  }, [playerRoomId, gameMap, getRoomById]);
 
   if (gameMap.length === 0) {
     return null; // Or a loading indicator
@@ -295,7 +298,7 @@ export default function EasyPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
             
-            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasWumpus;
+            const isHazard = room.hasWumpus || room.hasPit || room.hasBat;
 
             return (
                 <div
@@ -322,10 +325,10 @@ export default function EasyPracticePage() {
                     
                     {!isPlayerInRoom && (
                     <>
-                        {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                        {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                        {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                        {isVisited && !hasVisibleHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                        {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                        {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                        {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                        {isVisited && !isHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                     </>
                     )}
                 </div>
@@ -395,5 +398,3 @@ export default function EasyPracticePage() {
     </>
   );
 }
-
-    

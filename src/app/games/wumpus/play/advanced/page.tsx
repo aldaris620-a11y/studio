@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -115,7 +116,7 @@ export default function AdvancedPracticePage() {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
-  const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
+  const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
 
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
@@ -214,16 +215,21 @@ export default function AdvancedPracticePage() {
   }, []);
 
   const handleDroneTransport = () => {
-    let randomRoomId;
-    let newRoom;
-    do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-      newRoom = getRoomById(randomRoomId);
-    } while (randomRoomId === playerRoomId || !newRoom);
-    
-    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-    setPlayerRoomId(newRoom.id);
-    checkHazards(newRoom);
+    setGameMap(currentMap => {
+        let randomRoomId;
+        let newRoom;
+        do {
+            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+            newRoom = getRoomById(randomRoomId, currentMap);
+        } while (randomRoomId === playerRoomId || !newRoom);
+
+        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+        setPlayerRoomId(newRoom.id);
+        
+        setTimeout(() => checkHazards(newRoom!), 0);
+        
+        return currentMap;
+    });
   };
 
   const handleMove = useCallback((newRoomId: number) => {
@@ -233,7 +239,7 @@ export default function AdvancedPracticePage() {
         setIsGameStarted(true);
     }
 
-    const newRoom = getRoomById(newRoomId);
+    const newRoom = getRoomById(newRoomId, gameMap);
     if (!newRoom) return;
 
     setWumpusStatus('DORMIDO');
@@ -245,9 +251,7 @@ export default function AdvancedPracticePage() {
         setPendingAction('moveWumpus');
     }
     
-    if (!checkHazards(newRoom)) {
-        // no hazards
-    }
+    checkHazards(newRoom);
   }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted]);
   
   const handleShootClick = () => {
@@ -262,7 +266,7 @@ export default function AdvancedPracticePage() {
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
     
-    const targetRoom = getRoomById(targetRoomId);
+    const targetRoom = getRoomById(targetRoomId, gameMap);
 
     if (targetRoom?.hasWumpus) {
       setGameOver({
@@ -297,6 +301,7 @@ export default function AdvancedPracticePage() {
     setVisitedRooms(new Set([1]));
     setAlertModal(null);
     setIsGameStarted(false);
+    setPendingAction(null);
   }, []);
 
   useEffect(() => {
@@ -305,7 +310,7 @@ export default function AdvancedPracticePage() {
 
   const { connectedRooms, senses, isInStatic, isNearGhost } = useMemo(() => {
     if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
-    const room = getRoomById(playerRoomId);
+    const room = getRoomById(playerRoomId, gameMap);
     if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
     
     const inStatic = room.hasStatic;
@@ -327,7 +332,7 @@ export default function AdvancedPracticePage() {
 
     // Check for ghost in current room or adjacent rooms
      for (const connectedId of room.connections) {
-        const connectedRoom = getRoomById(connectedId);
+        const connectedRoom = getRoomById(connectedId, gameMap);
         if (connectedRoom?.hasGhost) {
             nearGhost = true;
             break;
@@ -339,7 +344,7 @@ export default function AdvancedPracticePage() {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
-            const connectedRoom = getRoomById(connectedId);
+            const connectedRoom = getRoomById(connectedId, gameMap);
             if (connectedRoom) {
                 if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
                 if (connectedRoom.hasPit && !detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
@@ -418,7 +423,7 @@ export default function AdvancedPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost || room.hasWumpus;
+            const isHazard = room.hasWumpus || room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost;
 
             return (
                 <div
@@ -445,13 +450,13 @@ export default function AdvancedPracticePage() {
                     {isPlayerInRoom && <UserCog className="h-6 w-6 md:h-8 md:h-8" />}
                     {!isPlayerInRoom && (
                     <>
-                        {room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
-                        {room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
-                        {room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
-                        {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
-                        {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
-                        {room.hasGhost && <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />}
-                        {isVisited && !hasVisibleHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
+                        {isPlayerInRoom && room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
+                        {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
+                        {isPlayerInRoom && room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
+                        {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
+                        {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
+                        {isPlayerInRoom && room.hasGhost && <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />}
+                        {isVisited && !isHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
                     </>
                     )}
                 </div>
