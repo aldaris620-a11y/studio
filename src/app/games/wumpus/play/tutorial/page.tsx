@@ -63,23 +63,32 @@ export default function TutorialPage() {
     }
     const connections = room.connections;
     
-    let wumpusNearby = false;
-    let pitNearby = false;
-    let batNearby = false;
+    const senseTypes = {
+        wumpus: { text: 'Huele a algo terrible cerca.', icon: Skull, color: 'text-red-400', id: 'wumpus' },
+        pit: { text: 'Sientes una ligera brisa.', icon: Wind, color: 'text-blue-400', id: 'pit' },
+        bat: { text: 'Oyes un aleteo cercano.', icon: VenetianMask, color: 'text-purple-400', id: 'bat' }
+    };
+
+    const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
+    const detectedSenses = new Set();
 
     for (const connectedId of connections) {
         const connectedRoom = getRoomById(connectedId);
         if (connectedRoom) {
-            if (connectedRoom.hasWumpus) wumpusNearby = true;
-            if (connectedRoom.hasPit) pitNearby = true;
-            if (connectedRoom.hasBat) batNearby = true;
+            if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) {
+                senses_warnings.push(senseTypes.wumpus);
+                detectedSenses.add('wumpus');
+            }
+            if (connectedRoom.hasPit && !detectedSenses.has('pit')) {
+                senses_warnings.push(senseTypes.pit);
+                detectedSenses.add('pit');
+            }
+            if (connectedRoom.hasBat && !detectedSenses.has('bat')) {
+                senses_warnings.push(senseTypes.bat);
+                detectedSenses.add('bat');
+            }
         }
     }
-
-    const senses_warnings: { text: string; icon: React.ElementType; color: string }[] = [];
-    if (wumpusNearby) senses_warnings.push({ text: 'Huele a algo terrible cerca.', icon: Skull, color: 'text-red-400' });
-    if (pitNearby) senses_warnings.push({ text: 'Sientes una ligera brisa.', icon: Wind, color: 'text-blue-400' });
-    if (batNearby) senses_warnings.push({ text: 'Oyes un aleteo cercano.', icon: VenetianMask, color: 'text-purple-400' });
 
     return { currentRoom: room, connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
@@ -94,7 +103,6 @@ export default function TutorialPage() {
             <CardDescription>Tutorial Guiado</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">Posición: <span className="font-bold text-primary">Habitación {currentRoom?.id}</span></p>
             <p className="mt-4 text-xs text-muted-foreground">Analizando el entorno...</p>
              <div className="mt-2 space-y-2 text-sm font-code">
                 {senses.length > 0 ? senses.map((sense, index) => (
@@ -138,9 +146,21 @@ export default function TutorialPage() {
                 !isClickable && !isPlayerInRoom && 'bg-background/80'
               )}
             >
-              <span className="absolute top-1 left-1 text-xs font-bold">{room.id}</span>
               <div className="flex flex-col items-center justify-center">
-                 {isPlayerInRoom && <User className="h-8 w-8" />}
+                 {isPlayerInRoom && (
+                    <>
+                        <User className="h-8 w-8" />
+                        <div className="absolute top-1 left-1 flex gap-1">
+                            {senses.find(s => s.id === 'wumpus') && <Skull className="h-3 w-3 text-red-400" />}
+                        </div>
+                        <div className="absolute top-1 right-1 flex gap-1">
+                            {senses.find(s => s.id === 'pit') && <Wind className="h-3 w-3 text-blue-400" />}
+                        </div>
+                        <div className="absolute bottom-1 left-1 flex gap-1">
+                            {senses.find(s => s.id === 'bat') && <VenetianMask className="h-3 w-3 text-purple-400" />}
+                        </div>
+                    </>
+                 )}
                  {room.hasWumpus && <Skull className="h-8 w-8 text-destructive" />}
                  {room.hasPit && <Circle className="h-8 w-8 text-blue-500 fill-current" />}
                  {room.hasBat && <VenetianMask className="h-8 w-8 text-purple-400" />}
