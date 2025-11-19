@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Wind, Skull, ArrowLeft, VenetianMask, Circle } from 'lucide-react';
+import { User, Wind, Skull, VenetianMask, Circle, Crosshair, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -94,7 +94,12 @@ export default function TutorialPage() {
   }, [playerRoomId]);
 
   return (
-    <div className="h-full w-full bg-background text-foreground flex flex-col md:flex-row items-center justify-center gap-8 p-4">
+    <div className="h-full w-full bg-background text-foreground flex flex-col md:flex-row items-center justify-center gap-8 p-4 relative">
+       {/* Botón de Salir */}
+      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-muted-foreground hover:text-primary hover:bg-primary/10">
+          <LogOut className="h-6 w-6" />
+      </Button>
+      
       {/* Panel de Información */}
       <div className="w-full md:w-1/4 max-w-sm">
         <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
@@ -104,24 +109,24 @@ export default function TutorialPage() {
           </CardHeader>
           <CardContent>
             <p className="mt-4 text-xs text-muted-foreground">Analizando el entorno...</p>
-             <div className="mt-2 space-y-2 text-sm font-code">
+             <div className="mt-2 space-y-2 text-sm font-code min-h-[60px]">
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${playerRoomId}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
                         <p className="typing-effect">{sense.text}</p>
                     </div>
                 )) : (
-                  <p key={playerRoomId} className="typing-effect text-muted-foreground italic">
+                  <p key={`${playerRoomId}-no-senses`} className="typing-effect text-muted-foreground italic">
                     No hay peligros inmediatos.
                   </p>
                 )}
              </div>
+             <Button className="w-full mt-4" variant="outline">
+                <Crosshair className="mr-2 h-4 w-4" />
+                Disparar
+             </Button>
           </CardContent>
         </Card>
-        <Button variant="ghost" onClick={() => router.back()} className="mt-4 text-muted-foreground w-full">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Salir del Tutorial
-        </Button>
       </div>
 
       {/* Mapa de Cuadrícula */}
@@ -172,3 +177,5 @@ export default function TutorialPage() {
     </div>
   );
 }
+
+    
