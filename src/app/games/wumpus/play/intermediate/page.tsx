@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -93,6 +94,7 @@ type AlertModalReason = {
     title: string;
     description: string;
     buttonText: string;
+    onConfirm: () => void;
 } | null;
 
 type PendingAction = 'transportByDrone' | 'moveWumpus' | null;
@@ -111,7 +113,6 @@ export default function IntermediatePracticePage() {
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
@@ -202,6 +203,7 @@ export default function IntermediatePracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
+          onConfirm: () => setPendingAction('transportByDrone'),
       });
       return false;
     }
@@ -234,7 +236,6 @@ export default function IntermediatePracticePage() {
       setIsGameStarted(true);
     }
 
-    setWumpusAlert(null);
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
@@ -261,7 +262,6 @@ export default function IntermediatePracticePage() {
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
 
-    setWumpusAlert(null);
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
@@ -324,9 +324,7 @@ export default function IntermediatePracticePage() {
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
     
-    if (wumpusAlert) {
-      senses_warnings.push({ text: wumpusAlert, icon: AlertTriangle, color: 'text-wumpus-danger', id: 'wumpus_move' });
-    } else if (!inStatic) {
+    if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId);
             if (connectedRoom) {
@@ -340,7 +338,7 @@ export default function IntermediatePracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
-  }, [playerRoomId, gameMap, getRoomById, lockdownEvent, wumpusAlert]);
+  }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) {
     return null; // O un indicador de carga
@@ -348,104 +346,106 @@ export default function IntermediatePracticePage() {
 
   return (
     <>
-    <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex flex-col md:flex-row items-center justify-center gap-8 p-4 relative">
-      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10">
+    <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
+      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
           <LogOut className="h-6 w-6" />
       </Button>
       
-      <div className="w-full md:w-1/4 max-w-sm flex flex-col gap-4">
-        <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
-            <CardDescription className="text-wumpus-foreground/60">Simulación: Práctica Intermedia</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-1 text-xs font-code min-h-[90px]">
-                {isInStatic ? (
-                  <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> <Typewriter text="ERROR: Interferencia de sensor." /></p>
-                ) : senses.length > 0 ? senses.map((sense, index) => (
-                    <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
-                        <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <Typewriter text={sense.text} />
-                    </div>
-                )) : (
-                  <p className="text-wumpus-foreground/70 italic"><Typewriter text="Sistemas estables. No hay peligros inmediatos." /></p>
-                )}
-             </div>
-             <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
-                <Crosshair className="h-4 w-4" />
-                <span>Cañón de Pulso: {arrowsLeft}</span>
-            </div>
-             <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0 || lockdownEvent} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
-                <Crosshair className="mr-2 h-4 w-4" />
-                {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
-             </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm text-wumpus-danger"><Activity />Estado del Activo 734</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-1 text-xs font-code min-h-[20px]">
-                <div className={cn("flex items-center gap-2", wumpusStatus !== 'DORMIDO' ? 'text-wumpus-danger' : 'text-wumpus-foreground/70' )}>
-                   <Typewriter text={`ESTADO: ${wumpusStatus}`} />
+      <div className="flex flex-col items-center justify-center gap-4">
+        <div className="w-full max-w-sm flex flex-col gap-4">
+            <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
+            <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
+                <CardDescription className="text-wumpus-foreground/60">Simulación: Práctica Intermedia</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-1 text-xs font-code min-h-[90px]">
+                    {isInStatic ? (
+                    <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> <Typewriter text="ERROR: Interferencia de sensor." /></p>
+                    ) : senses.length > 0 ? senses.map((sense, index) => (
+                        <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
+                            <sense.icon className="h-4 w-4 flex-shrink-0"/>
+                            <Typewriter text={sense.text} />
+                        </div>
+                    )) : (
+                    <p className="text-wumpus-foreground/70 italic"><Typewriter text="Sistemas estables. No hay peligros inmediatos." /></p>
+                    )}
                 </div>
-             </div>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
+                    <Crosshair className="h-4 w-4" />
+                    <span>Cañón de Pulso: {arrowsLeft}</span>
+                </div>
+                <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0 || lockdownEvent} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
+                    <Crosshair className="mr-2 h-4 w-4" />
+                    {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
+                </Button>
+            </CardContent>
+            </Card>
 
-      <div className="grid grid-cols-5 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
-        {gameMap.map(room => {
-          const isPlayerInRoom = playerRoomId === room.id;
-          const isConnected = connectedRooms.includes(room.id);
-          const isVisited = visitedRooms.has(room.id);
-          const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
-          const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
-          const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+            <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
+            <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm text-wumpus-danger"><Activity />Estado del Activo 734</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-1 text-xs font-code min-h-[20px]">
+                    <div className={cn("flex items-center gap-2", wumpusStatus !== 'DORMIDO' ? 'text-wumpus-danger' : 'text-wumpus-foreground/70' )}>
+                    <Typewriter text={`ESTADO: ${wumpusStatus}`} />
+                    </div>
+                </div>
+            </CardContent>
+            </Card>
+        </div>
 
-          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
+        <div className="grid grid-cols-5 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
+            {gameMap.map(room => {
+            const isPlayerInRoom = playerRoomId === room.id;
+            const isConnected = connectedRooms.includes(room.id);
+            const isVisited = visitedRooms.has(room.id);
+            const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
+            const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
+            const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-          return (
-            <div
-              key={room.id}
-              onClick={() => {
-                if (!isClickable) return;
-                if (isClickableForMove) handleMove(room.id);
-                if (isClickableForShoot) handleShoot(room.id);
-              }}
-              role="button"
-              tabIndex={isClickable ? 0 : -1}
-              className={cn(
-                'relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 border border-wumpus-accent/20 text-wumpus-accent',
-                'transition-all duration-200',
-                isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
-                isClickableForMove && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
-                isClickableForShoot && 'bg-wumpus-danger/20 hover:bg-wumpus-danger/30 hover:border-wumpus-danger cursor-crosshair ring-1 ring-wumpus-danger',
-                !isClickable && !isPlayerInRoom && 'bg-wumpus-background/50',
-                gameOver && 'cursor-not-allowed',
-                lockdownEvent && isConnected && 'cursor-not-allowed bg-red-900/50'
-              )}
-            >
-              <div className="flex flex-col items-center justify-center">
-                 {isPlayerInRoom && <UserCog className="h-8 w-8" />}
-                 
-                 {!isPlayerInRoom && (
-                   <>
-                     {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                     {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                     {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                     {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                     {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                     {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
-                   </>
-                 )}
-              </div>
-            </div>
-          );
-        })}
+            const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
+
+            return (
+                <div
+                key={room.id}
+                onClick={() => {
+                    if (!isClickable) return;
+                    if (isClickableForMove) handleMove(room.id);
+                    if (isClickableForShoot) handleShoot(room.id);
+                }}
+                role="button"
+                tabIndex={isClickable ? 0 : -1}
+                className={cn(
+                    'relative flex items-center justify-center w-12 h-12 md:w-16 md:h-16 border border-wumpus-accent/20 text-wumpus-accent',
+                    'transition-all duration-200',
+                    isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
+                    isClickableForMove && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
+                    isClickableForShoot && 'bg-wumpus-danger/20 hover:bg-wumpus-danger/30 hover:border-wumpus-danger cursor-crosshair ring-1 ring-wumpus-danger',
+                    !isClickable && !isPlayerInRoom && 'bg-wumpus-background/50',
+                    gameOver && 'cursor-not-allowed',
+                    lockdownEvent && isConnected && 'cursor-not-allowed bg-red-900/50'
+                )}
+                >
+                <div className="flex flex-col items-center justify-center">
+                    {isPlayerInRoom && <UserCog className="h-6 w-6 md:h-8 md:w-8" />}
+                    
+                    {!isPlayerInRoom && (
+                    <>
+                        {room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:w-8 text-wumpus-danger" />}
+                        {room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:w-8 text-wumpus-warning" />}
+                        {room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:w-8 text-wumpus-accent" />}
+                        {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />}
+                        {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />}
+                        {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-6 w-6 md:h-8 md:w-8 text-wumpus-primary opacity-40" />}
+                    </>
+                    )}
+                </div>
+                </div>
+            );
+            })}
+        </div>
       </div>
     </div>
     
@@ -493,8 +493,8 @@ export default function IntermediatePracticePage() {
           <AlertDialogFooter>
             <AlertDialogAction 
               onClick={() => {
+                alertModal?.onConfirm();
                 setAlertModal(null);
-                setPendingAction('transportByDrone');
               }}
               className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
             >
@@ -523,3 +523,5 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
+
+    

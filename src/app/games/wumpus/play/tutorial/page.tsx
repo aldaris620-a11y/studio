@@ -53,16 +53,25 @@ type GameOverReason = {
   variant: 'victory' | 'defeat';
 } | null;
 
+type PendingAction = 'transportByDrone' | null;
 
 export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
-  const [droneEvent, setDroneEvent] = useState<Room | null>(null);
+  const [droneEvent, setDroneEvent] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(1);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    if (pendingAction === 'transportByDrone') {
+      handleDroneTransport();
+      setPendingAction(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction]);
 
   const handleMove = (newRoomId: number) => {
     if (gameOver) return;
@@ -74,7 +83,6 @@ export default function TutorialPage() {
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
-    // Check for hazards in the new room
     if (newRoom.hasWumpus) {
       setGameOver({
         icon: Skull,
@@ -90,20 +98,28 @@ export default function TutorialPage() {
         variant: 'defeat',
       });
     } else if (newRoom.hasBat) {
-      setDroneEvent(newRoom);
+      setDroneEvent(true);
     }
   };
 
   const handleDroneTransport = () => {
-    if (!droneEvent) return;
-
     let randomRoomId;
+    let newRoom;
     do {
       randomRoomId = Math.floor(Math.random() * tutorialMapLayout.length) + 1;
-    } while (randomRoomId === playerRoomId);
+      newRoom = getRoomById(randomRoomId);
+    } while (randomRoomId === playerRoomId || !newRoom);
     
-    setDroneEvent(null);
-    handleMove(randomRoomId);
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+    setPlayerRoomId(newRoom.id);
+
+    if (newRoom.hasWumpus) {
+      setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
+    } else if (newRoom.hasPit) {
+      setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
+    } else if (newRoom.hasBat) {
+      setDroneEvent(true);
+    }
   };
   
   const handleShootClick = () => {
@@ -126,7 +142,6 @@ export default function TutorialPage() {
         variant: 'victory',
       });
     } else {
-      // Since arrows are now 0, this will trigger the loss condition.
        setGameOver({
         icon: Skull,
         title: "Munición Agotada",
@@ -144,10 +159,9 @@ export default function TutorialPage() {
     setVisitedRooms(new Set([1]));
   };
 
-  const { currentRoom, connectedRooms, senses } = useMemo(() => {
+  const { connectedRooms, senses } = useMemo(() => {
     const room = getRoomById(playerRoomId);
     if (!room) {
-      // Fallback
       return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [] };
     }
     const connections = room.connections;
@@ -179,96 +193,94 @@ export default function TutorialPage() {
         }
     }
 
-    return { currentRoom: room, connectedRooms: connections, senses: senses_warnings };
+    return { connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
 
   return (
     <>
-    <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex flex-col md:flex-row items-center justify-center gap-8 p-4 relative">
-       {/* Botón de Salir */}
-      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10">
+    <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
+      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
           <LogOut className="h-6 w-6" />
       </Button>
       
-      {/* Panel de Información */}
-      <div className="w-full md:w-1/4 max-w-sm">
-        <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
-            <CardDescription className="text-wumpus-foreground/60">Simulación de Entrenamiento</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-1 text-xs font-code min-h-[60px]">
-                {senses.length > 0 ? senses.map((sense, index) => (
-                    <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
-                        <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <Typewriter text={sense.text} />
-                    </div>
-                )) : (
-                  <p key="no-senses" className="text-wumpus-foreground/70 italic">
-                    <Typewriter text="Sistemas estables. No hay peligros inmediatos." />
-                  </p>
+      <div className="flex flex-col items-center justify-center gap-4">
+        <div className="w-full max-w-md">
+            <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
+            <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
+                <CardDescription className="text-wumpus-foreground/60">Simulación de Entrenamiento</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-1 text-xs font-code min-h-[60px]">
+                    {senses.length > 0 ? senses.map((sense, index) => (
+                        <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
+                            <sense.icon className="h-4 w-4 flex-shrink-0"/>
+                            <Typewriter text={sense.text} />
+                        </div>
+                    )) : (
+                    <p key="no-senses" className="text-wumpus-foreground/70 italic">
+                        <Typewriter text="Sistemas estables. No hay peligros inmediatos." />
+                    </p>
+                    )}
+                </div>
+                <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
+                    <Crosshair className="h-4 w-4" />
+                    <span>Cañón de Pulso: {arrowsLeft}</span>
+                </div>
+                <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
+                    <Crosshair className="mr-2 h-4 w-4" />
+                    {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
+                </Button>
+            </CardContent>
+            </Card>
+        </div>
+
+        <div className="grid grid-cols-4 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
+            {tutorialMapLayout.map(room => {
+            const isPlayerInRoom = playerRoomId === room.id;
+            const isConnected = connectedRooms.includes(room.id);
+            const isVisited = visitedRooms.has(room.id);
+            const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
+            const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
+            const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+
+            const hasHazard = room.hasWumpus || room.hasPit || room.hasBat;
+
+            return (
+                <div
+                key={room.id}
+                onClick={() => {
+                    if (!isClickable) return;
+                    if (isClickableForMove) handleMove(room.id);
+                    if (isClickableForShoot) handleShoot(room.id);
+                }}
+                role="button"
+                tabIndex={isClickable ? 0 : -1}
+                className={cn(
+                    'relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 border border-wumpus-accent/20 text-wumpus-accent',
+                    'transition-all duration-200',
+                    isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
+                    isClickableForMove && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
+                    isClickableForShoot && 'bg-wumpus-danger/20 hover:bg-wumpus-danger/30 hover:border-wumpus-danger cursor-crosshair ring-1 ring-wumpus-danger',
+                    !isClickable && !isPlayerInRoom && 'bg-wumpus-background/50',
+                    gameOver && 'cursor-not-allowed'
                 )}
-             </div>
-             <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
-                <Crosshair className="h-4 w-4" />
-                <span>Cañón de Pulso: {arrowsLeft}</span>
-            </div>
-             <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
-                <Crosshair className="mr-2 h-4 w-4" />
-                {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
-             </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Mapa de Cuadrícula */}
-      <div className="grid grid-cols-4 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
-        {tutorialMapLayout.map(room => {
-          const isPlayerInRoom = playerRoomId === room.id;
-          const isConnected = connectedRooms.includes(room.id);
-          const isVisited = visitedRooms.has(room.id);
-          const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
-          const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
-          const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
-
-          const hasHazard = room.hasWumpus || room.hasPit || room.hasBat;
-
-          return (
-            <div
-              key={room.id}
-              onClick={() => {
-                if (!isClickable) return;
-                if (isClickableForMove) handleMove(room.id);
-                if (isClickableForShoot) handleShoot(room.id);
-              }}
-              role="button"
-              tabIndex={isClickable ? 0 : -1}
-              className={cn(
-                'relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24 border border-wumpus-accent/20 text-wumpus-accent',
-                'transition-all duration-200',
-                isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
-                isClickableForMove && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
-                isClickableForShoot && 'bg-wumpus-danger/20 hover:bg-wumpus-danger/30 hover:border-wumpus-danger cursor-crosshair ring-1 ring-wumpus-danger',
-                !isClickable && !isPlayerInRoom && 'bg-wumpus-background/50',
-                 gameOver && 'cursor-not-allowed'
-              )}
-            >
-              <div className="flex flex-col items-center justify-center">
-                 {isPlayerInRoom && (
-                    <>
-                        <UserCog className="h-8 w-8" />
-                    </>
-                 )}
-                 {/* En el modo tutorial, todos los peligros son visibles */}
-                 {isVisited && room.hasWumpus && !isPlayerInRoom && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                 {isVisited && room.hasPit && !isPlayerInRoom && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                 {isVisited && room.hasBat && !isPlayerInRoom && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                 {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
-              </div>
-            </div>
-          );
-        })}
+                >
+                <div className="flex flex-col items-center justify-center">
+                    {isPlayerInRoom && (
+                        <>
+                            <UserCog className="h-8 w-8" />
+                        </>
+                    )}
+                    {isVisited && room.hasWumpus && !isPlayerInRoom && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                    {isVisited && room.hasPit && !isPlayerInRoom && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                    {isVisited && room.hasBat && !isPlayerInRoom && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                    {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                </div>
+                </div>
+            );
+            })}
+        </div>
       </div>
     </div>
     
@@ -306,7 +318,7 @@ export default function TutorialPage() {
       </AlertDialog>
 
       {/* Modal de Dron */}
-      <AlertDialog open={!!droneEvent}>
+      <AlertDialog open={droneEvent}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
             <Shuffle className="h-12 w-12 mx-auto text-wumpus-accent" />
@@ -316,7 +328,13 @@ export default function TutorialPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleDroneTransport} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+            <AlertDialogAction 
+              onClick={() => {
+                setDroneEvent(false);
+                setPendingAction('transportByDrone');
+              }} 
+              className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
+            >
               Continuar
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -325,3 +343,5 @@ export default function TutorialPage() {
     </>
   );
 }
+
+    
