@@ -28,8 +28,8 @@ export type Reward = {
 export const GAMES: GameDefinition[] = [
   {
     id: 'wumpus',
-    name: 'Caza del Wumpus',
-    description: 'Caza al Wumpus en una cueva oscura y peligrosa.',
+    name: 'Ecos en la Oscuridad',
+    description: 'Caza a la bestia en una cueva laberíntica y peligrosa.',
     icon: Skull,
     component: WumpusGamePage,
   },
@@ -54,7 +54,7 @@ export const getRewards = async (): Promise<Reward[]> => {
         {
             id: 'reward-1',
             name: 'Flecha de Plata',
-            description: "Una flecha especial para 'Caza del Wumpus'.",
+            description: "Una flecha especial para 'Ecos en la Oscuridad'.",
             gameToUnlock: "Responde 10 preguntas correctamente en Trivial de Miedo.",
             unlocked: false,
         },
