@@ -22,7 +22,7 @@ const trainingLevels = [
     title: 'Práctica Fácil',
     icon: Brain,
     description: 'Un mapa sencillo con menos peligros. Los peligros no son visibles.',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'intermedia',
@@ -45,8 +45,9 @@ export default function TrainingSelectionPage() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   
   const handleLevelSelect = (levelId: string) => {
-    if (levelId === 'tutorial') {
+    if (levelId === 'tutorial' || levelId === 'facil') {
       setIsLoading(levelId);
+      // TODO: 'facil' should eventually point to its own page. For now, it uses the tutorial.
       router.push('/games/wumpus/play/tutorial');
     } else {
       // Placeholder for other levels
