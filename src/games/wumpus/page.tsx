@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '../placeholder-images';
@@ -18,8 +19,8 @@ export default function WumpusPage() {
   const coverImage = PlaceHolderImages.find(img => img.id === 'wumpus-1');
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-black p-4">
-      <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-lg border border-primary/20 shadow-glow-primary">
+    <div className="relative flex h-full w-full items-center justify-center bg-black p-4">
+      <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-lg border border-primary/20 shadow-glow-primary">
         {coverImage && (
           <Image
             src={coverImage.imageUrl}
