@@ -86,7 +86,7 @@ export default function EasyPracticePage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
-  const [droneEvent, setDroneEvent] = useState<Room | null>(null);
+  const [droneEvent, setDroneEvent] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(3);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
@@ -124,20 +124,25 @@ export default function EasyPracticePage() {
         variant: 'defeat',
       });
     } else if (newRoom.hasBat) {
-      setDroneEvent(newRoom);
+      setDroneEvent(true);
     }
   };
 
-  const handleDroneTransport = () => {
+  const handleDroneTransport = (currentMap: Room[]) => {
     if (!droneEvent) return;
-
+  
     let randomRoomId;
+    let newRoom;
     do {
-      randomRoomId = Math.floor(Math.random() * gameMap.length) + 1;
-    } while (randomRoomId === playerRoomId);
+      randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+      newRoom = getRoomById(randomRoomId);
+    } while (randomRoomId === playerRoomId || !newRoom);
     
-    setDroneEvent(null);
-    handleMove(randomRoomId);
+    setDroneEvent(false);
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+    setPlayerRoomId(newRoom.id);
+    // You might want to check for hazards in the new room as well.
+    // For now, it just moves the player.
   };
   
   const handleShootClick = () => {
@@ -176,6 +181,7 @@ export default function EasyPracticePage() {
     setIsShooting(false);
     setArrowsLeft(3);
     setVisitedRooms(new Set([1]));
+    setDroneEvent(false);
   };
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
@@ -272,7 +278,7 @@ export default function EasyPracticePage() {
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
           
-          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasWumpus;
+          const hasVisibleHazard = room.hasPit || room.hasBat;
 
           return (
             <div
@@ -302,7 +308,7 @@ export default function EasyPracticePage() {
                     {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                     {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                     {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                    {isVisited && !hasVisibleHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                    {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>
@@ -346,7 +352,7 @@ export default function EasyPracticePage() {
       </AlertDialog>
 
       {/* Modal de Dron */}
-      <AlertDialog open={!!droneEvent}>
+      <AlertDialog open={droneEvent}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
             <Shuffle className="h-12 w-12 mx-auto text-wumpus-accent" />
@@ -356,7 +362,7 @@ export default function EasyPracticePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleDroneTransport} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+            <AlertDialogAction onClick={() => handleDroneTransport(gameMap)} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
               Continuar
             </AlertDialogAction>
           </AlertDialogFooter>

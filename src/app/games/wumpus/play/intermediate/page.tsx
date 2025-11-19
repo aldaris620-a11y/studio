@@ -395,7 +395,7 @@ export default function IntermediatePracticePage() {
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasWumpus;
+          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
 
           return (
             <div
@@ -428,7 +428,7 @@ export default function IntermediatePracticePage() {
                      {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
                      {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
                      {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                     {isVisited && !hasVisibleHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                     {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>

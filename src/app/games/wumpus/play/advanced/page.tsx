@@ -237,50 +237,58 @@ export default function AdvancedPracticePage() {
 
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
-
+  
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
     setWumpusStatus('DORMIDO');
-
+  
     if (targetRoom?.hasWumpus) {
       setGameOver({
-        icon: Trophy, title: "Activo Neutralizado",
-        description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.", variant: 'victory',
+        icon: Trophy,
+        title: "Activo Neutralizado",
+        description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.",
+        variant: 'victory',
       });
       return;
-    } 
-    
-    if (targetRoom?.hasStatic) {
-        const mapWithoutStatic = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
-        setGameMap(mapWithoutStatic);
-
-        setAlertModal({
-            icon: Zap,
-            title: "Interferencia Eliminada",
-            description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
-            buttonText: "Entendido",
-            onConfirm: () => {
-                const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(mapWithoutStatic);
-                if (!wumpusFell) {
-                    setGameMap(movedWumpusMap);
-                }
-                setAlertModal(null);
-            }
-        });
-        return;
     }
-
+  
+    if (targetRoom?.hasStatic) {
+      // 1. Update map to remove static icon immediately
+      const mapWithoutStatic = gameMap.map(r =>
+        r.id === targetRoomId ? { ...r, hasStatic: false } : r
+      );
+      setGameMap(mapWithoutStatic);
+  
+      // 2. Show modal with confirmation. Wumpus moves on confirm.
+      setAlertModal({
+        icon: Zap,
+        title: "Interferencia Eliminada",
+        description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
+        buttonText: "Entendido",
+        onConfirm: () => {
+          setAlertModal(null);
+          const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(mapWithoutStatic);
+          if (!wumpusFell) {
+            setGameMap(movedWumpusMap);
+          }
+        },
+      });
+      return;
+    }
+  
     // Wumpus moves if shot is missed
     const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
     if (!wumpusFell) {
-        setGameMap(movedMap);
-        if (arrowsLeft - 1 === 0 && !gameOver) {
-             setGameOver({
-                icon: Skull, title: "Munición Agotada",
-                description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.", variant: 'defeat',
-            });
-        }
+      setGameMap(movedMap);
+      if (arrowsLeft - 1 === 0 && !gameOver) {
+        setGameOver({
+          icon: Skull,
+          title: "Munición Agotada",
+          description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.",
+          variant: 'defeat',
+        });
+      }
     }
   };
 
@@ -294,6 +302,7 @@ export default function AdvancedPracticePage() {
     setLockdownEvent(false);
     setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
+    setAlertModal(null);
   }, []);
 
   useEffect(() => {
@@ -447,7 +456,7 @@ export default function AdvancedPracticePage() {
                      {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
                      {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
                      {room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
-                     {isVisited && !hasVisibleHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                     {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>
