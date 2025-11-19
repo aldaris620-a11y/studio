@@ -251,15 +251,13 @@ export default function AdvancedPracticePage() {
     } 
     
     if (targetRoom?.hasStatic) {
-        const newMap = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
-        setGameMap(newMap);
-
         setAlertModal({
             icon: Zap, title: "Interferencia Eliminada",
             description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
             buttonText: "Entendido",
             onConfirm: () => {
-                const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(newMap);
+                let mapWithoutStatic = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
+                const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(mapWithoutStatic);
                 if (!wumpusFell) {
                     setGameMap(movedWumpusMap);
                 }
@@ -412,7 +410,7 @@ export default function AdvancedPracticePage() {
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost || room.hasWumpus;
+          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost;
 
           return (
             <div
