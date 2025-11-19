@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -79,6 +80,7 @@ type GameOverReason = {
   variant: 'victory' | 'defeat';
 } | null;
 
+type PendingAction = 'transportByDrone' | null;
 
 export default function EasyPracticePage() {
   const [gameMap, setGameMap] = useState<Room[]>([]);
@@ -88,11 +90,17 @@ export default function EasyPracticePage() {
   const [droneEvent, setDroneEvent] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(3);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
 
+
   useEffect(() => {
-    setGameMap(generateMap());
-  }, []);
+    if (pendingAction === 'transportByDrone') {
+      handleDroneTransport();
+      setPendingAction(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction]);
 
   const getRoomById = (id: number) => gameMap.find(r => r.id === id);
 
@@ -128,7 +136,6 @@ export default function EasyPracticePage() {
   };
 
   const handleDroneTransport = () => {
-    setDroneEvent(false);
     let randomRoomId;
     let newRoom;
     do {
@@ -138,6 +145,7 @@ export default function EasyPracticePage() {
     
     setVisitedRooms(prev => new Set(prev).add(newRoom.id));
     setPlayerRoomId(newRoom.id);
+
     // Check for hazards in the new landing spot
     if (newRoom.hasWumpus) {
       setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
@@ -187,6 +195,10 @@ export default function EasyPracticePage() {
     setVisitedRooms(new Set([1]));
     setDroneEvent(false);
   };
+  
+  useEffect(() => {
+    restartGame();
+  }, []);
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
     if (gameMap.length === 0) return { currentRoom: null, connectedRooms: [], senses: [] };
@@ -366,7 +378,13 @@ export default function EasyPracticePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleDroneTransport} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+            <AlertDialogAction 
+              onClick={() => {
+                setDroneEvent(false);
+                setPendingAction('transportByDrone');
+              }} 
+              className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
+            >
               Continuar
             </AlertDialogAction>
           </AlertDialogFooter>

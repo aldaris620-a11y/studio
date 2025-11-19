@@ -93,8 +93,9 @@ type AlertModalReason = {
     title: string;
     description: string;
     buttonText: string;
-    onConfirm: () => void;
 } | null;
+
+type PendingAction = 'transportByDrone' | 'moveWumpus' | null;
 
 type WumpusStatus = 'DORMIDO' | 'EN MOVIMIENTO' | 'REUBICADO POR DRON';
 
@@ -109,53 +110,73 @@ export default function AdvancedPracticePage() {
   const [arrowsLeft, setArrowsLeft] = useState<number>(5);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
   const router = useRouter();
-
+  
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
-  const moveWumpus = useCallback((currentMap: Room[]) => {
-    const wumpusRoom = currentMap.find(r => r.hasWumpus);
-    if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false, moved: false };
-
-    const wumpusConnections = wumpusRoom.connections;
-    if (wumpusConnections.length === 0) return { newMap: currentMap, wumpusFell: false, moved: false };
-
-    const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
-    
-    let tempMap = currentMap.map(r => r.id === wumpusRoom.id ? { ...r, hasWumpus: false } : r);
-    const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
-
-    if (newWumpusRoom.hasPit) {
-        setGameOver({
-            icon: Trophy, title: "Activo Neutralizado por el Entorno",
-            description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
-        });
-        return { newMap: tempMap, wumpusFell: true, moved: true };
+  useEffect(() => {
+    if (pendingAction === 'transportByDrone') {
+        handleDroneTransport();
+        setPendingAction(null);
+    } else if (pendingAction === 'moveWumpus') {
+        moveWumpus();
+        setPendingAction(null);
     }
-     if (newWumpusRoom.id === playerRoomId) {
-        setGameOver({
-            icon: Skull, title: "¡Te ha encontrado!",
-            description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat',
-        });
-        return { newMap: tempMap, wumpusFell: true, moved: true };
-    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction]);
 
 
-    if (newWumpusRoom.hasBat) {
-        setWumpusStatus('REUBICADO POR DRON');
-        let finalRoomId;
-        do {
-            finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
-        } while (finalRoomId === newWumpusRoomId || finalRoomId === playerRoomId);
-        
-        tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
-    } else {
-        setWumpusStatus('EN MOVIMIENTO');
-        tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
-    }
+  const moveWumpus = useCallback(() => {
+    setGameMap(currentMap => {
+        const wumpusRoom = currentMap.find(r => r.hasWumpus);
+        if (!wumpusRoom) return currentMap;
 
-    return { newMap: tempMap, wumpusFell: false, moved: true };
-}, [playerRoomId]);
+        const wumpusConnections = wumpusRoom.connections;
+        if (wumpusConnections.length === 0) return currentMap;
+
+        const newWumpusRoomId = wumpusConnections[Math.floor(Math.random() * wumpusConnections.length)];
+        let tempMap = currentMap.map(r => r.id === wumpusRoom.id ? { ...r, hasWumpus: false } : r);
+        const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
+
+        if (newWumpusRoom.hasPit) {
+            setGameOver({
+                icon: Trophy, title: "Activo Neutralizado por el Entorno",
+                description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
+            });
+            return tempMap.map(r => ({ ...r, hasWumpus: false }));
+        }
+
+        if (newWumpusRoom.id === playerRoomId) {
+            setGameOver({
+                icon: Skull, title: "¡Te ha encontrado!",
+                description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat',
+            });
+            return tempMap;
+        }
+
+        if (newWumpusRoom.hasBat) {
+            setWumpusStatus('REUBICADO POR DRON');
+            let finalRoomId;
+            do {
+                finalRoomId = Math.floor(Math.random() * tempMap.length) + 1;
+            } while (finalRoomId === newWumpusRoomId || finalRoomId === playerRoomId);
+
+            if (finalRoomId === playerRoomId) {
+                setGameOver({
+                    icon: Skull, title: "Entrega Mortal",
+                    description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat',
+                });
+                return tempMap;
+            }
+            return tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
+        } else {
+            setWumpusStatus('EN MOVIMIENTO');
+            return tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
+        }
+    });
+  }, [playerRoomId]);
 
 
   const checkHazards = useCallback((room: Room) => {
@@ -178,7 +199,6 @@ export default function AdvancedPracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
-          onConfirm: () => handleDroneTransport()
       });
       return false;
     }
@@ -192,7 +212,6 @@ export default function AdvancedPracticePage() {
   }, []);
 
   const handleDroneTransport = () => {
-    setAlertModal(null);
     let randomRoomId;
     let newRoom;
     do {
@@ -207,6 +226,8 @@ export default function AdvancedPracticePage() {
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
+
+    setWumpusAlert(null);
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
@@ -215,19 +236,15 @@ export default function AdvancedPracticePage() {
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
-    let currentMap = gameMap;
-
     // 50% chance for Wumpus to move
     if (Math.random() < 0.5) {
-        const { newMap, wumpusFell } = moveWumpus(currentMap);
-        currentMap = newMap;
-        setGameMap(newMap);
-        if (wumpusFell) {
-            return;
-        }
+        setWumpusAlert("Has sentido un temblor. El activo puede haberse movido.");
+        moveWumpus();
     }
     
-    checkHazards(newRoom);
+    if (!checkHazards(newRoom)) {
+        // no hazards
+    }
   }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
   
   const handleShootClick = () => {
@@ -239,11 +256,11 @@ export default function AdvancedPracticePage() {
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
   
+    setWumpusAlert(null);
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
     
-  
     if (targetRoom?.hasWumpus) {
       setGameOver({
         icon: Trophy,
@@ -253,20 +270,16 @@ export default function AdvancedPracticePage() {
       });
       return;
     }
-  
-    // Wumpus moves if shot is missed
-    const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
-    setWumpusStatus('EN MOVIMIENTO');
-    if (!wumpusFell) {
-      setGameMap(movedMap);
-      if (arrowsLeft - 1 === 0 && !gameOver) {
-        setGameOver({
-          icon: Skull,
-          title: "Munición Agotada",
-          description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.",
-          variant: 'defeat',
-        });
-      }
+
+    setWumpusAlert("El activo ha sido alertado por tu disparo y ha cambiado de posición.");
+    moveWumpus();
+    if (arrowsLeft - 1 === 0 && !gameOver) {
+      setGameOver({
+        icon: Skull,
+        title: "Munición Agotada",
+        description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.",
+        variant: 'defeat',
+      });
     }
   };
 
@@ -318,8 +331,10 @@ export default function AdvancedPracticePage() {
         }
     }
     if (room.hasGhost) nearGhost = true;
-
-    if (nearGhost) {
+    
+    if (wumpusAlert) {
+      senses_warnings.push({ text: wumpusAlert, icon: AlertTriangle, color: 'text-wumpus-danger', id: 'wumpus_move' });
+    } else if (nearGhost) {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
@@ -336,7 +351,7 @@ export default function AdvancedPracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
-  }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
+  }, [playerRoomId, gameMap, getRoomById, lockdownEvent, wumpusAlert]);
 
   if (gameMap.length === 0) return null;
 
@@ -487,7 +502,13 @@ export default function AdvancedPracticePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={alertModal?.onConfirm} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
+            <AlertDialogAction 
+              onClick={() => {
+                setAlertModal(null);
+                setPendingAction('transportByDrone');
+              }}
+              className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
+            >
               {alertModal?.buttonText}
             </AlertDialogAction>
           </AlertDialogFooter>
