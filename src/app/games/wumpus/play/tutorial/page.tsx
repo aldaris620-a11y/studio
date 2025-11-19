@@ -91,7 +91,7 @@ export default function TutorialPage() {
         <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-primary"><User />Estado del Cazador</CardTitle>
-            <CardDescription>Protocolo de Entrenamiento</CardDescription>
+            <CardDescription>Tutorial Guiado</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm">Posición: <span className="font-bold text-primary">Habitación {currentRoom?.id}</span></p>
@@ -107,7 +107,7 @@ export default function TutorialPage() {
         </Card>
         <Button variant="ghost" onClick={() => router.back()} className="mt-4 text-muted-foreground w-full">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Salir de la Simulación
+            Salir del Tutorial
         </Button>
       </div>
 
@@ -127,7 +127,7 @@ export default function TutorialPage() {
                 'transition-all duration-200',
                 isPlayerInRoom && 'bg-primary/30 ring-2 ring-primary',
                 isClickable && 'bg-primary/10 hover:bg-primary/20 cursor-pointer',
-                !isClickable && 'bg-background/80'
+                !isClickable && !isPlayerInRoom && 'bg-background/80'
               )}
             >
               <span className="absolute top-1 left-1 text-xs font-bold">{room.id}</span>

@@ -35,7 +35,7 @@ export default function GameModeSelectionPage() {
   
   const handleModeSelect = (modeId: GameModeId) => {
     if (modeId === 'tutorial') {
-      router.push('/games/wumpus/play/tutorial');
+      router.push('/games/wumpus/play/training');
     } else {
       // TODO: Navigate to the actual game screen for the selected mode
       console.log(`Modo seleccionado: ${modeId}`);
@@ -49,7 +49,7 @@ export default function GameModeSelectionPage() {
         <p className="text-muted-foreground mt-2 text-xs md:text-base">Selecciona tu próximo contrato, cazador.</p>
       </div>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-4">
         {gameModes.map((mode) => (
           <Card 
             key={mode.id}
@@ -62,12 +62,12 @@ export default function GameModeSelectionPage() {
           >
             <CardHeader className="items-center text-center p-2">
               <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
-                <mode.icon className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                <mode.icon className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-base md:text-lg font-headline">{mode.title}</CardTitle>
+              <CardTitle className="text-lg font-headline">{mode.title}</CardTitle>
             </CardHeader>
             <CardContent className="text-center flex-grow p-4 pt-0">
-              <p className="text-muted-foreground text-xs md:text-sm">
+              <p className="text-muted-foreground text-sm">
                 {mode.description}
               </p>
             </CardContent>
@@ -75,7 +75,7 @@ export default function GameModeSelectionPage() {
         ))}
       </div>
       
-      <Button variant="ghost" onClick={() => router.back()} className="mt-4 md:mt-8">
+      <Button variant="ghost" onClick={() => router.back()} className="mt-8">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver al Menú Principal
       </Button>
