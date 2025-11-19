@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Wind, Skull, VenetianMask, Circle, Crosshair, LogOut } from 'lucide-react';
+import { UserCog, Wind, Skull, AlertTriangle, Shuffle, Circle, Crosshair, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -71,9 +71,9 @@ export default function TutorialPage() {
     const connections = room.connections;
     
     const senseTypes = {
-        wumpus: { text: 'Huele a algo terrible cerca.', icon: Skull, color: 'text-wumpus-danger', id: 'wumpus' },
-        pit: { text: 'Sientes una ligera brisa.', icon: Wind, color: 'text-wumpus-warning', id: 'pit' },
-        bat: { text: 'Oyes un aleteo cercano.', icon: VenetianMask, color: 'text-wumpus-accent', id: 'bat' }
+        wumpus: { text: 'Alerta: Interferencia biológica detectada.', icon: Skull, color: 'text-wumpus-danger', id: 'wumpus' },
+        pit: { text: 'Peligro estructural: Pozo de mantenimiento abierto.', icon: AlertTriangle, color: 'text-wumpus-warning', id: 'pit' },
+        bat: { text: 'Subsistema errático: Dron de transporte activado.', icon: Shuffle, color: 'text-wumpus-accent', id: 'bat' }
     };
 
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
@@ -111,25 +111,25 @@ export default function TutorialPage() {
       <div className="w-full md:w-1/4 max-w-sm">
         <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><User />Estado del Cazador</CardTitle>
-            <CardDescription className="text-wumpus-foreground/60">Tutorial Guiado</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
+            <CardDescription className="text-wumpus-foreground/60">Simulación de Entrenamiento</CardDescription>
           </CardHeader>
           <CardContent>
-             <div className="space-y-1 text-xs font-code min-h-[50px]">
+             <div className="text-xs font-code min-h-[50px]">
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${playerRoomId}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <p className="typing-effect">{sense.text}</p>
+                        <p>{sense.text}</p>
                     </div>
                 )) : (
-                  <p key={`${playerRoomId}-no-senses`} className="typing-effect text-wumpus-foreground/70 italic">
-                    No hay peligros inmediatos.
+                  <p key={`${playerRoomId}-no-senses`} className="text-wumpus-foreground/70 italic">
+                    Sistemas estables. No hay peligros inmediatos.
                   </p>
                 )}
              </div>
              <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
                 <Crosshair className="mr-2 h-4 w-4" />
-                {isShooting ? 'Apuntando...' : 'Disparar'}
+                {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
              </Button>
           </CardContent>
         </Card>
@@ -167,21 +167,21 @@ export default function TutorialPage() {
               <div className="flex flex-col items-center justify-center">
                  {isPlayerInRoom && (
                     <>
-                        <User className="h-8 w-8" />
+                        <UserCog className="h-8 w-8" />
                         <div className="absolute top-1 left-1 flex gap-1">
                             {senses.find(s => s.id === 'wumpus') && <Skull className="h-3 w-3 text-wumpus-danger" />}
                         </div>
                         <div className="absolute top-1 right-1 flex gap-1">
-                            {senses.find(s => s.id === 'pit') && <Wind className="h-3 w-3 text-wumpus-warning" />}
+                            {senses.find(s => s.id === 'pit') && <AlertTriangle className="h-3 w-3 text-wumpus-warning" />}
                         </div>
                         <div className="absolute bottom-1 left-1 flex gap-1">
-                            {senses.find(s => s.id === 'bat') && <VenetianMask className="h-3 w-3 text-wumpus-accent" />}
+                            {senses.find(s => s.id === 'bat') && <Shuffle className="h-3 w-3 text-wumpus-accent" />}
                         </div>
                     </>
                  )}
                  {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                  {room.hasPit && <Circle className="h-8 w-8 text-wumpus-warning fill-current" />}
-                 {room.hasBat && <VenetianMask className="h-8 w-8 text-wumpus-accent" />}
+                 {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
               </div>
             </div>
           );
@@ -190,5 +190,3 @@ export default function TutorialPage() {
     </div>
   );
 }
-
-    
