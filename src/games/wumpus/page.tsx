@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '../placeholder-images';
@@ -34,7 +33,7 @@ export default function WumpusPage() {
            <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-widest uppercase text-primary animate-pulse">
             Ecos en la Oscuridad
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-foreground/80 font-body">
+          <p className="mt-4 max-w-xl text-base md:text-lg text-foreground/80 font-body">
             En las profundidades de una caverna sin luz, algo antiguo y hambriento acecha. Solo tus sentidos pueden guiarte. Escucha el viento, huele el peligro, y caza a la bestia antes de que te encuentre a ti.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
