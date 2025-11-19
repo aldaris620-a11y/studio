@@ -112,7 +112,7 @@ export default function AdvancedPracticePage() {
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [isGameStarted, setIsGameStarted] useState(false);
   const router = useRouter();
   
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
@@ -482,12 +482,12 @@ export default function AdvancedPracticePage() {
                       </>
                     ) : (
                         <>
-                            {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {isPlayerInRoom && room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                            {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                            {isPlayerInRoom && room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
+                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                            {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                            {room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
                             
                             {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && (
                                 <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />

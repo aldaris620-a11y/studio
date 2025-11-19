@@ -106,7 +106,7 @@ export default function IntermediatePracticePage() {
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
-  const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
+  const [lockdownEvent, setLockdownEvent] useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(4);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
@@ -467,11 +467,11 @@ export default function IntermediatePracticePage() {
                       </>
                     ) : (
                         <>
-                            {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                             {isPlayerInRoom && room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                            {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                            {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
 
                             {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && (
                                 <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
