@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, Brain, Dices, Skull, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { AnimatedLoading } from '@/components/animated-loading';
 
 const trainingLevels = [
   {
@@ -40,14 +42,20 @@ const trainingLevels = [
 
 export default function TrainingSelectionPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   
   const handleLevelSelect = (levelId: string) => {
     if (levelId === 'tutorial') {
+      setIsLoading(levelId);
       router.push('/games/wumpus/play/tutorial');
     } else {
       // Placeholder for other levels
       console.log(`Nivel seleccionado: ${levelId}`);
     }
+  }
+
+  if (isLoading) {
+    return <AnimatedLoading text="Cargando simulación..." />;
   }
 
   return (

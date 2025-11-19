@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, Crosshair, FileText, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { AnimatedLoading } from '@/components/animated-loading';
 
 const gameModes = [
   {
@@ -32,14 +34,21 @@ type GameModeId = 'tutorial' | 'caceria' | 'historia';
 
 export default function GameModeSelectionPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState<GameModeId | null>(null);
   
   const handleModeSelect = (modeId: GameModeId) => {
+    setIsLoading(modeId);
     if (modeId === 'tutorial') {
       router.push('/games/wumpus/play/training');
     } else {
       // TODO: Navigate to the actual game screen for the selected mode
       console.log(`Modo seleccionado: ${modeId}`);
+      setTimeout(() => setIsLoading(null), 1000); // For now, just reset loading state
     }
+  }
+
+  if (isLoading) {
+    return <AnimatedLoading text={`Cargando ${isLoading}...`} />;
   }
 
   return (
