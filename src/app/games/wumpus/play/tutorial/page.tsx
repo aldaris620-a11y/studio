@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -272,10 +271,15 @@ export default function TutorialPage() {
                             <UserCog className="h-8 w-8" />
                         </>
                     )}
-                    {isVisited && room.hasWumpus && !isPlayerInRoom && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                    {isVisited && room.hasPit && !isPlayerInRoom && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                    {isVisited && room.hasBat && !isPlayerInRoom && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                    {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                    
+                    {!isPlayerInRoom && (
+                        <>
+                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                        </>
+                    )}
                 </div>
                 </div>
             );
@@ -343,5 +347,3 @@ export default function TutorialPage() {
     </>
   );
 }
-
-    
