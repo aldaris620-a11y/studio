@@ -21,14 +21,14 @@ const trainingLevels = [
     id: 'facil',
     title: 'Práctica Fácil',
     icon: Brain,
-    description: 'Un mapa sencillo con menos peligros. Los peligros no son visibles.',
+    description: 'Un mapa sencillo con menos peligros. El Wumpus no es visible.',
     enabled: true,
   },
   {
     id: 'intermedia',
     title: 'Práctica Intermedia',
     icon: Dices,
-    description: 'Un mapa aleatorio con una configuración de peligro estándar.',
+    description: 'Un mapa más grande con nuevos obstáculos. El Wumpus no es visible.',
     enabled: true,
   },
     {
@@ -36,7 +36,7 @@ const trainingLevels = [
     title: 'Práctica Avanzada',
     icon: Skull,
     description: 'Un desafío difícil con más peligros y un Wumpus más astuto.',
-    enabled: true,
+    enabled: false,
   },
 ];
 
@@ -50,7 +50,10 @@ export default function TrainingSelectionPage() {
       router.push('/games/wumpus/play/tutorial');
     } else if (levelId === 'facil') {
       router.push('/games/wumpus/play/easy');
-    } else {
+    } else if (levelId === 'intermedia') {
+      router.push('/games/wumpus/play/intermediate');
+    }
+     else {
       // Placeholder for other levels
       console.log(`Nivel seleccionado: ${levelId}`);
        setTimeout(() => setIsLoading(null), 1000);
