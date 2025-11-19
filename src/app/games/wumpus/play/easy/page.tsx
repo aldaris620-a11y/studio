@@ -358,9 +358,16 @@ export default function EasyPracticePage() {
                            })}
                         </div>
                       </>
-                    ) : isVisited ? (
-                        <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
-                    ) : null}
+                    ) : (
+                        <>
+                            {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && (
+                                <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
+                            )}
+                        </>
+                    )}
                 </div>
                 </div>
             );

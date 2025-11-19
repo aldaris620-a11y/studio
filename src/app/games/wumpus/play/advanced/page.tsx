@@ -480,9 +480,20 @@ export default function AdvancedPracticePage() {
                            })}
                         </div>
                       </>
-                    ) : isVisited ? (
-                        <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
-                    ) : null}
+                    ) : (
+                        <>
+                            {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {isPlayerInRoom && room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                            {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                            {isPlayerInRoom && room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
+                            
+                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && (
+                                <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                            )}
+                        </>
+                    )}
                 </div>
                 </div>
             );

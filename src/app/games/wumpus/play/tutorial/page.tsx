@@ -64,6 +64,36 @@ export default function TutorialPage() {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
 
+  const checkHazards = useCallback((room: Room) => {
+    if (room.hasWumpus) {
+      setGameOver({
+        icon: Skull,
+        title: "Neutralizado por Activo Hostil",
+        description: "El Activo 734 te ha encontrado. Misión fracasada.",
+        variant: 'defeat',
+      });
+      return true;
+    }
+    if (room.hasPit) {
+      setGameOver({
+        icon: AlertTriangle,
+        title: "Peligro Estructural Fatal",
+        description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.",
+        variant: 'defeat',
+      });
+      return true;
+    }
+    if (room.hasBat) {
+      setAlertModal({
+          title: "Dron de Transporte Activado",
+          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada a una sección aleatoria de los túneles!",
+          onConfirm: () => setPendingAction('transportByDrone')
+      });
+      return false;
+    }
+    return false;
+  }, []);
+
   const handleDroneTransport = useCallback(() => {
     let randomRoomId;
     let newRoom;
@@ -77,19 +107,9 @@ export default function TutorialPage() {
 
     // Check hazards in the new room after state update
     setTimeout(() => {
-        if (newRoom.hasWumpus) {
-          setGameOver({ icon: Skull, title: "Entrega Mortal", description: "El dron te ha dejado justo en la boca del Activo 734. Misión fracasada.", variant: 'defeat' });
-        } else if (newRoom.hasPit) {
-          setGameOver({ icon: AlertTriangle, title: "Caída Inesperada", description: "El dron te ha soltado sobre un pozo sin fondo. Misión fracasada.", variant: 'defeat' });
-        } else if (newRoom.hasBat) {
-           setAlertModal({
-              title: "Dron de Transporte Activado",
-              description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para otra reubicación forzada!",
-              onConfirm: () => setPendingAction('transportByDrone')
-          });
-        }
+        checkHazards(newRoom!);
     }, 0);
-  }, [playerRoomId]);
+  }, [playerRoomId, checkHazards]);
 
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
@@ -107,28 +127,7 @@ export default function TutorialPage() {
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
-
-    if (newRoom.hasWumpus) {
-      setGameOver({
-        icon: Skull,
-        title: "Neutralizado por Activo Hostil",
-        description: "El Activo 734 te ha encontrado. Misión fracasada.",
-        variant: 'defeat',
-      });
-    } else if (newRoom.hasPit) {
-      setGameOver({
-        icon: AlertTriangle,
-        title: "Peligro Estructural Fatal",
-        description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.",
-        variant: 'defeat',
-      });
-    } else if (newRoom.hasBat) {
-      setAlertModal({
-          title: "Dron de Transporte Activado",
-          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada a una sección aleatoria de los túneles!",
-          onConfirm: () => setPendingAction('transportByDrone')
-      });
-    }
+    checkHazards(newRoom);
   };
   
   const handleShootClick = () => {
