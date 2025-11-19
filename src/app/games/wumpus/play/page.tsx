@@ -61,8 +61,8 @@ export default function GameModeSelectionPage() {
               onMouseEnter={() => setHoveredMode(mode.id as GameModeId)}
               onClick={() => handleModeSelect(mode.id as GameModeId)}
             >
-              <mode.icon className="h-6 w-6 mr-4 text-primary" />
-              <span className="text-lg font-semibold">{mode.title}</span>
+              <mode.icon className="h-6 w-6 mr-4 flex-shrink-0 text-primary" />
+              <span className="text-lg font-semibold flex-shrink">{mode.title}</span>
             </Button>
           ))}
             <Button variant="ghost" onClick={() => router.back()} className="mt-6 self-start">
@@ -80,7 +80,7 @@ export default function GameModeSelectionPage() {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-muted-foreground text-lg">
+                <p className="text-muted-foreground text-base">
                     {selectedMode?.description}
                 </p>
             </CardContent>
