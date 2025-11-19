@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, SignalOff, ShieldAlert } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -217,7 +217,7 @@ export default function IntermediatePracticePage() {
         wumpus: { text: 'Alerta: Interferencia biológica.', icon: Skull, color: 'text-wumpus-danger', id: 'wumpus' },
         pit: { text: 'Peligro: Pozo estructural.', icon: AlertTriangle, color: 'text-wumpus-warning', id: 'pit' },
         bat: { text: 'Anomalía: Dron de transporte.', icon: Shuffle, color: 'text-wumpus-accent', id: 'bat' },
-        static: { text: 'Ruido de señal cercano.', icon: SignalOff, color: 'text-gray-400', id: 'static' },
+        static: { text: 'Ruido de señal cercano.', icon: WifiOff, color: 'text-gray-400', id: 'static' },
         lockdown: { text: 'Lectura de energía residual.', icon: ShieldAlert, color: 'text-orange-400', id: 'lockdown' }
     };
 
@@ -260,7 +260,7 @@ export default function IntermediatePracticePage() {
           <CardContent>
              <div className="space-y-1 text-xs font-code min-h-[90px]">
                 {isInStatic ? (
-                  <p className="text-orange-400 italic flex items-center gap-2"><SignalOff /> ERROR: Interferencia de sensor.</p>
+                  <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> ERROR: Interferencia de sensor.</p>
                 ) : senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
@@ -315,7 +315,7 @@ export default function IntermediatePracticePage() {
                  {isPlayerInRoom && <UserCog className="h-8 w-8" />}
                  {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                  {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                 {room.hasStatic && <SignalOff className="h-8 w-8 text-gray-400" />}
+                 {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
                  {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
               </div>
             </div>
