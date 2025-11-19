@@ -322,7 +322,7 @@ export default function AdvancedPracticePage() {
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost;
+          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost || room.hasWumpus;
 
           return (
             <div
@@ -349,6 +349,7 @@ export default function AdvancedPracticePage() {
                  {isPlayerInRoom && <UserCog className="h-8 w-8" />}
                  {!isPlayerInRoom && (
                    <>
+                     {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                      {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                      {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
                      {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
@@ -434,3 +435,5 @@ export default function AdvancedPracticePage() {
     </>
   );
 }
+
+    

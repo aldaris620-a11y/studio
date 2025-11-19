@@ -272,7 +272,7 @@ export default function EasyPracticePage() {
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
           
-          const hasHazard = room.hasPit || room.hasBat;
+          const hasVisibleHazard = room.hasPit || room.hasBat || room.hasWumpus;
 
           return (
             <div
@@ -299,9 +299,10 @@ export default function EasyPracticePage() {
                  
                  {!isPlayerInRoom && (
                    <>
+                    {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                     {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                     {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                    {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                    {isVisited && !hasVisibleHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>
@@ -364,3 +365,5 @@ export default function EasyPracticePage() {
     </>
   );
 }
+
+    
