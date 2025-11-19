@@ -24,38 +24,24 @@ export default function NarrativeStartPage() {
     <main className="flex min-h-screen w-full items-center justify-center bg-wumpus-background p-4 font-code">
       <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary bg-black/50 text-wumpus-foreground">
         <div className="p-8 md:p-12">
-          <div className="glitch" data-text="> OBJETIVOS DE LA MISIÓN: ACTIVO 734" style={{ animationDelay: '0.5s' }}>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-wumpus-primary uppercase">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-wumpus-primary uppercase fade-in" style={{ animationDelay: '0.5s' }}>
               &gt; OBJETIVOS DE LA MISIÓN: ACTIVO 734
             </h1>
-          </div>
           <div className="mt-6 border-t border-wumpus-accent/20 pt-6 space-y-4 text-base text-wumpus-foreground/80">
-            <div className="glitch" data-text="PARA: EXTRACTOR_7" style={{ animationDelay: '1s' }}>
-                <p><span className="text-wumpus-accent">PARA:</span> <span>EXTRACTOR_7</span></p>
-            </div>
-             <div className="glitch" data-text="DE: AETHELRED INDUSTRIES - DIVISIÓN DE CONTENCIÓN" style={{ animationDelay: '1.5s' }}>
-                <p><span className="text-wumpus-accent">DE:</span> <span>AETHELRED INDUSTRIES - DIVISIÓN DE CONTENCIÓN</span></p>
-            </div>
-             <div className="glitch" data-text="ASUNTO: Operación de Neutralización Urgente" style={{ animationDelay: '2s' }}>
-                <p><span className="text-wumpus-accent">ASUNTO:</span> <span>Operación de Neutralización Urgente</span></p>
-            </div>
-             <div className="glitch" data-text="Se ha detectado una brecha de contención. El Activo 734..." style={{ animationDelay: '2.5s' }}>
-                <p className="mt-4">
+                <p className="fade-in" style={{ animationDelay: '1s' }}><span className="text-wumpus-accent">PARA:</span> <span>EXTRACTOR_7</span></p>
+                <p className="fade-in" style={{ animationDelay: '1.5s' }}><span className="text-wumpus-accent">DE:</span> <span>AETHELRED INDUSTRIES - DIVISIÓN DE CONTENCIÓN</span></p>
+                <p className="fade-in" style={{ animationDelay: '2s' }}><span className="text-wumpus-accent">ASUNTO:</span> <span>Operación de Neutralización Urgente</span></p>
+                <p className="mt-4 fade-in" style={{ animationDelay: '2.5s' }}>
                   Se ha detectado una brecha de contención. El Activo 734, un arma biológica clase Tiamat, se ha liberado en los túneles de mantenimiento del Sector Gamma-9 de Neo-Arcadia.
                 </p>
-            </div>
-             <div className="glitch" data-text="Su objetivo es simple: infiltrarse, rastrear y neutralizar..." style={{ animationDelay: '3s' }}>
-                <p>
+                <p className="fade-in" style={{ animationDelay: '3s' }}>
                   Su objetivo es simple: infiltrarse en la red de túneles, rastrear al activo usando su equipo sensorial de última generación y neutralizarlo con fuerza letal. El activo es extremadamente hostil y ha demostrado tener capacidades de interferencia de sistemas.
                 </p>
-            </div>
-             <div className="glitch" data-text="Fracasar no es una opción." style={{ animationDelay: '3.5s' }}>
-                <p className="font-bold text-wumpus-warning">
+                <p className="font-bold text-wumpus-warning fade-in" style={{ animationDelay: '3.5s' }}>
                   Fracasar no es una opción. La integridad de la infraestructura de Neo-Arcadia está en juego.
                 </p>
-            </div>
           </div>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 fade-in" style={{ animationDelay: '4s' }}>
             <Button
               size="lg"
               className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90 text-lg font-bold shadow-glow-wumpus-primary"
