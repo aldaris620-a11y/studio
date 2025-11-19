@@ -36,7 +36,7 @@ const trainingLevels = [
     title: 'Práctica Avanzada',
     icon: Skull,
     description: 'Un desafío difícil con más peligros y un Wumpus más astuto.',
-    enabled: false,
+    enabled: true,
   },
 ];
 
