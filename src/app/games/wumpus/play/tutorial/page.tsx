@@ -30,7 +30,7 @@ const tutorialMapLayout: Room[] = [
   { id: 5, connections: [1, 6, 9], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 6, connections: [2, 5, 7, 10], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 7, connections: [3, 6, 8, 11], hasWumpus: true, hasPit: false, hasBat: false }, // Wumpus is here
-  { id: 8, connections: [4, 7, 12], hasWumpos: false, hasPit: false, hasBat: false },
+  { id: 8, connections: [4, 7, 12], hasWumpus: false, hasPit: false, hasBat: false },
   // Row 3
   { id: 9, connections: [5, 10, 13], hasWumpus: false, hasPit: true, hasBat: false },
   { id: 10, connections: [6, 9, 11, 14], hasWumpus: false, hasPit: false, hasBat: false },
@@ -273,12 +273,12 @@ export default function TutorialPage() {
         )}>
           <AlertDialogHeader>
             {gameOver?.icon && <gameOver.icon className={cn("h-12 w-12 mx-auto", {
-                'text-wumpus-danger': gameOver.variant === 'defeat',
-                'text-green-500': gameOver.variant === 'victory',
+                'text-wumpus-danger': gameOver?.variant === 'defeat',
+                'text-green-500': gameOver?.variant === 'victory',
             })} />}
             <AlertDialogTitle className={cn("text-center text-2xl", {
-                'text-wumpus-danger': gameOver.variant === 'defeat',
-                'text-green-500': gameOver.variant === 'victory',
+                'text-wumpus-danger': gameOver?.variant === 'defeat',
+                'text-green-500': gameOver?.variant === 'victory',
             })}>{gameOver?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-wumpus-foreground/80">
               {gameOver?.description}
@@ -317,5 +317,3 @@ export default function TutorialPage() {
     </>
   );
 }
-
-    
