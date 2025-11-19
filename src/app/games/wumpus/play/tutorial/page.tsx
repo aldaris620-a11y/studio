@@ -28,7 +28,7 @@ const tutorialMapLayout: Room[] = [
   { id: 5, connections: [1, 6, 9], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 6, connections: [2, 5, 7, 10], hasWumpus: false, hasPit: false, hasBat: false },
   { id: 7, connections: [3, 6, 8, 11], hasWumpus: true, hasPit: false, hasBat: false }, // Wumpus is here
-  { id: 8, connections: [4, 7, 12], hasWumpos: false, hasPit: false, hasBat: false },
+  { id: 8, connections: [4, 7, 12], hasWumpus: false, hasPit: false, hasBat: false },
   // Row 3
   { id: 9, connections: [5, 10, 13], hasWumpus: false, hasPit: true, hasBat: false },
   { id: 10, connections: [6, 9, 11, 14], hasWumpus: false, hasPit: false, hasBat: false },
@@ -128,7 +128,7 @@ export default function TutorialPage() {
                   </p>
                 )}
              </div>
-             <Button className="w-full mt-4" variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
+             <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
                 <Crosshair className="mr-2 h-4 w-4" />
                 {isShooting ? 'Apuntando...' : 'Disparar'}
              </Button>
@@ -191,3 +191,5 @@ export default function TutorialPage() {
     </div>
   );
 }
+
+    
