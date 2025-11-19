@@ -45,7 +45,7 @@ export default function GameModeSelectionPage() {
         <p className="text-muted-foreground mt-2 text-sm md:text-base">Selecciona tu próximo contrato, cazador.</p>
       </div>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
         {gameModes.map((mode) => (
           <Card 
             key={mode.id}
