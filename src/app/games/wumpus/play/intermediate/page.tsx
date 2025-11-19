@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -306,10 +305,10 @@ export default function IntermediatePracticePage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses, isInStatic } = useMemo(() => {
-    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false };
+  const { connectedRooms, senses, isInStatic, sensedHazards } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, sensedHazards: new Map() };
     const room = getRoomById(playerRoomId, gameMap);
-    if (!room) return { connectedRooms: [], senses: [], isInStatic: false };
+    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, sensedHazards: new Map() };
     
     const inStatic = room.hasStatic;
     let connections = room.connections;
@@ -327,21 +326,37 @@ export default function IntermediatePracticePage() {
 
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
+    const sensedHazards = new Map<number, React.ElementType>();
     
     if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId, gameMap);
             if (connectedRoom) {
-                if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
-                if (connectedRoom.hasPit && !detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
-                if (connectedRoom.hasBat && !detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
-                if (connectedRoom.hasStatic && !detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
-                if (connectedRoom.hasLockdown && !detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
+                if (connectedRoom.hasWumpus) {
+                    if (!detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
+                    sensedHazards.set(connectedId, Skull);
+                }
+                if (connectedRoom.hasPit) {
+                    if (!detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
+                    sensedHazards.set(connectedId, AlertTriangle);
+                }
+                if (connectedRoom.hasBat) {
+                    if (!detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
+                    sensedHazards.set(connectedId, Shuffle);
+                }
+                if (connectedRoom.hasStatic) {
+                    if (!detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
+                    sensedHazards.set(connectedId, WifiOff);
+                }
+                if (connectedRoom.hasLockdown) {
+                    if (!detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
+                    sensedHazards.set(connectedId, ShieldAlert);
+                }
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
+    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, sensedHazards };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) {
@@ -409,7 +424,7 @@ export default function IntermediatePracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const isHazard = room.hasWumpus || room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
+            const SensedHazardIcon = sensedHazards.get(room.id);
 
             return (
                 <div
@@ -442,7 +457,12 @@ export default function IntermediatePracticePage() {
                         {isPlayerInRoom && room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
                         {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
                         {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
-                        {isVisited && !isHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
+                        
+                        {SensedHazardIcon && <SensedHazardIcon className="h-6 w-6 md:h-8 md:h-8 text-white opacity-50" />}
+
+                        {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !SensedHazardIcon && (
+                            <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                        )}
                     </>
                     )}
                 </div>

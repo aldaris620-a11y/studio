@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -206,10 +205,10 @@ export default function EasyPracticePage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses } = useMemo(() => {
-    if (gameMap.length === 0) return { connectedRooms: [], senses: [] };
+  const { connectedRooms, senses, sensedHazards } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], sensedHazards: new Map() };
     const room = getRoomById(playerRoomId, gameMap);
-    if (!room) return { connectedRooms: [], senses: [] };
+    if (!room) return { connectedRooms: [], senses: [], sensedHazards: new Map() };
     
     const connections = room.connections;
     
@@ -221,26 +220,36 @@ export default function EasyPracticePage() {
 
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
+    const sensedHazards = new Map<number, React.ElementType>();
 
     for (const connectedId of connections) {
         const connectedRoom = getRoomById(connectedId, gameMap);
         if (connectedRoom) {
-            if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) {
-                senses_warnings.push(senseTypes.wumpus);
-                detectedSenses.add('wumpus');
+            if (connectedRoom.hasWumpus) {
+              if (!detectedSenses.has('wumpus')) {
+                  senses_warnings.push(senseTypes.wumpus);
+                  detectedSenses.add('wumpus');
+              }
+              sensedHazards.set(connectedId, Skull);
             }
-            if (connectedRoom.hasPit && !detectedSenses.has('pit')) {
-                senses_warnings.push(senseTypes.pit);
-                detectedSenses.add('pit');
+            if (connectedRoom.hasPit) {
+              if (!detectedSenses.has('pit')) {
+                  senses_warnings.push(senseTypes.pit);
+                  detectedSenses.add('pit');
+              }
+              sensedHazards.set(connectedId, AlertTriangle);
             }
-            if (connectedRoom.hasBat && !detectedSenses.has('bat')) {
-                senses_warnings.push(senseTypes.bat);
-                detectedSenses.add('bat');
+            if (connectedRoom.hasBat) {
+              if (!detectedSenses.has('bat')) {
+                  senses_warnings.push(senseTypes.bat);
+                  detectedSenses.add('bat');
+              }
+              sensedHazards.set(connectedId, Shuffle);
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings };
+    return { connectedRooms: connections, senses: senses_warnings, sensedHazards };
   }, [playerRoomId, gameMap, getRoomById]);
 
   if (gameMap.length === 0) {
@@ -298,7 +307,7 @@ export default function EasyPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
             
-            const isHazard = room.hasWumpus || room.hasPit || room.hasBat;
+            const SensedHazardIcon = sensedHazards.get(room.id);
 
             return (
                 <div
@@ -325,10 +334,18 @@ export default function EasyPracticePage() {
                     
                     {!isPlayerInRoom && (
                     <>
+                        {/* Render hazard ONLY if player is in the room */}
                         {isPlayerInRoom && room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                         {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                         {isPlayerInRoom && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                        {isVisited && !isHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                        
+                        {/* Render sensed hazard icons in adjacent rooms */}
+                        {SensedHazardIcon && <SensedHazardIcon className="h-8 w-8 text-white opacity-50" />}
+                        
+                        {/* Render footprints if visited and safe */}
+                        {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !SensedHazardIcon && (
+                            <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
+                        )}
                     </>
                     )}
                 </div>

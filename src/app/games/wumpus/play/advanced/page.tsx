@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -308,10 +307,10 @@ export default function AdvancedPracticePage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses, isInStatic, isNearGhost } = useMemo(() => {
-    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
+  const { connectedRooms, senses, isInStatic, isNearGhost, sensedHazards } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false, sensedHazards: new Map() };
     const room = getRoomById(playerRoomId, gameMap);
-    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
+    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false, sensedHazards: new Map() };
     
     const inStatic = room.hasStatic;
     let connections = room.connections;
@@ -329,6 +328,7 @@ export default function AdvancedPracticePage() {
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
     let nearGhost = false;
+    const sensedHazards = new Map<number, React.ElementType>();
 
     // Check for ghost in current room or adjacent rooms
      for (const connectedId of room.connections) {
@@ -342,21 +342,40 @@ export default function AdvancedPracticePage() {
     
     if (nearGhost) {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
+        room.connections.forEach(id => sensedHazards.set(id, Ghost));
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId, gameMap);
             if (connectedRoom) {
-                if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
-                if (connectedRoom.hasPit && !detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
-                if (connectedRoom.hasBat && !detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
-                if (connectedRoom.hasStatic && !detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
-                if (connectedRoom.hasLockdown && !detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
-                if (connectedRoom.hasGhost && !detectedSenses.has('ghost')) { senses_warnings.push(senseTypes.ghost); detectedSenses.add('ghost'); }
+                if (connectedRoom.hasWumpus) {
+                    if (!detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
+                    sensedHazards.set(connectedId, Skull);
+                }
+                if (connectedRoom.hasPit) {
+                    if (!detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
+                    sensedHazards.set(connectedId, AlertTriangle);
+                }
+                if (connectedRoom.hasBat) {
+                    if (!detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
+                    sensedHazards.set(connectedId, Shuffle);
+                }
+                if (connectedRoom.hasStatic) {
+                    if (!detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
+                    sensedHazards.set(connectedId, WifiOff);
+                }
+                if (connectedRoom.hasLockdown) {
+                    if (!detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
+                    sensedHazards.set(connectedId, ShieldAlert);
+                }
+                if (connectedRoom.hasGhost) {
+                    if (!detectedSenses.has('ghost')) { senses_warnings.push(senseTypes.ghost); detectedSenses.add('ghost'); }
+                    sensedHazards.set(connectedId, Ghost);
+                }
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
+    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost, sensedHazards };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) return null;
@@ -423,7 +442,7 @@ export default function AdvancedPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const isHazard = room.hasWumpus || room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown || room.hasGhost;
+            const SensedHazardIcon = sensedHazards.get(room.id);
 
             return (
                 <div
@@ -456,7 +475,12 @@ export default function AdvancedPracticePage() {
                         {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
                         {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
                         {isPlayerInRoom && room.hasGhost && <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />}
-                        {isVisited && !isHazard && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
+                        
+                        {SensedHazardIcon && <SensedHazardIcon className="h-6 w-6 md:h-8 md:h-8 text-white opacity-50" />}
+
+                        {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && !SensedHazardIcon && (
+                            <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                        )}
                     </>
                     )}
                 </div>

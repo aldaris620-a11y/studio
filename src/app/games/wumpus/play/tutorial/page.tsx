@@ -158,10 +158,10 @@ export default function TutorialPage() {
     setVisitedRooms(new Set([1]));
   };
 
-  const { connectedRooms, senses } = useMemo(() => {
+  const { connectedRooms, senses, sensedHazards } = useMemo(() => {
     const room = getRoomById(playerRoomId);
     if (!room) {
-      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [] };
+      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [], sensedHazards: new Map() };
     }
     const connections = room.connections;
     
@@ -173,26 +173,36 @@ export default function TutorialPage() {
 
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
+    const sensedHazards = new Map<number, React.ElementType>();
 
     for (const connectedId of connections) {
         const connectedRoom = getRoomById(connectedId);
         if (connectedRoom) {
-            if (connectedRoom.hasWumpus && !detectedSenses.has('wumpus')) {
-                senses_warnings.push(senseTypes.wumpus);
-                detectedSenses.add('wumpus');
+            if (connectedRoom.hasWumpus) {
+              if (!detectedSenses.has('wumpus')) {
+                  senses_warnings.push(senseTypes.wumpus);
+                  detectedSenses.add('wumpus');
+              }
+              sensedHazards.set(connectedId, Skull);
             }
-            if (connectedRoom.hasPit && !detectedSenses.has('pit')) {
-                senses_warnings.push(senseTypes.pit);
-                detectedSenses.add('pit');
+            if (connectedRoom.hasPit) {
+              if (!detectedSenses.has('pit')) {
+                  senses_warnings.push(senseTypes.pit);
+                  detectedSenses.add('pit');
+              }
+              sensedHazards.set(connectedId, AlertTriangle);
             }
-            if (connectedRoom.hasBat && !detectedSenses.has('bat')) {
-                senses_warnings.push(senseTypes.bat);
-                detectedSenses.add('bat');
+            if (connectedRoom.hasBat) {
+              if (!detectedSenses.has('bat')) {
+                  senses_warnings.push(senseTypes.bat);
+                  detectedSenses.add('bat');
+              }
+              sensedHazards.set(connectedId, Shuffle);
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings };
+    return { connectedRooms: connections, senses: senses_warnings, sensedHazards };
   }, [playerRoomId]);
 
   return (
@@ -243,7 +253,7 @@ export default function TutorialPage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const hasHazard = room.hasWumpus || room.hasPit || room.hasBat;
+            const SensedHazardIcon = sensedHazards.get(room.id);
 
             return (
                 <div
@@ -266,18 +276,20 @@ export default function TutorialPage() {
                 )}
                 >
                 <div className="flex flex-col items-center justify-center">
-                    {isPlayerInRoom && (
-                        <>
-                            <UserCog className="h-8 w-8" />
-                        </>
-                    )}
+                    {isPlayerInRoom && <UserCog className="h-8 w-8" />}
                     
                     {!isPlayerInRoom && (
                         <>
                             {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                             {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                             {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                            
+                            {/* Render sensed hazard icons */}
+                            {SensedHazardIcon && <SensedHazardIcon className="h-8 w-8 text-white opacity-50" />}
+
+                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !SensedHazardIcon && (
+                                <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
+                            )}
                         </>
                     )}
                 </div>
