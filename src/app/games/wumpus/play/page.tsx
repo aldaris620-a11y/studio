@@ -34,8 +34,12 @@ export default function GameModeSelectionPage() {
   const router = useRouter();
   
   const handleModeSelect = (modeId: GameModeId) => {
-    // TODO: Navigate to the actual game screen for the selected mode
-    console.log(`Modo seleccionado: ${modeId}`);
+    if (modeId === 'tutorial') {
+      router.push('/games/wumpus/play/tutorial');
+    } else {
+      // TODO: Navigate to the actual game screen for the selected mode
+      console.log(`Modo seleccionado: ${modeId}`);
+    }
   }
 
   return (
