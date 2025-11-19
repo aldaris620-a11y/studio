@@ -29,14 +29,14 @@ const trainingLevels = [
     title: 'Práctica Intermedia',
     icon: Dices,
     description: 'Un mapa aleatorio con una configuración de peligro estándar.',
-    enabled: false,
+    enabled: true,
   },
     {
     id: 'avanzada',
     title: 'Práctica Avanzada',
     icon: Skull,
     description: 'Un desafío difícil con más peligros y un Wumpus más astuto.',
-    enabled: false,
+    enabled: true,
   },
 ];
 
