@@ -13,7 +13,7 @@ export default function WumpusPage() {
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-wumpus-background p-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-wumpus-background p-4">
       <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
         <div className="relative flex flex-col items-center justify-center h-full p-8 md:p-12 text-center text-white bg-black/50">
            <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-widest uppercase text-wumpus-primary animate-pulse">
