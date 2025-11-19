@@ -2,11 +2,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network, User, Wind, Skull } from 'lucide-react';
+import { Network, User, Wind, Skull, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 // Definición de la estructura de una habitación
 type Room = {
@@ -17,6 +17,17 @@ type Room = {
   hasPit: boolean;
   hasBat: boolean;
 };
+
+// Coordenadas para el mapa holográfico (distribución circular)
+const roomCoordinates = [
+  { id: 1, x: 50, y: 10 }, { id: 2, x: 75, y: 15 }, { id: 3, x: 90, y: 30 },
+  { id: 4, x: 90, y: 50 }, { id: 5, x: 75, y: 65 }, { id: 6, x: 50, y: 70 },
+  { id: 7, x: 25, y: 65 }, { id: 8, x: 10, y: 50 }, { id: 9, x: 10, y: 30 },
+  { id: 10, x: 25, y: 15 }, { id: 11, x: 40, y: 25 }, { id: 12, x: 60, y: 25 },
+  { id: 13, x: 70, y: 40 }, { id: 14, x: 60, y: 55 }, { id: 15, x: 40, y: 55 },
+  { id: 16, x: 30, y: 40 }, { id: 17, x: 20, y: 50 }, { id: 18, x: 20, y: 30 },
+  { id: 19, x: 35, y: 20 }, { id: 20, x: 65, y: 20 },
+];
 
 // Mapa estático para el tutorial
 const tutorialMap: Room[] = [
@@ -42,7 +53,6 @@ const tutorialMap: Room[] = [
   { id: 20, name: 'Abismo Sin Fondo', connections: [13, 16, 19], hasWumpus: false, hasPit: true, hasBat: false },
 ];
 
-
 export default function TutorialPage() {
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
   const router = useRouter();
@@ -50,87 +60,122 @@ export default function TutorialPage() {
   const handleMove = (roomId: number) => {
     setPlayerRoomId(roomId);
   };
-  
-  const { currentRoom } = useMemo(() => {
+
+  const { currentRoom, connectedRooms } = useMemo(() => {
     const room = tutorialMap.find(r => r.id === playerRoomId);
     if (!room) {
-      // This should not happen in the tutorial
-      setPlayerRoomId(1); // Reset to start
-      return { currentRoom: tutorialMap[0] };
+      setPlayerRoomId(1); // Reset to start on error
+      return { currentRoom: tutorialMap[0], connectedRooms: tutorialMap[0].connections };
     }
-    return { currentRoom: room };
+    return { currentRoom: room, connectedRooms: room.connections };
   }, [playerRoomId]);
 
-  const connectedRoomIds = currentRoom?.connections || [];
-
   return (
-    <div className="h-full w-full bg-background text-foreground p-4 flex flex-col md:flex-row gap-4">
-      
-      {/* Columna de Información y Acciones */}
-      <div className="w-full md:w-1/3 flex flex-col gap-4">
-        <Card className="bg-card/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><User className="text-primary"/>Estado del Cazador</CardTitle>
+    <div className="h-full w-full bg-background text-foreground relative overflow-hidden">
+      {/* HUD de Información */}
+      <div className="absolute top-4 left-4 z-10 w-full max-w-xs">
+        <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg text-primary"><User />Estado del Cazador</CardTitle>
+            <CardDescription>Protocolo de Entrenamiento</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Te encuentras en: <span className="font-bold text-primary">{currentRoom?.name}</span> (Habitación {currentRoom?.id})</p>
-            <p className="mt-4 text-sm text-muted-foreground">Analizando el entorno...</p>
-             <div className="mt-2 space-y-1 text-sm">
+            <p className="text-sm">Posición: <span className="font-bold text-primary">{currentRoom?.name}</span> (Nodo {currentRoom?.id})</p>
+            <p className="mt-2 text-xs text-muted-foreground">Analizando el entorno...</p>
+             <div className="mt-1 space-y-1 text-xs">
                 {/* Lógica de pistas irá aquí */}
-                <div className="flex items-center gap-2"><Wind /> Sientes una ligera brisa.</div>
-                <div className="flex items-center gap-2"><Skull /> Huele a algo terrible cerca.</div>
+                <div className="flex items-center gap-2"><Wind className="h-3 w-3"/> Sientes una ligera brisa.</div>
+                <div className="flex items-center gap-2"><Skull className="h-3 w-3" /> Huele a algo terrible cerca.</div>
              </div>
           </CardContent>
         </Card>
+        <Button variant="ghost" onClick={() => router.back()} className="mt-2 text-muted-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Salir de la Simulación
+        </Button>
       </div>
 
-      {/* Columna del Mapa */}
-      <div className="w-full md:w-2/3">
-        <Card className="bg-card/50 h-full">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Network className="text-primary"/>Mapa de la Caverna (Nivel de Entrenamiento)</CardTitle>
-                 <CardDescription>Haz clic en una habitación adyacente resaltada para moverte.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3 text-center">
-                {tutorialMap.map(room => {
-                    const isPlayerInRoom = playerRoomId === room.id;
-                    const isConnected = connectedRoomIds.includes(room.id);
-                    const isClickable = isConnected && !isPlayerInRoom;
+      {/* Mapa Holográfico SVG */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg viewBox="0 0 100 80" className="w-full h-full">
+            {/* Renderizar todas las conexiones en gris */}
+            {tutorialMap.map(room => {
+                const startPos = roomCoordinates.find(c => c.id === room.id);
+                return room.connections.map(connId => {
+                    const endPos = roomCoordinates.find(c => c.id === connId);
+                    if (!startPos || !endPos || startPos.id > endPos.id) return null; // Evita duplicar líneas
 
+                     const isPathActive = (playerRoomId === startPos.id && connectedRooms.includes(endPos.id)) ||
+                                       (playerRoomId === endPos.id && connectedRooms.includes(startPos.id));
+                    
                     return (
-                        <div
-                            key={room.id}
-                            onClick={() => isClickable && handleMove(room.id)}
-                            role={isClickable ? "button" : undefined}
-                            tabIndex={isClickable ? 0 : -1}
-                            onKeyDown={(e) => {
-                                if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
-                                    handleMove(room.id);
-                                }
-                            }}
-                            className={cn(
-                                "aspect-square rounded-md flex items-center justify-center p-1 border-2 transition-all duration-200",
-                                isPlayerInRoom 
-                                    ? "bg-primary/20 border-primary shadow-glow-primary scale-105" 
-                                    : "bg-muted/30 border-muted",
-                                isClickable
-                                    ? "cursor-pointer border-primary/50 hover:bg-primary/10 hover:border-primary" 
-                                    : "cursor-default",
-                                !isPlayerInRoom && !isConnected && "opacity-60"
-                            )}
-                        >
-                            <div className="flex flex-col items-center">
-                                 <span className={cn(
-                                    "font-bold text-sm md:text-base",
-                                    isPlayerInRoom ? "text-primary-foreground" : "text-foreground"
-                                 )}>{room.id}</span>
-                                 {isPlayerInRoom && <User className="h-4 w-4 mt-1 text-primary animate-pulse" />}
-                            </div>
-                        </div>
-                    );
-                })}
-            </CardContent>
-        </Card>
+                       <line 
+                          key={`${room.id}-${connId}`}
+                          x1={startPos.x} y1={startPos.y}
+                          x2={endPos.x} y2={endPos.y}
+                          className={cn(
+                            "stroke-muted/30 transition-all duration-300",
+                            isPathActive && "stroke-primary/80"
+                          )}
+                          strokeWidth="0.2"
+                        />
+                    )
+                })
+            })}
+
+            {/* Renderizar Nodos (Habitaciones) */}
+            {roomCoordinates.map(coord => {
+              const isPlayerInRoom = playerRoomId === coord.id;
+              const isConnected = connectedRooms.includes(coord.id);
+              const isClickable = isConnected && !isPlayerInRoom;
+
+              return (
+                <g key={coord.id}>
+                    {/* Anillo exterior para la habitación actual */}
+                    {isPlayerInRoom && (
+                         <circle
+                            cx={coord.x}
+                            cy={coord.y}
+                            r="3"
+                            className="fill-none stroke-primary/80"
+                            strokeWidth="0.3"
+                          >
+                            <animate
+                                attributeName="stroke-width"
+                                values="0.3;0.6;0.3"
+                                dur="2s"
+                                repeatCount="indefinite"
+                            />
+                         </circle>
+                    )}
+                    <circle
+                      onClick={() => isClickable && handleMove(coord.id)}
+                      cx={coord.x}
+                      cy={coord.y}
+                      r={isPlayerInRoom ? "2" : "1.5"}
+                      className={cn(
+                        "fill-muted/50 stroke-primary/50 transition-all duration-300",
+                        isPlayerInRoom ? "fill-primary/70 stroke-primary" : "stroke-muted",
+                        isClickable ? "cursor-pointer pointer-events-auto fill-primary/30 hover:fill-primary" : "",
+                      )}
+                      strokeWidth="0.2"
+                    >
+                     {isClickable && (
+                        <animate
+                            attributeName="r"
+                            values="1.5;2;1.5"
+                            dur="1.5s"
+                            repeatCount="indefinite"
+                         />
+                     )}
+                    </circle>
+                     <text x={coord.x} y={coord.y + 0.5} textAnchor="middle" dy="0.1em" className="fill-foreground text-[1px] font-sans pointer-events-none">
+                        {coord.id}
+                    </text>
+                </g>
+              );
+            })}
+          </svg>
       </div>
     </div>
   );
