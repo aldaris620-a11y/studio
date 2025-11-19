@@ -45,13 +45,15 @@ export default function TrainingSelectionPage() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   
   const handleLevelSelect = (levelId: string) => {
-    if (levelId === 'tutorial' || levelId === 'facil') {
-      setIsLoading(levelId);
-      // TODO: 'facil' should eventually point to its own page. For now, it uses the tutorial.
+    setIsLoading(levelId);
+    if (levelId === 'tutorial') {
       router.push('/games/wumpus/play/tutorial');
+    } else if (levelId === 'facil') {
+      router.push('/games/wumpus/play/easy');
     } else {
       // Placeholder for other levels
       console.log(`Nivel seleccionado: ${levelId}`);
+       setTimeout(() => setIsLoading(null), 1000);
     }
   }
 
