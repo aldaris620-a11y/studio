@@ -224,7 +224,7 @@ export default function TutorialPage() {
                  )}
                  {/* En el modo tutorial, todos los peligros son visibles */}
                  {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                 {room.hasPit && <div className="w-8 h-8 rounded-full bg-black border-2 border-wumpus-warning" />}
+                 {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                  {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
               </div>
             </div>
@@ -276,5 +276,3 @@ export default function TutorialPage() {
     </>
   );
 }
-
-    
