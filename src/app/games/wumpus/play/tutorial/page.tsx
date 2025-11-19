@@ -110,13 +110,12 @@ export default function TutorialPage() {
       {/* Panel de Información */}
       <div className="w-full md:w-1/4 max-w-sm">
         <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><User />Estado del Cazador</CardTitle>
             <CardDescription className="text-wumpus-foreground/60">Tutorial Guiado</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mt-4 text-xs text-wumpus-foreground/60">Analizando el entorno...</p>
-             <div className="mt-2 space-y-2 text-sm font-code min-h-[60px]">
+             <div className="space-y-1 text-xs font-code min-h-[50px]">
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${playerRoomId}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
