@@ -43,10 +43,10 @@ export default function GameModeSelectionPage() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center bg-background text-foreground p-4">
+    <div className="flex h-full w-full flex-col items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
       <div className="text-center my-2 md:my-4">
-        <h1 className="text-2xl md:text-4xl font-bold md:tracking-widest text-primary uppercase">Tablero de Misiones</h1>
-        <p className="text-muted-foreground mt-2 text-xs md:text-base">Selecciona tu próximo contrato, cazador.</p>
+        <h1 className="text-2xl md:text-4xl font-bold md:tracking-widest text-wumpus-primary uppercase">Tablero de Misiones</h1>
+        <p className="text-wumpus-foreground/70 mt-2 text-xs md:text-base">Selecciona tu próximo contrato, cazador.</p>
       </div>
 
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -54,20 +54,20 @@ export default function GameModeSelectionPage() {
           <Card 
             key={mode.id}
             className={cn(
-                "bg-card/50 border-primary/20 flex flex-col cursor-pointer",
+                "bg-wumpus-card/80 border-wumpus-primary/20 flex flex-col cursor-pointer text-wumpus-foreground",
                 "transition-all duration-300 ease-in-out",
-                "hover:scale-105 hover:shadow-glow-primary hover:border-primary"
+                "hover:scale-105 hover:shadow-glow-wumpus-primary hover:border-wumpus-primary"
             )}
             onClick={() => handleModeSelect(mode.id as GameModeId)}
           >
             <CardHeader className="items-center text-center p-2">
-              <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
-                <mode.icon className="h-8 w-8 text-primary" />
+              <div className="p-2 bg-wumpus-primary/10 rounded-full border border-wumpus-primary/20">
+                <mode.icon className="h-8 w-8 text-wumpus-primary" />
               </div>
               <CardTitle className="text-lg font-headline">{mode.title}</CardTitle>
             </CardHeader>
             <CardContent className="text-center flex-grow p-4 pt-0">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-wumpus-foreground/70 text-sm">
                 {mode.description}
               </p>
             </CardContent>
@@ -75,7 +75,7 @@ export default function GameModeSelectionPage() {
         ))}
       </div>
       
-      <Button variant="ghost" onClick={() => router.back()} className="mt-8">
+      <Button variant="ghost" onClick={() => router.back()} className="mt-8 text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver al Menú Principal
       </Button>

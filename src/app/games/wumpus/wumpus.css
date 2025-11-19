@@ -1,3 +1,57 @@
+:root {
+  --wumpus-background: 232 40% 12%;
+  --wumpus-foreground: 212 80% 85%;
+  --wumpus-card: 240 30% 15%;
+  --wumpus-primary: 326 100% 74%; /* Neon Pink */
+  --wumpus-primary-foreground: 232 40% 12%;
+  --wumpus-accent: 172 100% 70%; /* Cyan */
+  --wumpus-warning: 48 100% 67%; /* Bright Yellow */
+  --wumpus-danger: 0 100% 67%; /* Bright Red */
+}
+
+.bg-wumpus-background { background-color: hsl(var(--wumpus-background)); }
+.text-wumpus-foreground { color: hsl(var(--wumpus-foreground)); }
+.bg-wumpus-card { background-color: hsl(var(--wumpus-card)); }
+.text-wumpus-primary { color: hsl(var(--wumpus-primary)); }
+.border-wumpus-primary { border-color: hsl(var(--wumpus-primary)); }
+.bg-wumpus-primary { background-color: hsl(var(--wumpus-primary)); }
+.text-wumpus-primary-foreground { color: hsl(var(--wumpus-primary-foreground)); }
+.text-wumpus-accent { color: hsl(var(--wumpus-accent)); }
+.border-wumpus-accent { border-color: hsl(var(--wumpus-accent)); }
+.bg-wumpus-accent { background-color: hsl(var(--wumpus-accent)); }
+.text-wumpus-warning { color: hsl(var(--wumpus-warning)); }
+.text-wumpus-danger { color: hsl(var(--wumpus-danger)); }
+.border-wumpus-danger { border-color: hsl(var(--wumpus-danger)); }
+
+
+.shadow-glow-wumpus-primary {
+  box-shadow: 0 0 15px 3px hsl(var(--wumpus-primary) / 0.3), 0 0 5px 1px hsl(var(--wumpus-primary) / 0.2);
+}
+
+.bg-wumpus-primary\/10 { background-color: hsl(var(--wumpus-primary) / 0.1); }
+.bg-wumpus-primary\/20 { background-color: hsl(var(--wumpus-primary) / 0.2); }
+.border-wumpus-primary\/20 { border-color: hsl(var(--wumpus-primary) / 0.2); }
+.border-wumpus-primary\/30 { border-color: hsl(var(--wumpus-primary) / 0.3); }
+
+.hover\:bg-wumpus-accent\/10:hover { background-color: hsl(var(--wumpus-accent) / 0.1); }
+.hover\:text-wumpus-accent:hover { color: hsl(var(--wumpus-accent)); }
+.bg-wumpus-accent\/10 { background-color: hsl(var(--wumpus-accent) / 0.1); }
+.bg-wumpus-accent\/20 { background-color: hsl(var(--wumpus-accent) / 0.2); }
+.border-wumpus-accent\/20 { border-color: hsl(var(--wumpus-accent) / 0.2); }
+.hover\:border-wumpus-accent:hover { border-color: hsl(var(--wumpus-accent)); }
+
+
+.bg-wumpus-danger\/20 { background-color: hsl(var(--wumpus-danger) / 0.2); }
+.hover\:bg-wumpus-danger\/30:hover { background-color: hsl(var(--wumpus-danger) / 0.3); }
+.hover\:border-wumpus-danger:hover { border-color: hsl(var(--wumpus-danger)); }
+.ring-wumpus-danger {--tw-ring-color: hsl(var(--wumpus-danger));}
+.text-wumpus-foreground\/60 { color: hsl(var(--wumpus-foreground) / 0.6); }
+.text-wumpus-foreground\/70 { color: hsl(var(--wumpus-foreground) / 0.7); }
+.bg-wumpus-background\/50 { background-color: hsl(var(--wumpus-background) / 0.5); }
+.hover\:bg-wumpus-primary\/10:hover { background-color: hsl(var(--wumpus-primary) / 0.1); }
+.hover\:text-wumpus-primary:hover { color: hsl(var(--wumpus-primary)); }
+
+
 @keyframes typing {
   from {
     width: 0;
@@ -13,14 +67,14 @@
     border-color: transparent;
   }
   50% {
-    border-color: hsl(var(--primary));
+    border-color: hsl(var(--wumpus-accent));
   }
 }
 
 .typing-effect {
   overflow: hidden;
   white-space: nowrap;
-  border-right: 0.15em solid hsl(var(--primary));
+  border-right: 0.1em solid hsl(var(--wumpus-accent));
   animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
   animation-fill-mode: forwards;
 }
