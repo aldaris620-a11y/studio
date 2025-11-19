@@ -119,9 +119,9 @@ export default function TutorialPage() {
     const connections = room.connections;
     
     const senseTypes = {
-        wumpus: { text: 'Alerta: Interferencia biológica detectada.', icon: Skull, color: 'text-wumpus-danger', id: 'wumpus' },
-        pit: { text: 'Peligro estructural: Pozo de mantenimiento abierto.', icon: AlertTriangle, color: 'text-wumpus-warning', id: 'pit' },
-        bat: { text: 'Subsistema errático: Dron de transporte activado.', icon: Shuffle, color: 'text-wumpus-accent', id: 'bat' }
+        wumpus: { text: 'Alerta: Interferencia biológica.', icon: Skull, color: 'text-wumpus-danger', id: 'wumpus' },
+        pit: { text: 'Peligro: Pozo estructural.', icon: AlertTriangle, color: 'text-wumpus-warning', id: 'pit' },
+        bat: { text: 'Anomalía: Dron de transporte.', icon: Shuffle, color: 'text-wumpus-accent', id: 'bat' }
     };
 
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
