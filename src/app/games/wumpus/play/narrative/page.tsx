@@ -26,7 +26,7 @@ export default function NarrativeStartPage() {
       <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary bg-black/50 text-wumpus-foreground">
         <div className="p-8 md:p-12">
           <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-wumpus-primary uppercase">
-            &gt; BRIEFING DE MISIÓN: ACTIVO 734
+            &gt; OBJETIVOS DE LA MISIÓN: ACTIVO 734
           </h1>
           <div className="mt-6 border-t border-wumpus-accent/20 pt-6 space-y-4 text-base text-wumpus-foreground/80">
             <p className="typing-effect"><span className="text-wumpus-accent">PARA:</span> EXTRACTOR_7</p>
