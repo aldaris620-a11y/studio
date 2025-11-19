@@ -76,10 +76,10 @@ export default function TutorialPage() {
         }
     }
 
-    const senses_warnings: { text: string; icon: React.ElementType }[] = [];
-    if (wumpusNearby) senses_warnings.push({ text: 'Huele a algo terrible cerca.', icon: Skull });
-    if (pitNearby) senses_warnings.push({ text: 'Sientes una ligera brisa.', icon: Wind });
-    if (batNearby) senses_warnings.push({ text: 'Oyes un aleteo cercano.', icon: VenetianMask });
+    const senses_warnings: { text: string; icon: React.ElementType; color: string }[] = [];
+    if (wumpusNearby) senses_warnings.push({ text: 'Huele a algo terrible cerca.', icon: Skull, color: 'text-red-400' });
+    if (pitNearby) senses_warnings.push({ text: 'Sientes una ligera brisa.', icon: Wind, color: 'text-blue-400' });
+    if (batNearby) senses_warnings.push({ text: 'Oyes un aleteo cercano.', icon: VenetianMask, color: 'text-purple-400' });
 
     return { currentRoom: room, connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
@@ -97,11 +97,11 @@ export default function TutorialPage() {
             <p className="text-sm">Posición: <span className="font-bold text-primary">Habitación {currentRoom?.id}</span></p>
             <p className="mt-4 text-xs text-muted-foreground">Analizando el entorno...</p>
              <div className="mt-2 space-y-2 text-sm">
-                {senses.length > 0 ? senses.map(sense => (
-                    <div key={sense.text} className="flex items-center gap-2">
-                        <sense.icon className="h-4 w-4 text-amber-400"/> {sense.text}
+                {senses.length > 0 ? senses.map((sense, index) => (
+                    <div key={sense.text} className={cn("flex items-center gap-2 animate-text-in", sense.color)} style={{ animationDelay: `${index * 150}ms` }}>
+                        <sense.icon className="h-4 w-4"/> {sense.text}
                     </div>
-                )) : <p className="text-sm text-muted-foreground italic">No hay peligros inmediatos.</p>}
+                )) : <p className="text-sm text-muted-foreground italic animate-text-in">No hay peligros inmediatos.</p>}
              </div>
           </CardContent>
         </Card>
@@ -122,6 +122,9 @@ export default function TutorialPage() {
             <div
               key={room.id}
               onClick={() => isClickable && handleMove(room.id)}
+              role="button"
+              tabIndex={isClickable ? 0 : -1}
+              onKeyDown={(e) => isClickable && (e.key === 'Enter' || e.key === ' ') && handleMove(room.id)}
               className={cn(
                 'relative flex items-center justify-center w-20 h-20 border border-primary/30 text-primary',
                 'transition-all duration-200',
