@@ -51,18 +51,17 @@ export default function TutorialPage() {
     setPlayerRoomId(roomId);
   };
   
-  const { currentRoom, connectedRooms } = useMemo(() => {
+  const { currentRoom } = useMemo(() => {
     const room = tutorialMap.find(r => r.id === playerRoomId);
     if (!room) {
       // This should not happen in the tutorial
       setPlayerRoomId(1); // Reset to start
-      return { currentRoom: tutorialMap[0], connectedRooms: [] };
+      return { currentRoom: tutorialMap[0] };
     }
-    const connections = room.connections
-      .map(id => tutorialMap.find(r => r.id === id))
-      .filter((r): r is Room => r !== undefined);
-    return { currentRoom: room, connectedRooms: connections };
+    return { currentRoom: room };
   }, [playerRoomId]);
+
+  const connectedRoomIds = currentRoom?.connections || [];
 
   return (
     <div className="h-full w-full bg-background text-foreground p-4 flex flex-col md:flex-row gap-4">
@@ -95,21 +94,29 @@ export default function TutorialPage() {
             <CardContent className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3 text-center">
                 {tutorialMap.map(room => {
                     const isPlayerInRoom = playerRoomId === room.id;
-                    const isConnected = connectedRooms.some(connectedRoom => connectedRoom.id === room.id);
+                    const isConnected = connectedRoomIds.includes(room.id);
+                    const isClickable = isConnected && !isPlayerInRoom;
 
                     return (
-                        <button
+                        <div
                             key={room.id}
-                            onClick={() => isConnected && handleMove(room.id)}
-                            disabled={!isConnected && !isPlayerInRoom}
+                            onClick={() => isClickable && handleMove(room.id)}
+                            role={isClickable ? "button" : undefined}
+                            tabIndex={isClickable ? 0 : -1}
+                            onKeyDown={(e) => {
+                                if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+                                    handleMove(room.id);
+                                }
+                            }}
                             className={cn(
-                                "aspect-square rounded-md flex items-center justify-center p-1 border-2 transition-colors",
+                                "aspect-square rounded-md flex items-center justify-center p-1 border-2 transition-all duration-200",
                                 isPlayerInRoom 
-                                    ? "bg-primary/20 border-primary shadow-glow-primary" 
+                                    ? "bg-primary/20 border-primary shadow-glow-primary scale-105" 
                                     : "bg-muted/30 border-muted",
-                                isConnected 
+                                isClickable
                                     ? "cursor-pointer border-primary/50 hover:bg-primary/10 hover:border-primary" 
-                                    : "cursor-not-allowed",
+                                    : "cursor-default",
+                                !isPlayerInRoom && !isConnected && "opacity-60"
                             )}
                         >
                             <div className="flex flex-col items-center">
@@ -117,9 +124,9 @@ export default function TutorialPage() {
                                     "font-bold text-sm md:text-base",
                                     isPlayerInRoom ? "text-primary-foreground" : "text-foreground"
                                  )}>{room.id}</span>
-                                 {isPlayerInRoom && <User className="h-4 w-4 text-primary" />}
+                                 {isPlayerInRoom && <User className="h-4 w-4 mt-1 text-primary animate-pulse" />}
                             </div>
-                        </button>
+                        </div>
                     );
                 })}
             </CardContent>
@@ -128,3 +135,5 @@ export default function TutorialPage() {
     </div>
   );
 }
+
+    
