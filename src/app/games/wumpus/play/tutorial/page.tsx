@@ -158,10 +158,10 @@ export default function TutorialPage() {
     setVisitedRooms(new Set([1]));
   };
 
-  const { connectedRooms, senses, sensedHazards } = useMemo(() => {
+  const { connectedRooms, senses } = useMemo(() => {
     const room = getRoomById(playerRoomId);
     if (!room) {
-      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [], sensedHazards: new Map() };
+      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: []};
     }
     const connections = room.connections;
     
@@ -173,7 +173,6 @@ export default function TutorialPage() {
 
     const senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
-    const sensedHazards = new Map<number, React.ElementType>();
 
     for (const connectedId of connections) {
         const connectedRoom = getRoomById(connectedId);
@@ -183,26 +182,23 @@ export default function TutorialPage() {
                   senses_warnings.push(senseTypes.wumpus);
                   detectedSenses.add('wumpus');
               }
-              sensedHazards.set(connectedId, Skull);
             }
             if (connectedRoom.hasPit) {
               if (!detectedSenses.has('pit')) {
                   senses_warnings.push(senseTypes.pit);
                   detectedSenses.add('pit');
               }
-              sensedHazards.set(connectedId, AlertTriangle);
             }
             if (connectedRoom.hasBat) {
               if (!detectedSenses.has('bat')) {
                   senses_warnings.push(senseTypes.bat);
                   detectedSenses.add('bat');
               }
-              sensedHazards.set(connectedId, Shuffle);
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings, sensedHazards };
+    return { connectedRooms: connections, senses: senses_warnings };
   }, [playerRoomId]);
 
   return (
@@ -253,8 +249,6 @@ export default function TutorialPage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const SensedHazardIcon = sensedHazards.get(room.id);
-
             return (
                 <div
                 key={room.id}
@@ -276,18 +270,32 @@ export default function TutorialPage() {
                 )}
                 >
                 <div className="flex flex-col items-center justify-center">
-                    {isPlayerInRoom && <UserCog className="h-8 w-8" />}
-                    
-                    {!isPlayerInRoom && (
+                    {isPlayerInRoom ? (
+                      <>
+                        <UserCog className="h-8 w-8" />
+                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                           {senses.map(sense => {
+                                const SenseIcon = sense.icon;
+                                return (
+                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
+                                    // This is a simplification, you might need a better way to position them
+                                    sense.id === 'wumpus' && 'items-start justify-start',
+                                    sense.id === 'pit' && 'items-start justify-end',
+                                    sense.id === 'bat' && 'items-end justify-start',
+                                    )}>
+                                        <SenseIcon className="h-3 w-3" />
+                                    </div>
+                                )
+                           })}
+                        </div>
+                      </>
+                    ) : (
                         <>
                             {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
                             {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                             {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
                             
-                            {/* Render sensed hazard icons */}
-                            {SensedHazardIcon && <SensedHazardIcon className="h-8 w-8 text-white opacity-50" />}
-
-                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !SensedHazardIcon && (
+                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && (
                                 <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
                             )}
                         </>

@@ -307,10 +307,10 @@ export default function AdvancedPracticePage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses, isInStatic, isNearGhost, sensedHazards } = useMemo(() => {
-    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false, sensedHazards: new Map() };
+  const { connectedRooms, senses, isInStatic, isNearGhost } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
     const room = getRoomById(playerRoomId, gameMap);
-    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false, sensedHazards: new Map() };
+    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
     
     const inStatic = room.hasStatic;
     let connections = room.connections;
@@ -328,7 +328,6 @@ export default function AdvancedPracticePage() {
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
     let nearGhost = false;
-    const sensedHazards = new Map<number, React.ElementType>();
 
     // Check for ghost in current room or adjacent rooms
      for (const connectedId of room.connections) {
@@ -342,40 +341,33 @@ export default function AdvancedPracticePage() {
     
     if (nearGhost) {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
-        room.connections.forEach(id => sensedHazards.set(id, Ghost));
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
             const connectedRoom = getRoomById(connectedId, gameMap);
             if (connectedRoom) {
                 if (connectedRoom.hasWumpus) {
                     if (!detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
-                    sensedHazards.set(connectedId, Skull);
                 }
                 if (connectedRoom.hasPit) {
                     if (!detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
-                    sensedHazards.set(connectedId, AlertTriangle);
                 }
                 if (connectedRoom.hasBat) {
                     if (!detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
-                    sensedHazards.set(connectedId, Shuffle);
                 }
                 if (connectedRoom.hasStatic) {
                     if (!detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
-                    sensedHazards.set(connectedId, WifiOff);
                 }
                 if (connectedRoom.hasLockdown) {
                     if (!detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
-                    sensedHazards.set(connectedId, ShieldAlert);
                 }
                 if (connectedRoom.hasGhost) {
                     if (!detectedSenses.has('ghost')) { senses_warnings.push(senseTypes.ghost); detectedSenses.add('ghost'); }
-                    sensedHazards.set(connectedId, Ghost);
                 }
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost, sensedHazards };
+    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) return null;
@@ -442,8 +434,6 @@ export default function AdvancedPracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const SensedHazardIcon = sensedHazards.get(room.id);
-
             return (
                 <div
                 key={room.id}
@@ -466,23 +456,43 @@ export default function AdvancedPracticePage() {
                 )}
                 >
                 <div className="flex flex-col items-center justify-center">
-                    {isPlayerInRoom && <UserCog className="h-6 w-6 md:h-8 md:h-8" />}
-                    {!isPlayerInRoom && (
-                    <>
-                        {isPlayerInRoom && room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
-                        {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
-                        {isPlayerInRoom && room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
-                        {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
-                        {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
-                        {isPlayerInRoom && room.hasGhost && <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />}
-                        
-                        {SensedHazardIcon && <SensedHazardIcon className="h-6 w-6 md:h-8 md:h-8 text-white opacity-50" />}
-
-                        {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && !SensedHazardIcon && (
-                            <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
-                        )}
-                    </>
-                    )}
+                     {isPlayerInRoom ? (
+                      <>
+                        <UserCog className="h-6 w-6 md:h-8 md:w-8" />
+                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                           {senses.map(sense => {
+                                const SenseIcon = sense.icon;
+                                return (
+                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
+                                    // This is a simplification, you might need a better way to position them
+                                    sense.id === 'wumpus' && 'items-start justify-start',
+                                    sense.id === 'pit' && 'items-start justify-end',
+                                    sense.id === 'bat' && 'items-end justify-start',
+                                    sense.id === 'static' && 'items-end justify-end',
+                                    sense.id === 'lockdown' && 'items-start justify-center',
+                                    sense.id === 'ghost' && 'items-end justify-center',
+                                    )}>
+                                        <SenseIcon className="h-3 w-3" />
+                                    </div>
+                                )
+                           })}
+                        </div>
+                      </>
+                    ) : room.hasWumpus ? (
+                        <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />
+                    ) : room.hasPit ? (
+                        <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />
+                    ) : room.hasBat ? (
+                        <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />
+                    ) : room.hasStatic ? (
+                        <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />
+                    ) : room.hasLockdown ? (
+                        <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />
+                    ) : room.hasGhost ? (
+                        <Ghost className="h-6 w-6 md:h-8 md:h-8 text-purple-400" />
+                    ) : isVisited ? (
+                        <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                    ) : null}
                 </div>
                 </div>
             );

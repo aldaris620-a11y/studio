@@ -305,10 +305,10 @@ export default function IntermediatePracticePage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses, isInStatic, sensedHazards } = useMemo(() => {
-    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, sensedHazards: new Map() };
+  const { connectedRooms, senses, isInStatic } = useMemo(() => {
+    if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false };
     const room = getRoomById(playerRoomId, gameMap);
-    if (!room) return { connectedRooms: [], senses: [], isInStatic: false, sensedHazards: new Map() };
+    if (!room) return { connectedRooms: [], senses: [], isInStatic: false };
     
     const inStatic = room.hasStatic;
     let connections = room.connections;
@@ -326,7 +326,6 @@ export default function IntermediatePracticePage() {
 
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
     const detectedSenses = new Set();
-    const sensedHazards = new Map<number, React.ElementType>();
     
     if (!inStatic) {
         for (const connectedId of room.connections) {
@@ -334,29 +333,24 @@ export default function IntermediatePracticePage() {
             if (connectedRoom) {
                 if (connectedRoom.hasWumpus) {
                     if (!detectedSenses.has('wumpus')) { senses_warnings.push(senseTypes.wumpus); detectedSenses.add('wumpus'); }
-                    sensedHazards.set(connectedId, Skull);
                 }
                 if (connectedRoom.hasPit) {
                     if (!detectedSenses.has('pit')) { senses_warnings.push(senseTypes.pit); detectedSenses.add('pit'); }
-                    sensedHazards.set(connectedId, AlertTriangle);
                 }
                 if (connectedRoom.hasBat) {
                     if (!detectedSenses.has('bat')) { senses_warnings.push(senseTypes.bat); detectedSenses.add('bat'); }
-                    sensedHazards.set(connectedId, Shuffle);
                 }
                 if (connectedRoom.hasStatic) {
                     if (!detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
-                    sensedHazards.set(connectedId, WifiOff);
                 }
                 if (connectedRoom.hasLockdown) {
                     if (!detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
-                    sensedHazards.set(connectedId, ShieldAlert);
                 }
             }
         }
     }
 
-    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, sensedHazards };
+    return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic };
   }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) {
@@ -424,8 +418,6 @@ export default function IntermediatePracticePage() {
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
-            const SensedHazardIcon = sensedHazards.get(room.id);
-
             return (
                 <div
                 key={room.id}
@@ -448,23 +440,40 @@ export default function IntermediatePracticePage() {
                 )}
                 >
                 <div className="flex flex-col items-center justify-center">
-                    {isPlayerInRoom && <UserCog className="h-6 w-6 md:h-8 md:w-8" />}
-                    
-                    {!isPlayerInRoom && (
-                    <>
-                        {isPlayerInRoom && room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
-                        {isPlayerInRoom && room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
-                        {isPlayerInRoom && room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
-                        {isPlayerInRoom && room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
-                        {isPlayerInRoom && room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
-                        
-                        {SensedHazardIcon && <SensedHazardIcon className="h-6 w-6 md:h-8 md:h-8 text-white opacity-50" />}
-
-                        {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !SensedHazardIcon && (
-                            <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
-                        )}
-                    </>
-                    )}
+                    {isPlayerInRoom ? (
+                      <>
+                        <UserCog className="h-6 w-6 md:h-8 md:w-8" />
+                        <div className="absolute top-0 left-0 right-0 bottom-0 grid grid-cols-2 grid-rows-2">
+                           {senses.map(sense => {
+                                const SenseIcon = sense.icon;
+                                return (
+                                    <div key={sense.id} className={cn("flex items-center justify-center", sense.color,
+                                    // This is a simplification, you might need a better way to position them
+                                    sense.id === 'wumpus' && 'items-start justify-start',
+                                    sense.id === 'pit' && 'items-start justify-end',
+                                    sense.id === 'bat' && 'items-end justify-start',
+                                    sense.id === 'static' && 'items-end justify-end',
+                                    sense.id === 'lockdown' && 'items-start justify-center',
+                                    )}>
+                                        <SenseIcon className="h-3 w-3" />
+                                    </div>
+                                )
+                           })}
+                        </div>
+                      </>
+                    ) : room.hasWumpus ? (
+                        <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />
+                    ) : room.hasPit ? (
+                        <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />
+                    ) : room.hasBat ? (
+                        <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />
+                    ) : room.hasStatic ? (
+                        <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />
+                    ) : room.hasLockdown ? (
+                        <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />
+                    ) : isVisited ? (
+                        <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                    ) : null}
                 </div>
                 </div>
             );
