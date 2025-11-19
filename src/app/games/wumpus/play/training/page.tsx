@@ -52,6 +52,8 @@ export default function TrainingSelectionPage() {
       router.push('/games/wumpus/play/easy');
     } else if (levelId === 'intermedia') {
       router.push('/games/wumpus/play/intermediate');
+    } else if (levelId === 'avanzada') {
+      router.push('/games/wumpus/play/advanced');
     }
      else {
       // Placeholder for other levels
