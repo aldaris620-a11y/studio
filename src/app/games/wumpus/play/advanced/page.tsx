@@ -109,8 +109,6 @@ export default function AdvancedPracticePage() {
   const [arrowsLeft, setArrowsLeft] = useState<number>(5);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
-  const [shotStatic, setShotStatic] = useState(false);
-  const [hitRoomId, setHitRoomId] = useState<number | null>(null);
   const router = useRouter();
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
@@ -236,34 +234,6 @@ export default function AdvancedPracticePage() {
     setIsShooting(prev => !prev);
   };
   
-  useEffect(() => {
-    if (shotStatic && hitRoomId !== null) {
-      // 1. Update map to remove static icon
-      setGameMap(prevMap => prevMap.map(r => r.id === hitRoomId ? { ...r, hasStatic: false } : r));
-      
-      // 2. Show the alert modal
-      setAlertModal({
-        icon: Zap,
-        title: "Interferencia Eliminada",
-        description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
-        buttonText: "Entendido",
-        onConfirm: () => {
-          // 3. On modal confirm, move the wumpus
-          const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(gameMap);
-          if (!wumpusFell) {
-            setGameMap(movedWumpusMap);
-          }
-          setAlertModal(null);
-        }
-      });
-      
-      // 4. Reset the trigger states
-      setShotStatic(false);
-      setHitRoomId(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shotStatic, hitRoomId, moveWumpus]);
-
 
   const handleShoot = (targetRoomId: number) => {
     if (!isShooting || arrowsLeft === 0 || gameOver) return;
@@ -282,8 +252,22 @@ export default function AdvancedPracticePage() {
     } 
     
     if (targetRoom?.hasStatic) {
-        setShotStatic(true);
-        setHitRoomId(targetRoomId);
+        const mapWithoutStatic = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
+        setGameMap(mapWithoutStatic);
+
+        setAlertModal({
+            icon: Zap,
+            title: "Interferencia Eliminada",
+            description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
+            buttonText: "Entendido",
+            onConfirm: () => {
+                const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(mapWithoutStatic);
+                if (!wumpusFell) {
+                    setGameMap(movedWumpusMap);
+                }
+                setAlertModal(null);
+            }
+        });
         return;
     }
 
