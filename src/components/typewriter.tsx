@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TypewriterProps {
@@ -18,14 +19,18 @@ export function Typewriter({
 }: TypewriterProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const index = useRef(0);
 
   useEffect(() => {
-    setDisplayedText(''); // Reset on text change
-    let i = 0;
+    // Reset state when text changes
+    setDisplayedText('');
+    index.current = 0;
+    setShowCursor(true);
+
     const intervalId = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText(prev => prev + text.charAt(i));
-        i++;
+      if (index.current < text.length) {
+        setDisplayedText((prev) => prev + text.charAt(index.current));
+        index.current += 1;
       } else {
         clearInterval(intervalId);
         // Hide cursor after a delay when typing is done
@@ -33,11 +38,8 @@ export function Typewriter({
       }
     }, speed);
 
-    // Show cursor immediately when new text comes in
-    setShowCursor(true);
-
     return () => {
-        clearInterval(intervalId);
+      clearInterval(intervalId);
     };
   }, [text, speed]);
 
