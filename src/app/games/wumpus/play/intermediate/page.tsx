@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -352,8 +351,8 @@ export default function IntermediatePracticePage() {
       </Button>
       
       <div className="flex flex-col items-center justify-center gap-4">
-        <div className="w-full max-w-sm flex flex-col gap-4">
-            <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
+         <div className="w-full max-w-md md:max-w-xl flex flex-col md:flex-row gap-4">
+            <Card className="flex-1 bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><UserCog />Estado del Extractor</CardTitle>
                 <CardDescription className="text-wumpus-foreground/60">Simulación: Práctica Intermedia</CardDescription>
@@ -382,7 +381,7 @@ export default function IntermediatePracticePage() {
             </CardContent>
             </Card>
 
-            <Card className="bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
+            <Card className="flex-1 bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-sm text-wumpus-danger"><Activity />Estado del Activo 734</CardTitle>
             </CardHeader>
@@ -433,12 +432,12 @@ export default function IntermediatePracticePage() {
                     
                     {!isPlayerInRoom && (
                     <>
-                        {room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:w-8 text-wumpus-danger" />}
-                        {room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:w-8 text-wumpus-warning" />}
-                        {room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:w-8 text-wumpus-accent" />}
-                        {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />}
-                        {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />}
-                        {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-6 w-6 md:h-8 md:w-8 text-wumpus-primary opacity-40" />}
+                        {room.hasWumpus && <Skull className="h-6 w-6 md:h-8 md:h-8 text-wumpus-danger" />}
+                        {room.hasPit && <AlertTriangle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-warning" />}
+                        {room.hasBat && <Shuffle className="h-6 w-6 md:h-8 md:h-8 text-wumpus-accent" />}
+                        {room.hasStatic && <WifiOff className="h-6 w-6 md:h-8 md:h-8 text-gray-400" />}
+                        {room.hasLockdown && <ShieldAlert className="h-6 w-6 md:h-8 md:h-8 text-orange-400" />}
+                        {isVisited && !hasVisibleHazard && !room.hasWumpus && <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />}
                     </>
                     )}
                 </div>
@@ -523,5 +522,3 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
-
-    
