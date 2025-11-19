@@ -3,7 +3,7 @@
   {
     "id": "wumpus-1",
     "description": "Game cover for 'Hunt the Wumpus'",
-    "imageUrl": "https://images.unsplash.com/photo-1549499839-a7a531e2f473?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXJrJTIwY2F2ZXxlbnwwfHx8fDE3NjMwNzIwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "imageUrl": "https://picsum.photos/seed/wumpus/1080/720",
     "imageHint": "dark cave"
   },
   {
