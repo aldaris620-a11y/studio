@@ -189,7 +189,7 @@ export default function AdvancedPracticePage() {
       return false;
     }
     return false;
-  }, [getRoomById]);
+  }, []);
 
   const handleDroneTransport = (currentMap: Room[]) => {
     let randomRoomId;
@@ -218,7 +218,7 @@ export default function AdvancedPracticePage() {
 
     // 50% chance for Wumpus to move
     if (Math.random() < 0.5) {
-        const { newMap, wumpusFell, moved } = moveWumpus(currentMap);
+        const { newMap, wumpusFell } = moveWumpus(currentMap);
         currentMap = newMap;
         setGameMap(newMap);
         if (wumpusFell) {
@@ -252,17 +252,20 @@ export default function AdvancedPracticePage() {
     
     if (targetRoom?.hasStatic) {
         const newMap = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
-        const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(newMap);
-        setGameMap(movedWumpusMap);
+        setGameMap(newMap);
 
-        if (!wumpusFell) {
-            setAlertModal({
-                icon: Zap, title: "Interferencia Eliminada",
-                description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
-                buttonText: "Entendido",
-                onConfirm: () => { setAlertModal(null); }
-            });
-        }
+        setAlertModal({
+            icon: Zap, title: "Interferencia Eliminada",
+            description: "Has destruido la fuente de estática. ADVERTENCIA: La descarga de energía ha alertado al activo, que ha cambiado de posición.",
+            buttonText: "Entendido",
+            onConfirm: () => {
+                const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(newMap);
+                if (!wumpusFell) {
+                    setGameMap(movedWumpusMap);
+                }
+                setAlertModal(null);
+            }
+        });
         return;
     }
 
