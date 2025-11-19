@@ -99,14 +99,12 @@ export default function TutorialPage() {
                 {senses.length > 0 ? senses.map((sense) => (
                     <div key={sense.text} className={cn("flex items-center gap-2", sense.color)}>
                         <sense.icon className="h-4 w-4 flex-shrink-0"/>
-                        <div className="typing-effect overflow-hidden whitespace-nowrap border-r-2 border-r-transparent" style={{ animation: `typing 2s steps(${sense.text.length}, end) forwards, blink-caret .75s step-end infinite` }}>
-                          {sense.text}
-                        </div>
+                        <p className="typing-effect">{sense.text}</p>
                     </div>
                 )) : (
-                  <div className="typing-effect overflow-hidden whitespace-nowrap border-r-2 border-r-transparent text-muted-foreground italic" style={{ animation: `typing 2s steps(28, end) forwards, blink-caret .75s step-end infinite` }}>
+                  <p className="typing-effect text-muted-foreground italic">
                     No hay peligros inmediatos.
-                  </div>
+                  </p>
                 )}
              </div>
           </CardContent>

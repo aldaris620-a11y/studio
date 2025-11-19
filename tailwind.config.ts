@@ -106,21 +106,12 @@ export default {
             transform: 'translateY(100vh)',
           },
         },
-        typing: {
-          'from': { width: '0' },
-          'to': { width: '100%' }
-        },
-        'blink-caret': {
-          'from, to': { borderColor: 'transparent' },
-          '50%': { borderColor: 'hsl(var(--primary))' },
-        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-out': 'fade-in-out 1.5s ease-in-out infinite',
         scanlines: 'scanlines 10s linear infinite',
-        typing: 'typing 2s steps(30, end) forwards, blink-caret .75s step-end infinite',
       },
       boxShadow: {
         'glow-primary': '0 0 15px 5px hsl(var(--primary) / 0.2)',
