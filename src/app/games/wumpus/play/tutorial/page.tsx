@@ -17,28 +17,28 @@ type Room = {
   hasBat: boolean;
 };
 
-// Mapa estático para el tutorial con una disposición de 20 habitaciones
+// Mapa estático para el tutorial con una disposición de 4x4 (16 habitaciones)
 const tutorialMapLayout: Room[] = [
-  { id: 1, connections: [2, 5, 8], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 2, connections: [1, 3, 10], hasWumpus: false, hasPit: false, hasBat: true },
-  { id: 3, connections: [2, 4, 12], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 4, connections: [3, 5, 14], hasWumpus: false, hasPit: false, hasBat: false }, // Wumpus will be here
-  { id: 5, connections: [1, 4, 6], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 6, connections: [5, 7, 15], hasWumpus: false, hasPit: true, hasBat: false },
-  { id: 7, connections: [6, 8, 17], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 8, connections: [1, 7, 9], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 9, connections: [8, 10, 18], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 10, connections: [2, 9, 11], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 11, connections: [10, 12, 19], hasWumpus: false, hasPit: false, hasBat: true },
-  { id: 12, connections: [3, 11, 13], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 13, connections: [12, 14, 20], hasWumpus: false, hasPit: true, hasBat: false },
-  { id: 14, connections: [4, 13, 15], hasWumpus: true, hasPit: false, hasBat: false },
-  { id: 15, connections: [6, 14, 16], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 16, connections: [15, 17, 20], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 17, connections: [7, 16, 18], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 18, connections: [9, 17, 19], hasWumpus: false, hasPit: true, hasBat: false },
-  { id: 19, connections: [11, 18, 20], hasWumpus: false, hasPit: false, hasBat: false },
-  { id: 20, connections: [13, 16, 19], hasWumpus: false, hasPit: false, hasBat: false },
+  // Row 1
+  { id: 1, connections: [2, 5], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 2, connections: [1, 3, 6], hasWumpus: false, hasPit: false, hasBat: true },
+  { id: 3, connections: [2, 4, 7], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 4, connections: [3, 8], hasWumpus: false, hasPit: false, hasBat: false },
+  // Row 2
+  { id: 5, connections: [1, 6, 9], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 6, connections: [2, 5, 7, 10], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 7, connections: [3, 6, 8, 11], hasWumpus: true, hasPit: false, hasBat: false }, // Wumpus is here
+  { id: 8, connections: [4, 7, 12], hasWumpus: false, hasPit: false, hasBat: false },
+  // Row 3
+  { id: 9, connections: [5, 10, 13], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 10, connections: [6, 9, 11, 14], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 11, connections: [7, 10, 12, 15], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 12, connections: [8, 11, 16], hasWumpus: false, hasPit: false, hasBat: true },
+  // Row 4
+  { id: 13, connections: [9, 14], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 14, connections: [10, 13, 15], hasWumpus: false, hasPit: false, hasBat: false },
+  { id: 15, connections: [11, 14, 16], hasWumpus: false, hasPit: true, hasBat: false },
+  { id: 16, connections: [12, 15], hasWumpus: false, hasPit: false, hasBat: false },
 ];
 
 // Helper para obtener una habitación por su ID
@@ -56,8 +56,10 @@ export default function TutorialPage() {
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
     const room = getRoomById(playerRoomId);
     if (!room) {
-      // Fallback en caso de error, volver al inicio
-      return { currentRoom: getRoomById(1)!, connectedRooms: getRoomById(1)!.connections, senses: [] };
+      // Fallback en caso de error
+      setPlayerRoomId(1);
+      const firstRoom = getRoomById(1)!;
+      return { currentRoom: firstRoom, connectedRooms: firstRoom.connections, senses: [] };
     }
     const connections = room.connections;
     
@@ -110,7 +112,7 @@ export default function TutorialPage() {
       </div>
 
       {/* Mapa de Cuadrícula */}
-      <div className="grid grid-cols-5 gap-1 bg-black/20 p-2 rounded-lg border border-primary/20">
+      <div className="grid grid-cols-4 gap-1 bg-black/20 p-2 rounded-lg border border-primary/20">
         {tutorialMapLayout.map(room => {
           const isPlayerInRoom = playerRoomId === room.id;
           const isConnected = connectedRooms.includes(room.id);
@@ -129,10 +131,12 @@ export default function TutorialPage() {
               )}
             >
               <span className="absolute top-1 left-1 text-xs font-bold">{room.id}</span>
-              {isPlayerInRoom && <User className="h-8 w-8" />}
-              {room.hasWumpus && <Skull className="h-8 w-8 text-destructive" />}
-              {room.hasPit && <Circle className="h-8 w-8 text-blue-500 fill-current" />}
-              {room.hasBat && <VenetianMask className="h-8 w-8 text-purple-400" />}
+              <div className="flex flex-col items-center justify-center">
+                 {isPlayerInRoom && <User className="h-8 w-8" />}
+                 {room.hasWumpus && <Skull className="h-8 w-8 text-destructive" />}
+                 {room.hasPit && <Circle className="h-8 w-8 text-blue-500 fill-current" />}
+                 {room.hasBat && <VenetianMask className="h-8 w-8 text-purple-400" />}
+              </div>
             </div>
           );
         })}
@@ -140,5 +144,3 @@ export default function TutorialPage() {
     </div>
   );
 }
-
-    
