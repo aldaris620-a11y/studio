@@ -328,7 +328,7 @@ export default function IntermediatePracticePage() {
                      {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
                      {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
                      {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                     {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
+                     {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>
@@ -406,5 +406,3 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
-
-    

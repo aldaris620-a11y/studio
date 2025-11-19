@@ -301,7 +301,7 @@ export default function EasyPracticePage() {
                    <>
                     {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                     {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                    {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
+                    {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
                    </>
                  )}
               </div>
@@ -364,5 +364,3 @@ export default function EasyPracticePage() {
     </>
   );
 }
-
-    

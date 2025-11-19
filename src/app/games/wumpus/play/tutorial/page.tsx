@@ -263,7 +263,7 @@ export default function TutorialPage() {
                  {isVisited && room.hasWumpus && !isPlayerInRoom && <Skull className="h-8 w-8 text-wumpus-danger" />}
                  {isVisited && room.hasPit && !isPlayerInRoom && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
                  {isVisited && room.hasBat && !isPlayerInRoom && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                 {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
+                 {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
               </div>
             </div>
           );
@@ -324,5 +324,3 @@ export default function TutorialPage() {
     </>
   );
 }
-
-    
