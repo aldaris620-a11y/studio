@@ -72,9 +72,7 @@
   overflow: hidden; /* Ensures the text is not visible until the animation starts */
   border-right: .15em solid hsl(var(--wumpus-accent)); /* The typwriter cursor */
   white-space: normal; /* Allow text to wrap */
-  animation: 
-    typing 2s steps(40, end),
-    blink-caret .75s step-end infinite;
+  animation: typing 2s steps(40, end);
   animation-fill-mode: forwards; /* Keep the state of the animation at the end */
   width: 0; /* Start with no width */
   max-width: 100%;
