@@ -44,15 +44,18 @@ export default function GameModeSelectionPage() {
 
     setIsLoading(mode.id as GameModeId);
     
+    let path = '';
     if (mode.id === 'tutorial') {
-      router.push('/games/wumpus/play/training');
+      path = '/games/wumpus/play/training';
     } else if (mode.id === 'historia') {
-      router.push('/games/wumpus/play/narrative');
+      path = '/games/wumpus/play/narrative';
     } else {
       // TODO: Navigate to the actual game screen for the selected mode
       console.log(`Modo seleccionado: ${mode.id}`);
       setTimeout(() => setIsLoading(null), 1000); // For now, just reset loading state
+      return;
     }
+    router.push(path);
   }
 
   if (isLoading) {
