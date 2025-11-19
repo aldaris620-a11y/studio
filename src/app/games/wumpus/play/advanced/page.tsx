@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -107,11 +106,12 @@ export default function AdvancedPracticePage() {
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(5);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
+  const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
   const router = useRouter();
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
-  const moveWumpus = useCallback((currentMap: Room[], alertPlayer = false) => {
+  const moveWumpus = useCallback((currentMap: Room[]) => {
     const wumpusRoom = currentMap.find(r => r.hasWumpus);
     if (!wumpusRoom) return { newMap: currentMap, wumpusFell: false, moved: false };
 
@@ -148,16 +148,6 @@ export default function AdvancedPracticePage() {
         tempMap = tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
     } else {
         tempMap = tempMap.map(r => r.id === newWumpusRoomId ? { ...r, hasWumpus: true } : r);
-    }
-    
-    if (alertPlayer) {
-         setAlertModal({
-            icon: AlertTriangle,
-            title: "¡Temblor Detectado!",
-            description: "Sientes un temblor en la estructura. El activo podría haberse movido.",
-            buttonText: "Entendido",
-            onConfirm: () => setAlertModal(null)
-        });
     }
 
     return { newMap: tempMap, wumpusFell: false, moved: true };
@@ -215,20 +205,23 @@ export default function AdvancedPracticePage() {
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
+    setWumpusAlert(null);
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
     let currentMap = gameMap;
-    let wumpusMoved = false;
 
     // 50% chance for Wumpus to move
     if (Math.random() < 0.5) {
-        const { newMap, wumpusFell } = moveWumpus(currentMap, true);
+        const { newMap, wumpusFell, moved } = moveWumpus(currentMap);
         currentMap = newMap;
         setGameMap(newMap);
+        if (moved && !wumpusFell) {
+            setWumpusAlert("¡Temblor detectado! El activo se ha movido.");
+        }
         if (wumpusFell) {
-            return; // Wumpus fell or game over, no need to check other hazards
+            return;
         }
     }
     
@@ -246,6 +239,7 @@ export default function AdvancedPracticePage() {
     const targetRoom = getRoomById(targetRoomId);
     setArrowsLeft(prev => prev - 1);
     setIsShooting(false);
+    setWumpusAlert(null);
 
     if (targetRoom?.hasWumpus) {
       setGameOver({
@@ -257,7 +251,7 @@ export default function AdvancedPracticePage() {
     
     if (targetRoom?.hasStatic) {
         const newMap = gameMap.map(r => r.id === targetRoomId ? { ...r, hasStatic: false } : r);
-        const { newMap: movedWumpusMap, wumpusFell } = moveWumpus(newMap);
+        const { newMap: movedWumpusMap, wumpusFell, moved } = moveWumpus(newMap);
         setGameMap(movedWumpusMap);
 
         if (!wumpusFell) {
@@ -272,23 +266,18 @@ export default function AdvancedPracticePage() {
     }
 
     // Wumpus moves if shot is missed
-    const { newMap: movedMap, wumpusFell } = moveWumpus(gameMap);
+    const { newMap: movedMap, wumpusFell, moved } = moveWumpus(gameMap);
     if (!wumpusFell) {
         setGameMap(movedMap);
-        setAlertModal({
-            icon: Skull, title: "Disparo Fallido: ¡El Activo se Mueve!",
-            description: "Has fallado. El activo, alertado, se ha reposicionado. La caza continúa, pero ahora eres la presa.",
-            buttonText: "Entendido",
-            onConfirm: () => {
-                setAlertModal(null);
-                if (arrowsLeft - 1 === 0 && !gameOver) {
-                     setGameOver({
-                        icon: Skull, title: "Munición Agotada",
-                        description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.", variant: 'defeat',
-                    });
-                }
-            }
-        });
+        if (moved) {
+            setWumpusAlert("¡Disparo fallido! El activo se ha reposicionado.");
+        }
+        if (arrowsLeft - 1 === 0 && !gameOver) {
+             setGameOver({
+                icon: Skull, title: "Munición Agotada",
+                description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.", variant: 'defeat',
+            });
+        }
     }
   };
 
@@ -300,6 +289,7 @@ export default function AdvancedPracticePage() {
     setIsShooting(false);
     setArrowsLeft(5);
     setLockdownEvent(false);
+    setWumpusAlert(null);
     setVisitedRooms(new Set([1]));
   }, []);
 
@@ -339,8 +329,9 @@ export default function AdvancedPracticePage() {
     }
     if (room.hasGhost) nearGhost = true;
 
-
-    if (nearGhost) {
+    if (wumpusAlert) {
+      senses_warnings.push({ text: wumpusAlert, icon: AlertTriangle, color: 'text-wumpus-danger', id: 'wumpus-alert' });
+    } else if (nearGhost) {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
@@ -357,7 +348,7 @@ export default function AdvancedPracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
-  }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
+  }, [playerRoomId, gameMap, getRoomById, lockdownEvent, wumpusAlert]);
 
   if (gameMap.length === 0) return null;
 
@@ -483,7 +474,7 @@ export default function AdvancedPracticePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-    {/* Generic Alert Modal (Drones, Wumpus Moved, etc.) */}
+    {/* Generic Alert Modal (Drones, etc.) */}
     <AlertDialog open={!!alertModal}>
         <AlertDialogContent className="bg-wumpus-card text-wumpus-foreground border-wumpus-accent">
           <AlertDialogHeader>
