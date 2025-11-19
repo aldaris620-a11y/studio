@@ -93,6 +93,7 @@ type AlertModalReason = {
     title: string;
     description: string;
     buttonText: string;
+    onConfirm: () => void;
 } | null;
 
 type PendingAction = 'transportByDrone' | 'moveWumpus' | null;
@@ -112,6 +113,7 @@ export default function AdvancedPracticePage() {
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
@@ -199,6 +201,7 @@ export default function AdvancedPracticePage() {
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
           buttonText: "Continuar",
+          onConfirm: () => setPendingAction('transportByDrone'),
       });
       return false;
     }
@@ -227,6 +230,10 @@ export default function AdvancedPracticePage() {
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
 
+    if (!isGameStarted) {
+        setIsGameStarted(true);
+    }
+
     setWumpusAlert(null);
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
@@ -236,16 +243,14 @@ export default function AdvancedPracticePage() {
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
-    // 50% chance for Wumpus to move
-    if (Math.random() < 0.5) {
-        setWumpusAlert("Has sentido un temblor. El activo puede haberse movido.");
-        moveWumpus();
+    if (isGameStarted && Math.random() < 0.5) {
+        setPendingAction('moveWumpus');
     }
     
     if (!checkHazards(newRoom)) {
         // no hazards
     }
-  }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
+  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -271,8 +276,7 @@ export default function AdvancedPracticePage() {
       return;
     }
 
-    setWumpusAlert("El activo ha sido alertado por tu disparo y ha cambiado de posición.");
-    moveWumpus();
+    setPendingAction('moveWumpus');
     if (arrowsLeft - 1 === 0 && !gameOver) {
       setGameOver({
         icon: Skull,
@@ -294,6 +298,7 @@ export default function AdvancedPracticePage() {
     setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
     setAlertModal(null);
+    setIsGameStarted(false);
   }, []);
 
   useEffect(() => {
@@ -332,9 +337,7 @@ export default function AdvancedPracticePage() {
     }
     if (room.hasGhost) nearGhost = true;
     
-    if (wumpusAlert) {
-      senses_warnings.push({ text: wumpusAlert, icon: AlertTriangle, color: 'text-wumpus-danger', id: 'wumpus_move' });
-    } else if (nearGhost) {
+    if (nearGhost) {
         senses_warnings = [{ text: "Interferencias fantasma detectadas.", icon: Ghost, color: "text-purple-400", id: "ghost_interference" }];
     } else if (!inStatic) {
         for (const connectedId of room.connections) {
@@ -351,7 +354,7 @@ export default function AdvancedPracticePage() {
     }
 
     return { connectedRooms: connections, senses: senses_warnings, isInStatic: inStatic, isNearGhost: nearGhost };
-  }, [playerRoomId, gameMap, getRoomById, lockdownEvent, wumpusAlert]);
+  }, [playerRoomId, gameMap, getRoomById, lockdownEvent]);
 
   if (gameMap.length === 0) return null;
 
@@ -505,7 +508,7 @@ export default function AdvancedPracticePage() {
             <AlertDialogAction 
               onClick={() => {
                 setAlertModal(null);
-                setPendingAction('transportByDrone');
+                alertModal?.onConfirm();
               }}
               className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
             >

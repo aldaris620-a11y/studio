@@ -112,14 +112,15 @@ export default function IntermediatePracticePage() {
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [wumpusAlert, setWumpusAlert] = useState<string | null>(null);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
   useEffect(() => {
     if (pendingAction === 'transportByDrone') {
-      handleDroneTransport();
-      setPendingAction(null);
+        handleDroneTransport();
+        setPendingAction(null);
     } else if (pendingAction === 'moveWumpus') {
         moveWumpus();
         setPendingAction(null);
@@ -229,6 +230,10 @@ export default function IntermediatePracticePage() {
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
 
+    if (!isGameStarted) {
+      setIsGameStarted(true);
+    }
+
     setWumpusAlert(null);
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
@@ -238,17 +243,15 @@ export default function IntermediatePracticePage() {
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
     
-    // 25% chance for Wumpus to move
-    if (Math.random() < 0.25) {
-        setWumpusAlert("Has sentido un temblor. El activo puede haberse movido.");
-        moveWumpus();
+    if (isGameStarted && Math.random() < 0.25) {
+        setPendingAction('moveWumpus');
     }
     
     if (!checkHazards(newRoom)) {
       // no hazards found
     }
 
-  }, [gameOver, gameMap, getRoomById, checkHazards, moveWumpus]);
+  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -271,8 +274,7 @@ export default function IntermediatePracticePage() {
         variant: 'victory',
       });
     } else {
-        setWumpusAlert("El activo ha sido alertado por tu disparo y ha cambiado de posición.");
-        moveWumpus();
+        setPendingAction('moveWumpus');
         if (arrowsLeft - 1 === 0 && !gameOver) {
              setGameOver({
                 icon: Skull, title: "Munición Agotada",
@@ -293,6 +295,7 @@ export default function IntermediatePracticePage() {
     setAlertModal(null);
     setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
+    setIsGameStarted(false);
   }, []);
 
   useEffect(() => {
