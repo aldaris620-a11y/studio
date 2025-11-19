@@ -97,7 +97,7 @@ export default function IntermediatePracticePage() {
   const [droneEvent, setDroneEvent] = useState<boolean>(false);
   const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
-  const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [arrowsLeft, setArrowsLeft] = useState<number>(4);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
@@ -109,7 +109,7 @@ export default function IntermediatePracticePage() {
     setPlayerRoomId(1);
     setGameOver(null);
     setIsShooting(false);
-    setArrowsLeft(1);
+    setArrowsLeft(4);
     setDroneEvent(false);
     setLockdownEvent(false);
     setVisitedRooms(new Set([1]));
@@ -202,7 +202,7 @@ export default function IntermediatePracticePage() {
        setGameOver({
         icon: Skull,
         title: "Munición Agotada",
-        description: "Has fallado tu disparo. El activo, alertado, te ha localizado. Misión fracasada.",
+        description: "Has fallado tu último disparo. El activo, alertado, te ha localizado. Misión fracasada.",
         variant: 'defeat',
       });
     }
@@ -408,3 +408,5 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
+
+    

@@ -105,7 +105,7 @@ export default function AdvancedPracticePage() {
   const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
   const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
-  const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [arrowsLeft, setArrowsLeft] = useState<number>(5);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
@@ -221,7 +221,7 @@ export default function AdvancedPracticePage() {
     setPlayerRoomId(1);
     setGameOver(null);
     setIsShooting(false);
-    setArrowsLeft(1);
+    setArrowsLeft(5);
     setLockdownEvent(false);
     setVisitedRooms(new Set([1]));
   }, []);
@@ -436,3 +436,5 @@ export default function AdvancedPracticePage() {
     </>
   );
 }
+
+    

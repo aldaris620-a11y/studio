@@ -87,7 +87,7 @@ export default function EasyPracticePage() {
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [droneEvent, setDroneEvent] = useState<Room | null>(null);
-  const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [arrowsLeft, setArrowsLeft] = useState<number>(3);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
@@ -159,12 +159,11 @@ export default function EasyPracticePage() {
         description: "¡Has completado la misión, Extractor! El Activo 734 ha sido eliminado.",
         variant: 'victory',
       });
-    } else {
-      // Since arrows are now 0, this will trigger the loss condition.
+    } else if (arrowsLeft - 1 === 0) {
        setGameOver({
         icon: Skull,
         title: "Munición Agotada",
-        description: "Has fallado tu disparo. El activo, alertado, te ha localizado. Misión fracasada.",
+        description: "Has fallado tu último disparo. El activo, alertado, te ha localizado. Misión fracasada.",
         variant: 'defeat',
       });
     }
@@ -175,7 +174,7 @@ export default function EasyPracticePage() {
     setPlayerRoomId(1);
     setGameOver(null);
     setIsShooting(false);
-    setArrowsLeft(1);
+    setArrowsLeft(3);
     setVisitedRooms(new Set([1]));
   };
 
@@ -366,3 +365,5 @@ export default function EasyPracticePage() {
     </>
   );
 }
+
+    
