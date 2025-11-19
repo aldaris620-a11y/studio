@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,7 @@ export default function EasyPracticePage() {
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [droneEvent, setDroneEvent] = useState<Room | null>(null);
   const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export default function EasyPracticePage() {
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
+    setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
@@ -173,6 +175,7 @@ export default function EasyPracticePage() {
     setGameOver(null);
     setIsShooting(false);
     setArrowsLeft(1);
+    setVisitedRooms(new Set([1]));
   };
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
@@ -264,9 +267,12 @@ export default function EasyPracticePage() {
         {gameMap.map(room => {
           const isPlayerInRoom = playerRoomId === room.id;
           const isConnected = connectedRooms.includes(room.id);
+          const isVisited = visitedRooms.has(room.id);
           const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+          
+          const hasHazard = room.hasPit || room.hasBat;
 
           return (
             <div
@@ -289,14 +295,15 @@ export default function EasyPracticePage() {
               )}
             >
               <div className="flex flex-col items-center justify-center">
-                 {isPlayerInRoom && (
-                    <>
-                        <UserCog className="h-8 w-8" />
-                    </>
+                 {isPlayerInRoom && <UserCog className="h-8 w-8" />}
+                 
+                 {!isPlayerInRoom && (
+                   <>
+                    {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                    {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                    {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
+                   </>
                  )}
-                 {/* En este modo, el wumpus no es visible, pero los otros sí */}
-                 {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                 {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
               </div>
             </div>
           );
@@ -357,3 +364,5 @@ export default function EasyPracticePage() {
     </>
   );
 }
+
+    

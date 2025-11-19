@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -97,18 +97,21 @@ export default function IntermediatePracticePage() {
   const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
   const getRoomById = useCallback((id: number) => gameMap.find(r => r.id === id), [gameMap]);
 
   const restartGame = useCallback(() => {
-    setGameMap(generateMap());
+    const newMap = generateMap();
+    setGameMap(newMap);
     setPlayerRoomId(1);
     setGameOver(null);
     setIsShooting(false);
     setArrowsLeft(1);
     setDroneEvent(false);
     setLockdownEvent(false);
+    setVisitedRooms(new Set([1]));
   }, []);
 
   useEffect(() => {
@@ -153,6 +156,7 @@ export default function IntermediatePracticePage() {
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
+    setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
     checkHazards(newRoom);
@@ -169,6 +173,7 @@ export default function IntermediatePracticePage() {
     } while (randomRoomId === playerRoomId || !newRoom);
     
     setDroneEvent(false);
+    setVisitedRooms(prev => new Set(prev).add(newRoom.id));
     setPlayerRoomId(newRoom.id);
     checkHazards(newRoom);
   };
@@ -286,9 +291,12 @@ export default function IntermediatePracticePage() {
         {gameMap.map(room => {
           const isPlayerInRoom = playerRoomId === room.id;
           const isConnected = connectedRooms.includes(room.id);
+          const isVisited = visitedRooms.has(room.id);
           const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+
+          const hasHazard = room.hasPit || room.hasBat || room.hasStatic || room.hasLockdown;
 
           return (
             <div
@@ -313,10 +321,16 @@ export default function IntermediatePracticePage() {
             >
               <div className="flex flex-col items-center justify-center">
                  {isPlayerInRoom && <UserCog className="h-8 w-8" />}
-                 {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                 {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                 {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                 {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                 
+                 {!isPlayerInRoom && (
+                   <>
+                     {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                     {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                     {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                     {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                     {isVisited && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
+                   </>
+                 )}
               </div>
             </div>
           );
@@ -392,3 +406,5 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
+
+    

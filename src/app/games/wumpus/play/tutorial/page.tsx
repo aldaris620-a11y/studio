@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,7 @@ export default function TutorialPage() {
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [droneEvent, setDroneEvent] = useState<Room | null>(null);
   const [arrowsLeft, setArrowsLeft] = useState<number>(1);
+  const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const router = useRouter();
 
 
@@ -68,6 +69,7 @@ export default function TutorialPage() {
     const newRoom = getRoomById(newRoomId);
     if (!newRoom) return;
 
+    setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
@@ -138,6 +140,7 @@ export default function TutorialPage() {
     setGameOver(null);
     setIsShooting(false);
     setArrowsLeft(1);
+    setVisitedRooms(new Set([1]));
   };
 
   const { currentRoom, connectedRooms, senses } = useMemo(() => {
@@ -223,9 +226,12 @@ export default function TutorialPage() {
         {tutorialMapLayout.map(room => {
           const isPlayerInRoom = playerRoomId === room.id;
           const isConnected = connectedRooms.includes(room.id);
+          const isVisited = visitedRooms.has(room.id);
           const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
           const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
           const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+
+          const hasHazard = room.hasWumpus || room.hasPit || room.hasBat;
 
           return (
             <div
@@ -254,9 +260,10 @@ export default function TutorialPage() {
                     </>
                  )}
                  {/* En el modo tutorial, todos los peligros son visibles */}
-                 {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                 {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                 {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                 {isVisited && room.hasWumpus && !isPlayerInRoom && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                 {isVisited && room.hasPit && !isPlayerInRoom && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                 {isVisited && room.hasBat && !isPlayerInRoom && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                 {isVisited && !isPlayerInRoom && !hasHazard && <Footprints className="h-8 w-8 text-wumpus-foreground/20" />}
               </div>
             </div>
           );
@@ -268,7 +275,7 @@ export default function TutorialPage() {
       <AlertDialog open={!!gameOver}>
         <AlertDialogContent className={cn(
           "bg-wumpus-card text-wumpus-foreground border-wumpus-primary",
-           gameOver?.variant === 'defeat' && "border-wumpus-danger shadow-glow-wumpus-primary",
+           gameOver?.variant === 'defeat' && "border-wumpus-danger shadow-glow-wumpus-danger",
            gameOver?.variant === 'victory' && "border-green-500 shadow-glow-wumpus-primary"
         )}>
           <AlertDialogHeader>
@@ -317,3 +324,5 @@ export default function TutorialPage() {
     </>
   );
 }
+
+    
