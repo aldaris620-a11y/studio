@@ -21,16 +21,14 @@ export default function HuntSelectionPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
-  const handleLevelSelect = (levelId: string) => {
+  const handleLevelSelect = (levelNumber: number) => {
+    const levelId = `sector-${String(levelNumber).padStart(2, '0')}`;
     setIsLoading(levelId);
-    // TODO: Navigate to the actual game level. For now, it will just show a loading screen.
-    console.log(`Cargando Nivel: ${levelId}`);
-    // Example: router.push(`/games/wumpus/play/hunt/${levelId}`);
-    setTimeout(() => setIsLoading(null), 2000); // Simulate loading
+    router.push(`/games/wumpus/play/hunt/${levelNumber}`);
   };
 
   if (isLoading) {
-    return <AnimatedLoading text={`Accediendo al Sector de Caza ${isLoading.split('-')[1]}...`} />;
+    return <AnimatedLoading text={`Accediendo al ${isLoading.replace('-', ' ')}...`} />;
   }
 
   return (
@@ -52,7 +50,7 @@ export default function HuntSelectionPage() {
                 level.enabled ? "cursor-pointer hover:border-wumpus-primary hover:shadow-glow-wumpus-primary hover:-translate-y-1" : "opacity-50 cursor-not-allowed",
               )}
               style={{ animationDelay: `${index * 100}ms` }}
-              onClick={() => level.enabled && handleLevelSelect(level.id)}
+              onClick={() => level.enabled && handleLevelSelect(level.level)}
             >
               <h2 className="text-lg font-bold text-wumpus-primary">{level.title}</h2>
               <p className="text-xs text-wumpus-foreground/60 mt-1 h-10">{level.description}</p>
