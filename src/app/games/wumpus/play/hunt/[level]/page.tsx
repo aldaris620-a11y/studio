@@ -375,13 +375,13 @@ export default function HuntLevelPage() {
 
   const getSensePositionClass = (senseId: string) => {
     switch (senseId) {
-      case 'wumpus': return 'top-1 left-1';
-      case 'pit': return 'top-1 right-1';
-      case 'bat': return 'bottom-1 left-1';
-      case 'static': return 'bottom-1 right-1';
-      case 'lockdown': return 'top-1/2 left-1 -translate-y-1/2';
-      case 'ghost': return 'top-1/2 right-1 -translate-y-1/2';
-      default: return '';
+      case 'wumpus': return 'absolute top-1 left-1';
+      case 'pit': return 'absolute top-1 right-1';
+      case 'bat': return 'absolute bottom-1 left-1';
+      case 'static': return 'absolute bottom-1 right-1';
+      case 'lockdown': return 'absolute top-1/2 left-1 -translate-y-1/2';
+      case 'ghost': return 'absolute top-1/2 right-1 -translate-y-1/2';
+      default: return 'absolute';
     }
   }
 
@@ -448,7 +448,7 @@ export default function HuntLevelPage() {
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
             const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
-            const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
+            const isClickableForShoot = isConnected && !isPlayerIn-room && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
             return (
@@ -473,15 +473,14 @@ export default function HuntLevelPage() {
                     lockdownEvent && isConnected && 'cursor-not-allowed bg-red-900/50'
                 )}
                 >
-                <div className="flex flex-col items-center justify-center">
-                     {isPlayerInRoom ? (
+                  {isPlayerInRoom ? (
                       <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className={playerIconSizeClass} />
                         <div className="absolute top-0 left-0 right-0 bottom-0">
                             {senses.map(sense => {
                                 const SenseIcon = sense.icon;
                                 return (
-                                    <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
+                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
                                         <SenseIcon className="h-3 w-3" />
                                     </div>
                                 )
@@ -495,7 +494,6 @@ export default function HuntLevelPage() {
                             )}
                         </>
                     )}
-                </div>
                 </div>
             );
             })}
