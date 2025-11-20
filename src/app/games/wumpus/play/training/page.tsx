@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -98,7 +99,7 @@ export default function TrainingSelectionPage() {
             ))}
           </div>
           
-          <Button variant="ghost" onClick={() => router.back()} className="mt-6 text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+          <Button variant="ghost" onClick={() => router.push('/games/wumpus/play')} className="mt-6 text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a Selección de Modo
           </Button>
