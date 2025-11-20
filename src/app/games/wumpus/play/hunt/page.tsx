@@ -124,7 +124,7 @@ export default function HuntSelectionPage() {
         </div>
       </div>
       
-      <Button variant="ghost" onClick={() => router.back()} className="mt-12 text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+      <Button variant="ghost" onClick={() => router.push('/games/wumpus/play')} className="mt-12 text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver al Tablero de Misiones
       </Button>

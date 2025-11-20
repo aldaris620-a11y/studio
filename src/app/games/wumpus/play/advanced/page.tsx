@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -392,7 +393,7 @@ export default function AdvancedPracticePage() {
   return (
     <>
     <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
-      <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
+      <Button variant="ghost" size="icon" onClick={() => router.push('/games/wumpus/play/training')} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
           <LogOut className="h-6 w-6" />
       </Button>
       
@@ -529,7 +530,7 @@ export default function AdvancedPracticePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => router.back()} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+            <Button variant="outline" onClick={() => router.push('/games/wumpus/play/training')} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
                 <LogOut className="mr-2"/> Salir
             </Button>
             <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">

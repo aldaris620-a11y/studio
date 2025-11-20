@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -67,7 +68,7 @@ export default function GuidedTutorialPage() {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      router.back();
+      router.push('/games/wumpus/play/training');
     }
   };
 

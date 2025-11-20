@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -54,7 +55,7 @@ export default function NarrativeStartPage() {
               size="lg"
               variant="outline"
               className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent text-lg"
-              onClick={() => router.back()}
+              onClick={() => router.push('/games/wumpus/play')}
             >
               <ArrowLeft className="mr-2 h-5 w-5" />
               Rechazar
