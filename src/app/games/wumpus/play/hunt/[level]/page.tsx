@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -477,11 +476,11 @@ export default function HuntLevelPage() {
                      {isPlayerInRoom ? (
                       <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className={playerIconSizeClass} />
-                        <div className="absolute top-0 left-0 right-0 bottom-0">
+                        <div className="absolute inset-0">
                            {senses.map(sense => {
                                 const SenseIcon = sense.icon;
                                 return (
-                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
+                                    <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
                                         <SenseIcon className="h-3 w-3" />
                                     </div>
                                 )
@@ -490,13 +489,6 @@ export default function HuntLevelPage() {
                       </div>
                     ) : (
                         <>
-                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                            {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                            {room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
-                            
                             {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && (
                                 <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
                             )}
