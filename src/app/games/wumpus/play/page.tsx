@@ -50,9 +50,7 @@ export default function GameModeSelectionPage() {
     } else if (mode.id === 'historia') {
       path = '/games/wumpus/play/narrative';
     } else if (mode.id === 'caceria') {
-      // For now, Hunt Protocol will also lead to the training selection.
-      // This can be changed later to a dedicated game mode screen.
-      path = '/games/wumpus/play/training';
+      path = '/games/wumpus/play/hunt';
     } else {
       console.log(`Modo seleccionado: ${mode.id}`);
       setTimeout(() => setIsLoading(null), 1000); // For now, just reset loading state
