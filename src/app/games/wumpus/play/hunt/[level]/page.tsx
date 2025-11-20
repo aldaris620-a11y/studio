@@ -93,7 +93,7 @@ const generateMap = (config: LevelConfig): Room[] => {
     const playerStartRoom = 1;
     let availableRooms = rooms.map(r => r.id).filter(id => id !== playerStartRoom);
     
-    const placeItems = (itemType: keyof Room, count: number) => {
+    const placeItems = (itemType: keyof Omit<Room, 'id' | 'connections'>, count: number) => {
         for (let i = 0; i < count; i++) {
             if (availableRooms.length === 0) return;
             const randomIndex = Math.floor(Math.random() * availableRooms.length);
@@ -374,13 +374,13 @@ export default function HuntLevelPage() {
 
   const getSensePositionClass = (senseId: string) => {
     switch (senseId) {
-      case 'wumpus': return 'absolute top-1 left-1';
-      case 'pit': return 'absolute top-1 right-1';
-      case 'bat': return 'absolute bottom-1 left-1';
-      case 'static': return 'absolute bottom-1 right-1';
-      case 'lockdown': return 'absolute bottom-1 right-1';
-      case 'ghost': return 'absolute top-1 right-1';
-      default: return 'absolute';
+      case 'wumpus': return 'top-1 left-1';
+      case 'pit': return 'top-1 right-1';
+      case 'bat': return 'bottom-1 left-1';
+      case 'static': return 'bottom-1 right-1';
+      case 'lockdown': return 'top-1/2 left-1 -translate-y-1/2';
+      case 'ghost': return 'top-1/2 right-1 -translate-y-1/2';
+      default: return '';
     }
   }
 
@@ -476,16 +476,14 @@ export default function HuntLevelPage() {
                      {isPlayerInRoom ? (
                       <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className={playerIconSizeClass} />
-                        <div className="absolute inset-0">
-                           {senses.map(sense => {
-                                const SenseIcon = sense.icon;
-                                return (
-                                    <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
-                                        <SenseIcon className="h-3 w-3" />
-                                    </div>
-                                )
-                           })}
-                        </div>
+                        {senses.map(sense => {
+                            const SenseIcon = sense.icon;
+                            return (
+                                <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
+                                    <SenseIcon className="h-3 w-3" />
+                                </div>
+                            )
+                        })}
                       </div>
                     ) : (
                         <>
