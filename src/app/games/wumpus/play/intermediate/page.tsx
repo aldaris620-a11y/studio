@@ -430,7 +430,6 @@ export default function IntermediatePracticePage() {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
-            const isDiscoveredHazard = discoveredHazards.has(room.id);
             const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
@@ -473,8 +472,11 @@ export default function IntermediatePracticePage() {
                       </div>
                     ) : (
                         <>
-                            {isDiscoveredHazard && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {isDiscoveredHazard && room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                            {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
                             
                             {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && (
                                 <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
@@ -563,3 +565,5 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
+
+    
