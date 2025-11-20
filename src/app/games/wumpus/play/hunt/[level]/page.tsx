@@ -448,7 +448,7 @@ export default function HuntLevelPage() {
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
             const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
-            const isClickableForShoot = isConnected && !isPlayerIn-room && isShooting;
+            const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
 
             return (
