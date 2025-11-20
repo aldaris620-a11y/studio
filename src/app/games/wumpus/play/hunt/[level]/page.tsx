@@ -9,6 +9,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Typewriter } from '@/components/typewriter';
+import { AnimatedLoading } from '@/components/animated-loading';
+
 
 // Game Structure Definitions
 type Room = {
@@ -486,13 +488,15 @@ export default function HuntLevelPage() {
                            })}
                         </div>
                       </div>
-                    ) : room.hasWumpus ? <Skull className={playerIconSizeClass} />
-                      : room.hasPit ? <AlertTriangle className={playerIconSizeClass} />
-                      : room.hasBat ? <Shuffle className={playerIconSizeClass} />
-                      : room.hasStatic ? <WifiOff className={playerIconSizeClass} />
-                      : room.hasLockdown ? <ShieldAlert className={playerIconSizeClass} />
-                      : room.hasGhost ? <Ghost className={playerIconSizeClass} />
-                      : isVisited && <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
+                    ) : isVisited ? (
+                        room.hasWumpus ? <Skull className={playerIconSizeClass} />
+                        : room.hasPit ? <AlertTriangle className={playerIconSizeClass} />
+                        : room.hasBat ? <Shuffle className={playerIconSizeClass} />
+                        : room.hasStatic ? <WifiOff className={playerIconSizeClass} />
+                        : room.hasLockdown ? <ShieldAlert className={playerIconSizeClass} />
+                        : room.hasGhost ? <Ghost className={playerIconSizeClass} />
+                        : <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
+                    ): null
                     }
                 </div>
                 </div>
