@@ -322,7 +322,7 @@ export default function HuntLevelPage() {
     restartGame();
   }, [restartGame]);
 
-  const { connectedRooms, senses, isInStatic, isNearGhost } = useMemo(() => {
+  const { connectedRooms, senses, isInStatic } = useMemo(() => {
     if (gameMap.length === 0) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
     const room = getRoomById(playerRoomId, gameMap);
     if (!room) return { connectedRooms: [], senses: [], isInStatic: false, isNearGhost: false };
@@ -344,7 +344,8 @@ export default function HuntLevelPage() {
     const detectedSenses = new Set();
     let nearGhost = false;
 
-    for (const connectedId of room.connections) {
+    // Check for ghost in current room or adjacent rooms
+     for (const connectedId of room.connections) {
         const connectedRoom = getRoomById(connectedId, gameMap);
         if (connectedRoom?.hasGhost) {
             nearGhost = true;
