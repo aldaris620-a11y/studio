@@ -103,17 +103,17 @@ const generateMap = (config: LevelConfig): Room[] => {
             
             const room = rooms.find(r => r.id === roomId);
             if (room) {
-                (room as any)[`has${itemType.charAt(0).toUpperCase() + itemType.slice(1).replace('has', '')}`] = true;
+                 (room as any)[itemType] = true;
             }
         }
     };
     
-    placeItems('hasWumpus' as any, wumpusCount);
-    placeItems('hasPit' as any, pitCount);
-    placeItems('hasBat' as any, batCount);
-    placeItems('hasStatic' as any, staticCount);
-    placeItems('hasLockdown' as any, lockdownCount);
-    placeItems('hasGhost' as any, ghostCount);
+    placeItems('hasWumpus', wumpusCount);
+    placeItems('hasPit', pitCount);
+    placeItems('hasBat', batCount);
+    placeItems('hasStatic', staticCount);
+    placeItems('hasLockdown', lockdownCount);
+    placeItems('hasGhost', ghostCount);
 
     return rooms;
 }
@@ -583,5 +583,3 @@ export default function HuntLevelPage() {
     </>
   );
 }
-
-    
