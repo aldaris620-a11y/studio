@@ -132,6 +132,7 @@ export default function HuntLevelPage() {
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(config.arrows);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
+  const [discoveredHazards, setDiscoveredHazards] = useState<Set<number>>(new Set());
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
@@ -204,6 +205,7 @@ export default function HuntLevelPage() {
       return true;
     }
     if (room.hasBat) {
+      setDiscoveredHazards(prev => new Set(prev).add(room.id));
       setAlertModal({
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
@@ -213,10 +215,17 @@ export default function HuntLevelPage() {
       return false;
     }
     if (room.hasLockdown) {
+      setDiscoveredHazards(prev => new Set(prev).add(room.id));
       setLockdownEvent(true);
       setLockdownContinue(false);
       setTimeout(() => setLockdownContinue(true), 2000); // 2-second lockdown
       return false;
+    }
+     if (room.hasGhost) {
+      setDiscoveredHazards(prev => new Set(prev).add(room.id));
+    }
+    if (room.hasStatic) {
+      setDiscoveredHazards(prev => new Set(prev).add(room.id));
     }
     return false;
   }, []);
@@ -313,6 +322,7 @@ export default function HuntLevelPage() {
     setLockdownEvent(false);
     setWumpusStatus('DORMIDO');
     setVisitedRooms(new Set([1]));
+    setDiscoveredHazards(new Set());
     setAlertModal(null);
     setIsGameStarted(false);
     setPendingAction(null);
@@ -447,6 +457,7 @@ export default function HuntLevelPage() {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
+            const isDiscoveredHazard = discoveredHazards.has(room.id);
             const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
@@ -489,7 +500,11 @@ export default function HuntLevelPage() {
                       </div>
                     ) : (
                         <>
-                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && (
+                            {isDiscoveredHazard && room.hasBat && <Shuffle className={cn(playerIconSizeClass, "text-wumpus-accent")} />}
+                            {isDiscoveredHazard && room.hasLockdown && <ShieldAlert className={cn(playerIconSizeClass, "text-orange-400")} />}
+                            {isDiscoveredHazard && room.hasStatic && <WifiOff className={cn(playerIconSizeClass, "text-gray-400")} />}
+                            {isDiscoveredHazard && room.hasGhost && <Ghost className={cn(playerIconSizeClass, "text-purple-400")} />}
+                            {isVisited && !isDiscoveredHazard && (
                                 <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
                             )}
                         </>

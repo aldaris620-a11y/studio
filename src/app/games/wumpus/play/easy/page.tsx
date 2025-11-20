@@ -97,6 +97,7 @@ export default function EasyPracticePage() {
   const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
   const [arrowsLeft, setArrowsLeft] = useState<number>(3);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
+  const [discoveredHazards, setDiscoveredHazards] = useState<Set<number>>(new Set());
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
 
@@ -123,6 +124,7 @@ export default function EasyPracticePage() {
       return true;
     }
     if (room.hasBat) {
+      setDiscoveredHazards(prev => new Set(prev).add(room.id));
       setAlertModal({
           icon: Shuffle, title: "Dron de Transporte Activado",
           description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
@@ -208,6 +210,7 @@ export default function EasyPracticePage() {
     setIsShooting(false);
     setArrowsLeft(3);
     setVisitedRooms(new Set([1]));
+    setDiscoveredHazards(new Set());
     setAlertModal(null);
     setPendingAction(null);
   }, []);
@@ -319,6 +322,7 @@ export default function EasyPracticePage() {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
+            const isDiscoveredHazard = discoveredHazards.has(room.id);
             const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
             const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
             const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
@@ -345,7 +349,7 @@ export default function EasyPracticePage() {
                 >
                 <div className="flex flex-col items-center justify-center">
                     {isPlayerInRoom ? (
-                      <>
+                      <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className="h-8 w-8" />
                         <div className="absolute top-0 left-0 right-0 bottom-0">
                            {senses.map(sense => {
@@ -357,12 +361,10 @@ export default function EasyPracticePage() {
                                 )
                            })}
                         </div>
-                      </>
+                      </div>
                     ) : (
                         <>
-                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {isDiscoveredHazard && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
                             {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && (
                                 <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
                             )}
