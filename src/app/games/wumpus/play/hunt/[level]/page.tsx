@@ -103,17 +103,17 @@ const generateMap = (config: LevelConfig): Room[] => {
             
             const room = rooms.find(r => r.id === roomId);
             if (room) {
-                (room as any)[itemType] = true;
+                (room as any)[`has${itemType.charAt(0).toUpperCase() + itemType.slice(1).replace('has', '')}`] = true;
             }
         }
     };
     
-    placeItems('hasWumpus', wumpusCount);
-    placeItems('hasPit', pitCount);
-    placeItems('hasBat', batCount);
-    placeItems('hasStatic', staticCount);
-    placeItems('hasLockdown', lockdownCount);
-    placeItems('hasGhost', ghostCount);
+    placeItems('hasWumpus' as any, wumpusCount);
+    placeItems('hasPit' as any, pitCount);
+    placeItems('hasBat' as any, batCount);
+    placeItems('hasStatic' as any, staticCount);
+    placeItems('hasLockdown' as any, lockdownCount);
+    placeItems('hasGhost' as any, ghostCount);
 
     return rooms;
 }
@@ -474,7 +474,7 @@ export default function HuntLevelPage() {
                 )}
                 >
                 <div className="flex flex-col items-center justify-center">
-                    {isPlayerInRoom ? (
+                     {isPlayerInRoom ? (
                       <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className={playerIconSizeClass} />
                         <div className="absolute top-0 left-0 right-0 bottom-0">
@@ -488,16 +488,20 @@ export default function HuntLevelPage() {
                            })}
                         </div>
                       </div>
-                    ) : isVisited ? (
-                        room.hasWumpus ? <Skull className={playerIconSizeClass} />
-                        : room.hasPit ? <AlertTriangle className={playerIconSizeClass} />
-                        : room.hasBat ? <Shuffle className={playerIconSizeClass} />
-                        : room.hasStatic ? <WifiOff className={playerIconSizeClass} />
-                        : room.hasLockdown ? <ShieldAlert className={playerIconSizeClass} />
-                        : room.hasGhost ? <Ghost className={playerIconSizeClass} />
-                        : <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
-                    ): null
-                    }
+                    ) : (
+                        <>
+                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
+                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
+                            {room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
+                            {room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
+                            {room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
+                            {room.hasGhost && <Ghost className="h-8 w-8 text-purple-400" />}
+                            
+                            {isVisited && !room.hasWumpus && !room.hasPit && !room.hasBat && !room.hasStatic && !room.hasLockdown && !room.hasGhost && (
+                                <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
+                            )}
+                        </>
+                    )}
                 </div>
                 </div>
             );
@@ -579,3 +583,5 @@ export default function HuntLevelPage() {
     </>
   );
 }
+
+    
