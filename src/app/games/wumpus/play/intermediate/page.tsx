@@ -106,7 +106,7 @@ export default function IntermediatePracticePage() {
   const [isShooting, setIsShooting] = useState<boolean>(false);
   const [gameOver, setGameOver] = useState<GameOverReason>(null);
   const [alertModal, setAlertModal] = useState<AlertModalReason>(null);
-  const [lockdownEvent, setLockdownEvent] useState<boolean>(false);
+  const [lockdownEvent, setLockdownEvent] = useState<boolean>(false);
   const [lockdownContinue, setLockdownContinue] = useState<boolean>(false);
   const [arrowsLeft, setArrowsLeft] = useState<number>(4);
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
@@ -560,3 +560,5 @@ export default function IntermediatePracticePage() {
     </>
   );
 }
+
+    
