@@ -113,7 +113,7 @@ export default function AdvancedPracticePage() {
   const [visitedRooms, setVisitedRooms] = useState<Set<number>>(new Set([1]));
   const [wumpusStatus, setWumpusStatus] = useState<WumpusStatus>('DORMIDO');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const [isGameStarted, setIsGameStarted] useState(false);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
   
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
@@ -468,7 +468,7 @@ export default function AdvancedPracticePage() {
                 >
                 <div className="flex flex-col items-center justify-center">
                      {isPlayerInRoom ? (
-                      <>
+                      <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className="h-6 w-6 md:h-8 md:w-8" />
                         <div className="absolute top-0 left-0 right-0 bottom-0">
                            {senses.map(sense => {
@@ -480,7 +480,7 @@ export default function AdvancedPracticePage() {
                                 )
                            })}
                         </div>
-                      </>
+                      </div>
                     ) : (
                         <>
                             {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
