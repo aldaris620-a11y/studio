@@ -22,7 +22,7 @@ const gameModes = [
     title: 'Protocolo de Cacería',
     icon: Crosshair,
     description: 'La caza en su forma más pura. Entra en una caverna generada proceduralmente y da caza a la bestia.',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'historia',
@@ -49,8 +49,11 @@ export default function GameModeSelectionPage() {
       path = '/games/wumpus/play/training';
     } else if (mode.id === 'historia') {
       path = '/games/wumpus/play/narrative';
+    } else if (mode.id === 'caceria') {
+      // For now, Hunt Protocol will also lead to the training selection.
+      // This can be changed later to a dedicated game mode screen.
+      path = '/games/wumpus/play/training';
     } else {
-      // TODO: Navigate to the actual game screen for the selected mode
       console.log(`Modo seleccionado: ${mode.id}`);
       setTimeout(() => setIsLoading(null), 1000); // For now, just reset loading state
       return;
