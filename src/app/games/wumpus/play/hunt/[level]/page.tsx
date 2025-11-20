@@ -477,14 +477,16 @@ export default function HuntLevelPage() {
                      {isPlayerInRoom ? (
                       <div className="relative w-full h-full flex items-center justify-center">
                         <UserCog className={playerIconSizeClass} />
-                        {senses.map(sense => {
-                            const SenseIcon = sense.icon;
-                            return (
-                                <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
-                                    <SenseIcon className="h-3 w-3" />
-                                </div>
-                            )
-                        })}
+                        <div className="absolute top-0 left-0 right-0 bottom-0">
+                            {senses.map(sense => {
+                                const SenseIcon = sense.icon;
+                                return (
+                                    <div key={sense.id} className={cn('absolute', getSensePositionClass(sense.id), sense.color)}>
+                                        <SenseIcon className="h-3 w-3" />
+                                    </div>
+                                )
+                            })}
+                        </div>
                       </div>
                     ) : (
                         <>
