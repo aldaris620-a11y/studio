@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -7,28 +6,15 @@ import { ArrowLeft, Skull, AlertTriangle, Shuffle, WifiOff, ShieldAlert, Ghost }
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { AnimatedLoading } from '@/components/animated-loading';
+import { levelConfigs } from '@/games/wumpus/level-configs';
 
-// Centralized Level Configuration
-const levelConfigs = [
-  { level: 1, gridSize: 3, arrows: 2, wumpusCount: 1, pitCount: 1, batCount: 1, staticCount: 0, lockdownCount: 0, ghostCount: 0, wumpusMoveChance: 0.1 },
-  { level: 2, gridSize: 3, arrows: 3, wumpusCount: 1, pitCount: 2, batCount: 1, staticCount: 0, lockdownCount: 0, ghostCount: 0, wumpusMoveChance: 0.15 },
-  { level: 3, gridSize: 4, arrows: 3, wumpusCount: 1, pitCount: 2, batCount: 2, staticCount: 1, lockdownCount: 0, ghostCount: 0, wumpusMoveChance: 0.2 },
-  { level: 4, gridSize: 4, arrows: 3, wumpusCount: 1, pitCount: 3, batCount: 2, staticCount: 2, lockdownCount: 1, ghostCount: 0, wumpusMoveChance: 0.25 },
-  { level: 5, gridSize: 5, arrows: 4, wumpusCount: 1, pitCount: 3, batCount: 2, staticCount: 2, lockdownCount: 2, ghostCount: 1, wumpusMoveChance: 0.3 },
-  { level: 6, gridSize: 5, arrows: 4, wumpusCount: 1, pitCount: 4, batCount: 3, staticCount: 2, lockdownCount: 2, ghostCount: 1, wumpusMoveChance: 0.35 },
-  { level: 7, gridSize: 6, arrows: 4, wumpusCount: 1, pitCount: 4, batCount: 3, staticCount: 3, lockdownCount: 2, ghostCount: 2, wumpusMoveChance: 0.4 },
-  { level: 8, gridSize: 6, arrows: 5, wumpusCount: 1, pitCount: 5, batCount: 4, staticCount: 3, lockdownCount: 3, ghostCount: 2, wumpusMoveChance: 0.45 },
-  { level: 9, gridSize: 7, arrows: 5, wumpusCount: 1, pitCount: 5, batCount: 4, staticCount: 4, lockdownCount: 3, ghostCount: 3, wumpusMoveChance: 0.5 },
-  { level: 10, gridSize: 7, arrows: 5, wumpusCount: 1, pitCount: 6, batCount: 5, staticCount: 4, lockdownCount: 4, ghostCount: 3, wumpusMoveChance: 0.6 },
-];
-
-const huntLevels = levelConfigs.map(config => ({
-  id: `sector-${String(config.level).padStart(2, '0')}`,
+// Filter only hunt levels (e.g., levels 11-20)
+const huntLevels = levelConfigs.filter(l => l.level > 10).map(config => ({
+  id: `sector-${String(config.level - 10).padStart(2, '0')}`,
   level: config.level,
-  title: `Sector de Caza ${String(config.level).padStart(2, '0')}`,
-  description: config.level < 3 ? 'Baja actividad anómala detectada.' : config.level < 7 ? 'Múltiples peligros estructurales.' : 'Alerta: Entorno altamente hostil.',
-  difficulty: config.level,
-  enabled: true,
+  title: `Sector de Caza ${String(config.level - 10).padStart(2, '0')}`,
+  difficulty: config.level - 10,
+  enabled: true, // Assuming all hunt levels are enabled by default
   hazards: {
     wumpus: config.wumpusCount,
     pit: config.pitCount,
@@ -54,7 +40,7 @@ export default function HuntSelectionPage() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const handleLevelSelect = (levelNumber: number) => {
-    const levelId = `sector-${String(levelNumber).padStart(2, '0')}`;
+    const levelId = `sector-${String(levelNumber - 10).padStart(2, '0')}`;
     setIsLoading(levelId);
     router.push(`/games/wumpus/play/hunt/${levelNumber}`);
   };

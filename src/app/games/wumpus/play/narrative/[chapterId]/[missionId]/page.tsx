@@ -2,13 +2,14 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost, Activity, Target } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost, Activity, Target, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Typewriter } from '@/components/typewriter';
 import { AnimatedLoading } from '@/components/animated-loading';
+import { chapters, Mission } from '@/games/wumpus/narrative-missions';
 import { LevelConfig, levelConfigs } from '@/games/wumpus/level-configs';
 
 
@@ -22,6 +23,7 @@ type Room = {
   hasStatic: boolean;
   hasLockdown: boolean;
   hasGhost: boolean;
+  isTerminal: boolean; // For narrative missions
 };
 
 type GameOverReason = {
@@ -34,7 +36,7 @@ type GameOverReason = {
 type AlertModalReason = {
     icon: React.ElementType;
     title: string;
-    description: string;
+    description: React.ReactNode;
     buttonText: string;
     onConfirm: () => void;
 } | null;
@@ -43,7 +45,7 @@ type PendingAction = 'transportByDrone' | 'moveWumpus' | null;
 type WumpusStatus = 'DORMIDO' | 'EN MOVIMIENTO' | 'REUBICADO POR DRON';
 
 // Dynamic Map Generation
-const generateMap = (config: LevelConfig): Room[] => {
+const generateMap = (config: LevelConfig, terminalRoom?: number): Room[] => {
     const { gridSize, wumpusCount, pitCount, batCount, staticCount, lockdownCount, ghostCount } = config;
     const roomCount = gridSize * gridSize;
     const rooms: Room[] = [];
@@ -59,12 +61,12 @@ const generateMap = (config: LevelConfig): Room[] => {
         if (row > 0) connections.push(i - gridSize);
         if (row < gridSize - 1) connections.push(i + gridSize);
 
-        rooms.push({ id: i, connections, hasWumpus: false, hasPit: false, hasBat: false, hasStatic: false, hasLockdown: false, hasGhost: false });
+        rooms.push({ id: i, connections, hasWumpus: false, hasPit: false, hasBat: false, hasStatic: false, hasLockdown: false, hasGhost: false, isTerminal: false });
     }
 
     // 2. Place hazards
     const playerStartRoom = 1;
-    let availableRooms = rooms.map(r => r.id).filter(id => id !== playerStartRoom);
+    let availableRooms = rooms.map(r => r.id).filter(id => id !== playerStartRoom && id !== terminalRoom);
     
     const placeItems = (itemType: keyof Omit<Room, 'id' | 'connections'>, count: number) => {
         for (let i = 0; i < count; i++) {
@@ -87,14 +89,28 @@ const generateMap = (config: LevelConfig): Room[] => {
     placeItems('hasLockdown', lockdownCount);
     placeItems('hasGhost', ghostCount);
 
+    if (terminalRoom) {
+      const termRoom = rooms.find(r => r.id === terminalRoom);
+      if (termRoom) termRoom.isTerminal = true;
+    }
+
     return rooms;
 }
 
-export default function HuntLevelPage() {
+export default function NarrativeMissionPage() {
   const router = useRouter();
   const params = useParams();
-  const level = parseInt(params.level as string, 10);
-  const config = useMemo(() => levelConfigs.find(c => c.level === level) || levelConfigs[0], [level]);
+  const { chapterId, missionId } = params;
+
+  const mission = useMemo(() => {
+    const chapter = chapters.find(c => c.id === chapterId);
+    return chapter?.missions.find(m => m.id === missionId);
+  }, [chapterId, missionId]);
+
+  const config = useMemo(() => {
+      if (!mission) return levelConfigs[0];
+      return levelConfigs.find(c => c.level === mission.level) || levelConfigs[0]
+  }, [mission]);
 
   const [gameMap, setGameMap] = useState<Room[]>([]);
   const [playerRoomId, setPlayerRoomId] = useState<number>(1);
@@ -125,21 +141,13 @@ export default function HuntLevelPage() {
         const newWumpusRoom = tempMap.find(r => r.id === newWumpusRoomId)!;
 
         if (newWumpusRoom.hasPit) {
-            setGameOver({
-                icon: Trophy, title: "Activo Neutralizado por el Entorno",
-                description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory',
-            });
+            setGameOver({ icon: Trophy, title: "Activo Neutralizado por el Entorno", description: "¡Has tenido suerte! El Activo 734 se movió y cayó en un pozo sin fondo.", variant: 'victory' });
             return tempMap.map(r => ({ ...r, hasWumpus: false }));
         }
-
         if (newWumpusRoom.id === playerRoomId) {
-            setGameOver({
-                icon: Skull, title: "¡Te ha encontrado!",
-                description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat',
-            });
+            setGameOver({ icon: Skull, title: "¡Te ha encontrado!", description: "El Activo 734 se ha movido a tu ubicación. Misión fracasada.", variant: 'defeat' });
             return tempMap;
         }
-
         if (newWumpusRoom.hasBat) {
             setWumpusStatus('REUBICADO POR DRON');
             let finalRoomId;
@@ -148,10 +156,7 @@ export default function HuntLevelPage() {
             } while (finalRoomId === newWumpusRoomId || finalRoomId === playerRoomId);
 
             if (finalRoomId === playerRoomId) {
-                setGameOver({
-                    icon: Skull, title: "Entrega Mortal",
-                    description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat',
-                });
+                setGameOver({ icon: Skull, title: "Entrega Mortal", description: "Un dron transportó al Activo 734 directamente a tu ubicación. Misión fracasada.", variant: 'defeat' });
                 return tempMap;
             }
             return tempMap.map(r => r.id === finalRoomId ? { ...r, hasWumpus: true } : r);
@@ -164,49 +169,50 @@ export default function HuntLevelPage() {
 
   const checkHazards = useCallback((room: Room) => {
     if (room.hasWumpus) {
-      setGameOver({
-        icon: Skull, title: "Neutralizado por Activo Hostil",
-        description: "El Activo 734 te ha encontrado. Misión fracasada.", variant: 'defeat',
-      });
+      setGameOver({ icon: Skull, title: "Neutralizado por Activo Hostil", description: "El Activo 734 te ha encontrado. Misión fracasada.", variant: 'defeat' });
       return true;
     }
     if (room.hasPit) {
-      setGameOver({
-        icon: AlertTriangle, title: "Peligro Estructural Fatal",
-        description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.", variant: 'defeat',
-      });
+      setGameOver({ icon: AlertTriangle, title: "Peligro Estructural Fatal", description: "Has caído en un pozo de mantenimiento sin fondo. Misión fracasada.", variant: 'defeat' });
       return true;
+    }
+     if (mission?.dataLog && room.isTerminal) {
+       setAlertModal({
+          icon: Server, title: mission.dataLog.title,
+          description: (
+            <div className="text-left font-mono text-xs space-y-2 my-4 max-h-[40vh] overflow-y-auto pr-2">
+                {mission.dataLog.content.map((line, index) => (
+                    <div key={index}>{line.startsWith('>') ? <span>&gt; </span> : ''}<span className={line.startsWith('>') ? 'text-wumpus-accent' : ''}>{line.replace('>','')}</span></div>
+                ))}
+            </div>
+          ),
+          buttonText: "Continuar Misión",
+          onConfirm: () => {
+             setGameOver({ icon: Trophy, title: "Misión Cumplida", description: "Has recuperado el registro de datos. La información obtenida es vital para las siguientes operaciones.", variant: 'victory' });
+          },
+       });
+       return true;
     }
     if (room.hasBat) {
       setDiscoveredHazards(prev => new Set(prev).add(room.id));
-      setAlertModal({
-          icon: Shuffle, title: "Dron de Transporte Activado",
-          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
-          buttonText: "Continuar",
-          onConfirm: () => setPendingAction('transportByDrone'),
-      });
+      setAlertModal({ icon: Shuffle, title: "Dron de Transporte Activado", description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!", buttonText: "Continuar", onConfirm: () => setPendingAction('transportByDrone') });
       return false;
     }
     if (room.hasLockdown) {
       setDiscoveredHazards(prev => new Set(prev).add(room.id));
       setLockdownEvent(true);
       setLockdownContinue(false);
-      setTimeout(() => setLockdownContinue(true), 2000); // 2-second lockdown
+      setTimeout(() => setLockdownContinue(true), 2000);
       return false;
     }
-     if (room.hasGhost) {
-      setDiscoveredHazards(prev => new Set(prev).add(room.id));
-    }
-    if (room.hasStatic) {
-      setDiscoveredHazards(prev => new Set(prev).add(room.id));
-    }
+    if (room.hasGhost) setDiscoveredHazards(prev => new Set(prev).add(room.id));
+    if (room.hasStatic) setDiscoveredHazards(prev => new Set(prev).add(room.id));
     return false;
-  }, []);
+  }, [mission]);
 
   const handleDroneTransport = useCallback(() => {
     setGameMap(currentMap => {
-        let randomRoomId;
-        let newRoom;
+        let randomRoomId, newRoom;
         do {
             randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
             newRoom = getRoomById(randomRoomId, currentMap);
@@ -214,9 +220,7 @@ export default function HuntLevelPage() {
 
         setVisitedRooms(prev => new Set(prev).add(newRoom.id));
         setPlayerRoomId(newRoom.id);
-        
         setTimeout(() => checkHazards(newRoom!), 0);
-        
         return currentMap;
     });
   }, [playerRoomId, getRoomById, checkHazards]);
@@ -233,7 +237,6 @@ export default function HuntLevelPage() {
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
-
     if (!isGameStarted) setIsGameStarted(true);
 
     const newRoom = getRoomById(newRoomId, gameMap);
@@ -242,55 +245,19 @@ export default function HuntLevelPage() {
     setWumpusStatus('DORMIDO');
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
     setPlayerRoomId(newRoom.id);
-    setIsShooting(false);
 
     if (isGameStarted && Math.random() < config.wumpusMoveChance) {
         setPendingAction('moveWumpus');
     }
-    
     checkHazards(newRoom);
   }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted, config.wumpusMoveChance]);
-  
-  const handleShootClick = () => {
-    if (gameOver || arrowsLeft === 0) return;
-    setIsShooting(prev => !prev);
-  };
-  
-  const handleShoot = (targetRoomId: number) => {
-    if (!isShooting || arrowsLeft === 0 || gameOver) return;
-  
-    setArrowsLeft(prev => prev - 1);
-    setIsShooting(false);
-    
-    const targetRoom = getRoomById(targetRoomId, gameMap);
-
-    if (targetRoom?.hasWumpus) {
-      setGameOver({
-        icon: Trophy,
-        title: "Activo Neutralizado",
-        description: `¡Has completado la misión del Sector ${String(level).padStart(2, '0')}! El Activo 734 ha sido eliminado.`,
-        variant: 'victory',
-      });
-      return;
-    }
-    
-    setPendingAction('moveWumpus');
-    if (arrowsLeft - 1 === 0 && !gameOver) {
-      setGameOver({
-        icon: Skull,
-        title: "Munición Agotada",
-        description: "Te has quedado sin munición. Sin forma de defenderte, eres un blanco fácil. Misión fracasada.",
-        variant: 'defeat',
-      });
-    }
-  };
 
   const restartGame = useCallback(() => {
-    const newMap = generateMap(config);
+    if (!mission) return;
+    const newMap = generateMap(config, mission.terminalRoom);
     setGameMap(newMap);
     setPlayerRoomId(1);
     setGameOver(null);
-    setIsShooting(false);
     setArrowsLeft(config.arrows);
     setLockdownEvent(false);
     setWumpusStatus('DORMIDO');
@@ -299,7 +266,7 @@ export default function HuntLevelPage() {
     setAlertModal(null);
     setIsGameStarted(false);
     setPendingAction(null);
-  }, [config]);
+  }, [config, mission]);
 
   useEffect(() => {
     restartGame();
@@ -327,12 +294,10 @@ export default function HuntLevelPage() {
     const detectedSenses = new Set();
     let nearGhost = false;
 
-    // Check for ghost in current room or adjacent rooms
      for (const connectedId of room.connections) {
         const connectedRoom = getRoomById(connectedId, gameMap);
         if (connectedRoom?.hasGhost) {
-            nearGhost = true;
-            break;
+            nearGhost = true; break;
         }
     }
     if (room.hasGhost) nearGhost = true;
@@ -368,7 +333,7 @@ export default function HuntLevelPage() {
     }
   }
 
-  if (gameMap.length === 0) return <AnimatedLoading text={`Cargando Sector ${String(level).padStart(2, '0')}...`} />;
+  if (!mission) return <AnimatedLoading text={`Cargando Misión...`} />;
 
   const roomSizeClass = config.gridSize > 5 ? 'w-12 h-12 md:w-14 md:h-14' : 'w-16 h-16 md:w-16 md:h-16';
   const playerIconSizeClass = config.gridSize > 5 ? 'h-6 w-6 md:h-7 md:w-7' : 'h-8 w-8';
@@ -376,7 +341,7 @@ export default function HuntLevelPage() {
   return (
     <>
     <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
-      <Button variant="ghost" size="icon" onClick={() => router.push('/games/wumpus/play/hunt')} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
+      <Button variant="ghost" size="icon" onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="absolute top-4 right-4 text-wumpus-accent hover:text-wumpus-primary hover:bg-wumpus-primary/10 z-10">
           <LogOut className="h-6 w-6" />
       </Button>
       
@@ -385,10 +350,10 @@ export default function HuntLevelPage() {
             <Card className="flex-1 bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
               <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><Target />Objetivo de la Misión</CardTitle>
-                  <CardDescription className="text-wumpus-foreground/60">Sector de Caza {String(level).padStart(2, '0')}</CardDescription>
+                  <CardDescription className="text-wumpus-foreground/60">{mission.title}</CardDescription>
               </CardHeader>
               <CardContent>
-                  <p className="font-code text-sm text-wumpus-accent">Neutralizar al Activo 734.</p>
+                  <p className="font-code text-sm text-wumpus-accent">{mission.objective}</p>
                   <div className="mt-4 space-y-1 text-xs font-code min-h-[90px]">
                       {isInStatic ? (
                       <p className="text-orange-400 italic flex items-center gap-2"><WifiOff /> <Typewriter text="ERROR: Interferencia de sensor."/></p>
@@ -401,29 +366,9 @@ export default function HuntLevelPage() {
                       <p className="text-wumpus-foreground/70 italic"><Typewriter text="Sistemas estables. No hay peligros inmediatos." /></p>
                       )}
                   </div>
-                  <div className="mt-2 text-sm font-semibold flex items-center gap-2 text-wumpus-accent">
-                      <Crosshair className="h-4 w-4" />
-                      <span>Cañón de Pulso: {arrowsLeft}</span>
-                  </div>
-                  <Button className="w-full mt-4 bg-wumpus-primary/20 border border-wumpus-primary text-wumpus-primary hover:bg-wumpus-primary/30 hover:text-wumpus-primary" disabled={arrowsLeft === 0 || lockdownEvent} variant={isShooting ? "destructive" : "outline"} onClick={handleShootClick} >
-                      <Crosshair className="mr-2 h-4 w-4" />
-                      {isShooting ? 'Apuntando...' : 'Armar Cañón de Pulso'}
-                  </Button>
               </CardContent>
             </Card>
 
-            <Card className="flex-1 bg-wumpus-card/80 backdrop-blur-sm border-wumpus-danger/20 text-wumpus-foreground">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm text-wumpus-danger"><Activity />Estado del Activo 734</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-1 text-xs font-code min-h-[20px]">
-                    <div className={cn("flex items-center gap-2", wumpusStatus !== 'DORMIDO' ? 'text-wumpus-danger' : 'text-wumpus-foreground/70' )}>
-                    <Typewriter text={`ESTADO: ${wumpusStatus}`} />
-                    </div>
-                </div>
-            </CardContent>
-            </Card>
         </div>
 
         <div className={`grid gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary`} style={{gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))`}}>
@@ -431,19 +376,12 @@ export default function HuntLevelPage() {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
-            const isDiscoveredHazard = discoveredHazards.has(room.id);
-            const isClickableForMove = isConnected && !isPlayerInRoom && !isShooting;
-            const isClickableForShoot = isConnected && !isPlayerInRoom && isShooting;
-            const isClickable = !gameOver && (isClickableForMove || isClickableForShoot);
+            const isClickable = !gameOver && isConnected && !isPlayerInRoom;
 
             return (
                 <div
                 key={room.id}
-                onClick={() => {
-                    if (!isClickable) return;
-                    if (isClickableForMove) handleMove(room.id);
-                    if (isClickableForShoot) handleShoot(room.id);
-                }}
+                onClick={() => isClickable && handleMove(room.id) }
                 role="button"
                 tabIndex={isClickable ? 0 : -1}
                 className={cn(
@@ -451,11 +389,9 @@ export default function HuntLevelPage() {
                     roomSizeClass,
                     'transition-all duration-200',
                     isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
-                    isClickableForMove && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
-                    isClickableForShoot && 'bg-wumpus-danger/20 hover:bg-wumpus-danger/30 hover:border-wumpus-danger cursor-crosshair ring-1 ring-wumpus-danger',
+                    isClickable && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
                     !isClickable && !isPlayerInRoom && 'bg-wumpus-background/50',
                     gameOver && 'cursor-not-allowed',
-                    lockdownEvent && isConnected && 'cursor-not-allowed bg-red-900/50'
                 )}
                 >
                   {isPlayerInRoom ? (
@@ -472,17 +408,11 @@ export default function HuntLevelPage() {
                             })}
                         </div>
                       </div>
-                    ) : (
-                        <>
-                            {isDiscoveredHazard && room.hasBat && <Shuffle className={cn(playerIconSizeClass, "text-wumpus-accent")} />}
-                            {isDiscoveredHazard && room.hasLockdown && <ShieldAlert className={cn(playerIconSizeClass, "text-orange-400")} />}
-                            {isDiscoveredHazard && room.hasStatic && <WifiOff className={cn(playerIconSizeClass, "text-gray-400")} />}
-                            {isDiscoveredHazard && room.hasGhost && <Ghost className={cn(playerIconSizeClass, "text-purple-400")} />}
-                            {isVisited && !isDiscoveredHazard && (
-                                <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
-                            )}
-                        </>
-                    )}
+                    ) : room.isTerminal ? (
+                       <Server className={cn(playerIconSizeClass, 'text-wumpus-primary')} />
+                    ) : isVisited ? (
+                        <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
+                    ) : null}
                 </div>
             );
             })}
@@ -491,31 +421,24 @@ export default function HuntLevelPage() {
     </div>
     
       <AlertDialog open={!!gameOver}>
-        <AlertDialogContent className={cn(
-          "bg-wumpus-card text-wumpus-foreground border-wumpus-primary",
-           gameOver?.variant === 'defeat' && "border-wumpus-danger shadow-glow-wumpus-danger",
-           gameOver?.variant === 'victory' && "border-green-500 shadow-glow-wumpus-primary"
-        )}>
+        <AlertDialogContent className={cn( "bg-wumpus-card text-wumpus-foreground border-wumpus-primary", gameOver?.variant === 'defeat' && "border-wumpus-danger shadow-glow-wumpus-danger", gameOver?.variant === 'victory' && "border-green-500 shadow-glow-wumpus-primary" )}>
           <AlertDialogHeader>
-            {gameOver?.icon && <gameOver.icon className={cn("h-12 w-12 mx-auto", {
-                'text-wumpus-danger': gameOver?.variant === 'defeat',
-                'text-green-500': gameOver?.variant === 'victory',
-            })} />}
-            <AlertDialogTitle className={cn("text-center text-2xl", {
-                'text-wumpus-danger': gameOver?.variant === 'defeat',
-                'text-green-500': gameOver?.variant === 'victory',
-            })}>{gameOver?.title}</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              {gameOver?.description}
-            </AlertDialogDescription>
+            {gameOver?.icon && <gameOver.icon className={cn("h-12 w-12 mx-auto", { 'text-wumpus-danger': gameOver?.variant === 'defeat', 'text-green-500': gameOver?.variant === 'victory' })} />}
+            <AlertDialogTitle className={cn("text-center text-2xl", { 'text-wumpus-danger': gameOver?.variant === 'defeat', 'text-green-500': gameOver?.variant === 'victory' })}>{gameOver?.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-wumpus-foreground/80"> {gameOver?.description} </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => router.push('/games/wumpus/play/hunt')} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
-                <LogOut className="mr-2"/> Volver a Sectores
-            </Button>
+            {gameOver?.variant === 'victory' ? (
+                 <Button onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
+                    <LogOut className="mr-2"/> Volver a Misiones
+                </Button>
+            ): (
+                 <Button variant="outline" onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+                    <LogOut className="mr-2"/> Abandonar Misión
+                </Button>
+            )}
             <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
-                <RotateCcw className="mr-2"/>
-                {gameOver?.variant === 'victory' ? 'Jugar de Nuevo' : 'Reiniciar Misión'}
+                <RotateCcw className="mr-2"/> Reiniciar Misión
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -526,18 +449,10 @@ export default function HuntLevelPage() {
           <AlertDialogHeader>
             {alertModal?.icon && <alertModal.icon className="h-12 w-12 mx-auto text-wumpus-accent" />}
             <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              {alertModal?.description}
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          {alertModal?.description}
           <AlertDialogFooter>
-            <AlertDialogAction 
-              onClick={() => {
-                alertModal?.onConfirm();
-                setAlertModal(null);
-              }}
-              className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80"
-            >
+            <AlertDialogAction onClick={() => { alertModal?.onConfirm(); setAlertModal(null); }} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
               {alertModal?.buttonText}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -549,9 +464,7 @@ export default function HuntLevelPage() {
           <AlertDialogHeader>
             <ShieldAlert className="h-12 w-12 mx-auto text-orange-400" />
             <AlertDialogTitle className="text-center text-2xl text-orange-400">Protocolo de Bloqueo Activado</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-wumpus-foreground/80">
-              Has activado una trampa de contención. Las rutas de salida están selladas temporalmente. Espera...
-            </AlertDialogDescription>
+            <AlertDialogDescription className="text-center text-wumpus-foreground/80"> Has activado una trampa de contención. Las rutas de salida están selladas temporalmente. Espera... </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button onClick={() => setLockdownEvent(false)} className="w-full" disabled={!lockdownContinue}>
