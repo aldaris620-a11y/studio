@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost, Activity, Target, Server } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, WifiOff, ShieldAlert, Footprints, Ghost, Activity, Target, Server, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -102,9 +102,15 @@ export default function NarrativeMissionPage() {
   const params = useParams();
   const { chapterId, missionId } = params;
 
-  const mission = useMemo(() => {
-    const chapter = chapters.find(c => c.id === chapterId);
-    return chapter?.missions.find(m => m.id === missionId);
+  const { chapter, mission, nextMission } = useMemo(() => {
+    const currentChapter = chapters.find(c => c.id === chapterId);
+    if (!currentChapter) return { chapter: null, mission: null, nextMission: null };
+    
+    const missionIndex = currentChapter.missions.findIndex(m => m.id === missionId);
+    const currentMission = currentChapter.missions[missionIndex];
+    const nextMission = missionIndex + 1 < currentChapter.missions.length ? currentChapter.missions[missionIndex + 1] : null;
+    
+    return { chapter: currentChapter, mission: currentMission, nextMission };
   }, [chapterId, missionId]);
 
   const config = useMemo(() => {
@@ -127,6 +133,15 @@ export default function NarrativeMissionPage() {
   const [isGameStarted, setIsGameStarted] = useState(false);
   
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
+
+  const handleMissionComplete = useCallback(() => {
+    if (typeof window !== 'undefined') {
+        const completed = JSON.parse(localStorage.getItem('completedMissions') || '{}');
+        completed[missionId] = true;
+        localStorage.setItem('completedMissions', JSON.stringify(completed));
+    }
+     setGameOver({ icon: Trophy, title: "Misión Cumplida", description: "Has recuperado el registro de datos. La información obtenida es vital para las siguientes operaciones.", variant: 'victory' });
+  }, [missionId]);
 
   const moveWumpus = useCallback(() => {
     setGameMap(currentMap => {
@@ -187,9 +202,7 @@ export default function NarrativeMissionPage() {
             </div>
           ),
           buttonText: "Continuar Misión",
-          onConfirm: () => {
-             setGameOver({ icon: Trophy, title: "Misión Cumplida", description: "Has recuperado el registro de datos. La información obtenida es vital para las siguientes operaciones.", variant: 'victory' });
-          },
+          onConfirm: handleMissionComplete,
        });
        return true;
     }
@@ -208,7 +221,7 @@ export default function NarrativeMissionPage() {
     if (room.hasGhost) setDiscoveredHazards(prev => new Set(prev).add(room.id));
     if (room.hasStatic) setDiscoveredHazards(prev => new Set(prev).add(room.id));
     return false;
-  }, [mission]);
+  }, [mission, handleMissionComplete]);
 
   const handleDroneTransport = useCallback(() => {
     setGameMap(currentMap => {
@@ -288,6 +301,7 @@ export default function NarrativeMissionPage() {
         static: { text: 'Ruido de señal cercano.', icon: WifiOff, color: 'text-gray-400', id: 'static' },
         lockdown: { text: 'Lectura de energía residual.', icon: ShieldAlert, color: 'text-orange-400', id: 'lockdown' },
         ghost: { text: 'Lecturas de datos anómalas.', icon: Ghost, color: 'text-purple-400', id: 'ghost' },
+        terminal: { text: 'Señal de datos cercana.', icon: Server, color: 'text-wumpus-primary', id: 'terminal' },
     };
 
     let senses_warnings: { text: string; icon: React.ElementType; color: string, id: string }[] = [];
@@ -314,6 +328,7 @@ export default function NarrativeMissionPage() {
                 if (connectedRoom.hasStatic && !detectedSenses.has('static')) { senses_warnings.push(senseTypes.static); detectedSenses.add('static'); }
                 if (connectedRoom.hasLockdown && !detectedSenses.has('lockdown')) { senses_warnings.push(senseTypes.lockdown); detectedSenses.add('lockdown'); }
                 if (connectedRoom.hasGhost && !detectedSenses.has('ghost')) { senses_warnings.push(senseTypes.ghost); detectedSenses.add('ghost'); }
+                if (connectedRoom.isTerminal && !detectedSenses.has('terminal')) { senses_warnings.push(senseTypes.terminal); detectedSenses.add('terminal'); }
             }
         }
     }
@@ -329,9 +344,19 @@ export default function NarrativeMissionPage() {
       case 'static': return 'absolute bottom-1 right-1';
       case 'lockdown': return 'absolute top-1/2 left-1 -translate-y-1/2';
       case 'ghost': return 'absolute top-1/2 right-1 -translate-y-1/2';
+      case 'terminal': return 'absolute bottom-1 right-1';
       default: return 'absolute';
     }
   }
+  
+  const handleNextMission = () => {
+    if (nextMission) {
+      router.push(`/games/wumpus/play/narrative/${chapterId}/${nextMission.id}`);
+    } else {
+      router.push(`/games/wumpus/play/narrative`); // Go back to chapter select if no more missions
+    }
+  };
+
 
   if (!mission) return <AnimatedLoading text={`Cargando Misión...`} />;
 
@@ -429,17 +454,24 @@ export default function NarrativeMissionPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             {gameOver?.variant === 'victory' ? (
-                 <Button onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
-                    <LogOut className="mr-2"/> Volver a Misiones
-                </Button>
+                <>
+                    <Button variant="outline" onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+                        <LogOut className="mr-2"/> Volver a Misiones
+                    </Button>
+                    <Button onClick={handleNextMission} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
+                       <RotateCcw className="mr-2"/> {nextMission ? 'Siguiente Misión' : 'Fin del Capítulo'}
+                    </Button>
+                </>
             ): (
-                 <Button variant="outline" onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
-                    <LogOut className="mr-2"/> Abandonar Misión
-                </Button>
+                 <>
+                    <Button variant="outline" onClick={() => router.push(`/games/wumpus/play/narrative/${chapterId}`)} className="border-wumpus-accent text-wumpus-accent hover:bg-wumpus-accent/10 hover:text-wumpus-accent">
+                        <LogOut className="mr-2"/> Abandonar Misión
+                    </Button>
+                     <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
+                        <RotateCcw className="mr-2"/> Reiniciar Misión
+                    </Button>
+                 </>
             )}
-            <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
-                <RotateCcw className="mr-2"/> Reiniciar Misión
-            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -450,7 +482,7 @@ export default function NarrativeMissionPage() {
             {alertModal?.icon && <alertModal.icon className="h-12 w-12 mx-auto text-wumpus-accent" />}
             <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
           </AlertDialogHeader>
-          {alertModal?.description}
+          <div className="text-sm text-wumpus-foreground/80">{alertModal?.description}</div>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => { alertModal?.onConfirm(); setAlertModal(null); }} className="w-full bg-wumpus-accent text-black hover:bg-wumpus-accent/80">
               {alertModal?.buttonText}

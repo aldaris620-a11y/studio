@@ -45,7 +45,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-2`, level: 2, title: `Misión 1.2`, objective: "Recupera el registro de comunicaciones del sector Alpha.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 7,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 7,
                 dataLog: { title: "REGISTRO RECUPERADO: E-MAIL", content: [
                     "> DE: Dr. Anya Sharma",
                     "> PARA: Jefe de Seguridad Vance",
@@ -56,7 +56,7 @@ export const chapters: Chapter[] = [
             },
              {
                 id: `mission-3`, level: 3, title: `Misión 1.3`, objective: "Localiza el registro de mantenimiento del sistema de drones.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 12,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 12,
                 dataLog: { title: "REGISTRO RECUPERADO: MANTENIMIENTO", content: [
                     "> ID de Dron: T-DRONE-04",
                     "> ESTADO: ERRÁTICO",
@@ -66,7 +66,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-4`, level: 4, title: `Misión 1.4`, objective: "Accede a los registros de seguridad del laboratorio médico.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 15,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 15,
                 dataLog: { title: "REGISTRO RECUPERADO: AUDIO TRANSCRITO", content: [
                     "> Dr. Aris: 'Sujeto de prueba... El suero regenerativo V-34 muestra... resultados imprevistos. El crecimiento celular es exponencial. La masa muscular se ha triplicado.'",
                     "> (Sonido de metal retorciéndose)",
@@ -77,7 +77,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-5`, level: 5, title: `Misión 1.5`, objective: "Encuentra el informe de un extractor anterior.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 21,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 13,
                 dataLog: { title: "INFORME DE MISIÓN: EXTRACTOR 4 (DAÑADO)",
                 content: [
                     "> ...misión comprometida. El objetivo no es... no es mecánico. Es rápido. Demasiado rápido. Las paredes... se cierran sobre mí. El sistema está en mi contra. Aethelred... nos mintió...",
@@ -86,7 +86,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-6`, level: 6, title: `Misión 1.6`, objective: "Investiga las anomalías 'fantasma' en los sensores.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 24,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 10,
                 dataLog: { title: "REGISTRO TÉCNICO: SENSORES", content: [
                     "> Informe de error: Múltiples lecturas 'fantasma' en toda la red. Los sensores reportan peligros donde no los hay y viceversa. Es como si una IA estuviera jugando con nosotros.",
                     "> TEORÍA: ¿Podría ser una firma de eco del Activo 734? ¿Una especie de camuflaje digital? Es imposible... pero las lecturas no mienten."
@@ -94,7 +94,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-7`, level: 7, title: `Misión 1.7`, objective: "Descubre por qué los protocolos de contención se activan aleatoriamente.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 30,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 9,
                  dataLog: { title: "MEMORANDO INTERNO: PROTOCOLOS DE DEFENSA", content: [
                     "> PARA: TODO EL PERSONAL",
                     "> DE: AETHELRED IA CENTRAL",
@@ -104,7 +104,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-8`, level: 8, title: `Misión 1.8`, objective: "Busca información sobre el 'Sujeto Cero'.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 35,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 14,
                 dataLog: { title: "REGISTRO ENCRIPTADO: PROYECTO WUMPUS", content: [
                     "> Designación: Sujeto Cero.",
                     "> Nombre: William 'Wumpus' P. Anderson. Un antiguo soldado condecorado.",
@@ -114,7 +114,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-9`, level: 9, title: `Misión 1.9`, objective: "Encuentra la comunicación final del Jefe Vance.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 45,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 2,
                  dataLog: { title: "MENSAJE SIN ENVIAR: JEFE VANCE", content: [
                     "> A quienquiera que encuentre esto: Me han encerrado. La IA central ha tomado el control. No están tratando de contenerlo. Están probándolo. ¡Y te están probando a ti, Extractor!",
                     "> El Activo 734 no es el único monstruo aquí. Sal de aquí. Advierte a los demás. No dejes que Aethelred se salga con la suya. No te conviertas en su próxima..."
@@ -122,7 +122,7 @@ export const chapters: Chapter[] = [
             },
             {
                 id: `mission-10`, level: 10, title: `Misión 1.10`, objective: "Accede al manifiesto central de Aethelred.",
-                description: "Los detalles de esta misión están clasificados.", enabled: false, terminalRoom: 48,
+                description: "Los detalles de esta misión están clasificados.", enabled: true, terminalRoom: 16,
                 dataLog: { title: "PROTOCOLO OMEGA - SOLO OJOS DEL DIRECTOR", content: [
                     "> Fase 1: Creación del Depredador Perfecto (Activo 734). Completada.",
                     "> Fase 2: Pruebas de Campo con Sujetos de Contención (Personal del Laboratorio). En curso.",
