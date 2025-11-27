@@ -1,9 +1,8 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Server, Target } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Server, Target, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ type Room = {
 };
 
 const generateFixedMap = (): Room[] => {
-    const size = 3;
+    const size = 4; // Changed to 4x4
     const roomCount = size * size;
     const rooms: Room[] = [];
 
@@ -37,11 +36,11 @@ const generateFixedMap = (): Room[] => {
         rooms.push({ id: i, connections, hasWumpus: false, hasPit: false, hasBat: false, isTerminal: false });
     }
     
-    // Fixed placement for narrative mission 1
-    rooms.find(r => r.id === 6)!.hasWumpus = true;
-    rooms.find(r => r.id === 4)!.hasPit = true;
-    rooms.find(r => r.id === 2)!.hasBat = true;
-    rooms.find(r => r.id === 8)!.isTerminal = true;
+    // Fixed placement for narrative mission 1 (4x4)
+    rooms.find(r => r.id === 12)!.hasWumpus = true;
+    rooms.find(r => r.id === 7)!.hasPit = true;
+    rooms.find(r => r.id === 3)!.hasBat = true;
+    rooms.find(r => r.id === 15)!.isTerminal = true; // New terminal location
 
     return rooms;
 };
@@ -171,19 +170,28 @@ export default function MissionOnePage() {
     return { connectedRooms: room.connections, senses: senses_warnings };
   }, [playerRoomId, gameMap, getRoomById]);
 
+  const getSensePositionClass = (senseId: string) => {
+    switch (senseId) {
+      case 'wumpus': return 'absolute top-1 left-1';
+      case 'pit': return 'absolute top-1 right-1';
+      case 'bat': return 'absolute bottom-1 left-1';
+      default: return 'absolute';
+    }
+  }
+
   if (gameMap.length === 0) return null;
 
   return (
     <>
     <div className="h-full w-full bg-wumpus-background text-wumpus-foreground flex items-center justify-center p-4">
-      <div className="flex flex-col items-center justify-center gap-4 w-full max-w-sm">
+      <div className="flex flex-col items-center justify-center gap-4 w-full max-w-md">
         <Card className="w-full bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
           <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><Target />Objetivo de la Misión</CardTitle>
               <CardDescription className="text-wumpus-foreground/60">Misión 01: El Incidente Gamma-9</CardDescription>
           </CardHeader>
           <CardContent>
-             <p className="font-code text-sm text-wumpus-accent">Alcanza el terminal de datos en la habitación 8.</p>
+             <p className="font-code text-sm text-wumpus-accent">Alcanza el terminal de datos en la habitación 15.</p>
               <div className="mt-4 space-y-1 text-xs font-code min-h-[60px]">
                 {senses.length > 0 ? senses.map((sense, index) => (
                     <div key={`${sense.id}-${index}`} className={cn("flex items-center gap-2", sense.color)}>
@@ -199,7 +207,7 @@ export default function MissionOnePage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-3 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
+        <div className="grid grid-cols-4 gap-1 bg-black/30 p-2 rounded-lg border border-wumpus-primary/30 shadow-glow-wumpus-primary">
             {gameMap.map(room => {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
@@ -213,7 +221,7 @@ export default function MissionOnePage() {
                   role="button"
                   tabIndex={isClickable ? 0 : -1}
                   className={cn(
-                      'relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24 border border-wumpus-accent/20 text-wumpus-accent font-bold text-2xl',
+                      'relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 border border-wumpus-accent/20 text-wumpus-accent font-bold text-2xl',
                       'transition-all duration-200',
                       isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
                       isClickable && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
@@ -221,8 +229,26 @@ export default function MissionOnePage() {
                       gameOver && 'cursor-not-allowed'
                   )}
                 >
-                  {isPlayerInRoom ? <UserCog className="h-10 w-10" /> : <span className="text-wumpus-foreground/40">{room.id}</span>}
-                  {room.isTerminal && !isPlayerInRoom && <Server className="h-8 w-8 text-wumpus-primary absolute" />}
+                  {isPlayerInRoom ? (
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <UserCog className="h-8 w-8" />
+                        <div className="absolute top-0 left-0 right-0 bottom-0">
+                           {senses.map(sense => {
+                                const SenseIcon = sense.icon;
+                                return (
+                                    <div key={sense.id} className={cn(getSensePositionClass(sense.id), sense.color)}>
+                                        <SenseIcon className="h-3 w-3" />
+                                    </div>
+                                )
+                           })}
+                        </div>
+                      </div>
+                  ) : (
+                    <>
+                      {isVisited && !room.isTerminal && <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />}
+                      {room.isTerminal && <Server className="h-8 w-8 text-wumpus-primary" />}
+                    </>
+                  )}
                 </div>
             );
             })}
@@ -254,7 +280,7 @@ export default function MissionOnePage() {
                 <LogOut className="mr-2"/> Volver a Misiones
             </Button>
             {gameOver?.variant === 'defeat' && (
-                <Button onClick={restartGame} className="bg-wumpus-primary text-wumpus-primary-foreground hover:bg-wumpus-primary/90">
+                <Button onClick={restartGame} className="bg-wumpus-primary text-wmpus-primary-foreground hover:bg-wumpus-primary/90">
                     <RotateCcw className="mr-2"/> Reiniciar Misión
                 </Button>
             )}
