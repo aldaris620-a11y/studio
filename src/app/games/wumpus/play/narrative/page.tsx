@@ -13,8 +13,7 @@ export default function NarrativeStartPage() {
 
   const handleAcceptMission = () => {
     setIsLoading(true);
-    // TODO: This will eventually lead to the first mission level. For now, it goes to the tutorial.
-    router.push('/games/wumpus/play/tutorial');
+    router.push('/games/wumpus/play/narrative/mission-1');
   };
 
   if (isLoading) {
