@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCog, Skull, AlertTriangle, Shuffle, Crosshair, LogOut, RotateCcw, Trophy, Server, Target, Footprints } from 'lucide-react';
+import { UserCog, Skull, AlertTriangle, Shuffle, Server, Target, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -123,7 +123,7 @@ export default function MissionOnePage() {
         // Check hazards in the new room after a brief delay
         setTimeout(() => checkHazardsAndEvents(newRoom), 100);
     }
-  }, [gameMap.length, playerRoomId, getRoomById]);
+  }, [gameMap, playerRoomId, getRoomById]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver) return;
@@ -189,7 +189,7 @@ export default function MissionOnePage() {
         <Card className="w-full bg-wumpus-card/80 backdrop-blur-sm border-wumpus-primary/20 text-wumpus-foreground">
           <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg text-wumpus-primary"><Target />Objetivo de la Misión</CardTitle>
-              <CardDescription className="text-wumpus-foreground/60">Misión 01: El Incidente Gamma-9</CardDescription>
+              <CardDescription className="text-wumpus-foreground/60">Misión 1.1: El Incidente Gamma-9</CardDescription>
           </CardHeader>
           <CardContent>
              <p className="font-code text-sm text-wumpus-accent">Alcanza el terminal de datos en la habitación 15.</p>
@@ -283,6 +283,11 @@ export default function MissionOnePage() {
             {gameOver?.variant === 'defeat' && (
                 <Button onClick={restartGame} className="bg-wumpus-primary text-wmpus-primary-foreground hover:bg-wumpus-primary/90">
                     <RotateCcw className="mr-2"/> Reiniciar Misión
+                </Button>
+            )}
+             {gameOver?.variant === 'victory' && (
+                <Button onClick={() => router.push('/games/wumpus/play/narrative')} className="bg-wumpus-primary text-wmpus-primary-foreground hover:bg-wumpus-primary/90">
+                    <LogOut className="mr-2"/> Continuar
                 </Button>
             )}
           </AlertDialogFooter>
