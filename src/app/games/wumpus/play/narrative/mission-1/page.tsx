@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -90,7 +91,7 @@ export default function MissionOnePage() {
        setAlertModal({
           icon: Server, title: "Registro de Seguridad Recuperado",
           description: (
-            <div className="text-left font-mono text-xs space-y-2">
+            <div className="text-left font-mono text-xs space-y-2 my-4">
                 <div>&gt; <span className="text-wumpus-accent">ID DE REGISTRO:</span> 8492-GAMMA-9</div>
                 <div>&gt; <span className="text-wumpus-accent">USUARIO:</span> C. VANCE, JEFE DE SEGURIDAD</div>
                 <div>&gt; <span className="text-wumpus-accent">FECHA:</span> 24.10.2184</div>
@@ -221,7 +222,7 @@ export default function MissionOnePage() {
                   role="button"
                   tabIndex={isClickable ? 0 : -1}
                   className={cn(
-                      'relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 border border-wumpus-accent/20 text-wumpus-accent font-bold text-2xl',
+                      'relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 border border-wumpus-accent/20 text-wumpus-accent font-bold',
                       'transition-all duration-200',
                       isPlayerInRoom && 'bg-wumpus-primary/20 ring-2 ring-wumpus-primary text-wumpus-primary',
                       isClickable && 'bg-wumpus-accent/10 hover:bg-wumpus-accent/20 hover:border-wumpus-accent cursor-pointer',
@@ -293,10 +294,10 @@ export default function MissionOnePage() {
           <AlertDialogHeader>
             {alertModal?.icon && <alertModal.icon className="h-12 w-12 mx-auto text-wumpus-accent" />}
             <AlertDialogTitle className="text-center text-2xl text-wumpus-accent">{alertModal?.title}</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-wumpus-foreground/80 max-h-[50vh] overflow-y-auto px-2">
-              {alertModal?.description}
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="text-sm text-center text-wumpus-foreground/80 max-h-[50vh] overflow-y-auto px-2">
+            {alertModal?.description}
+          </div>
           <AlertDialogFooter>
             <AlertDialogAction 
               onClick={() => {
