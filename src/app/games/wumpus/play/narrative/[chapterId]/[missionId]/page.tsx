@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -68,7 +69,7 @@ const generateMap = (config: LevelConfig, terminalRoom?: number): Room[] => {
     const playerStartRoom = 1;
     let availableRooms = rooms.map(r => r.id).filter(id => id !== playerStartRoom && id !== terminalRoom);
     
-    const placeItems = (itemType: keyof Omit<Room, 'id' | 'connections'>, count: number) => {
+    const placeItems = (itemType: keyof Omit<Room, 'id' | 'connections'| 'isTerminal'>, count: number) => {
         for (let i = 0; i < count; i++) {
             if (availableRooms.length === 0) return;
             const randomIndex = Math.floor(Math.random() * availableRooms.length);
@@ -401,6 +402,7 @@ export default function NarrativeMissionPage() {
             const isPlayerInRoom = playerRoomId === room.id;
             const isConnected = connectedRooms.includes(room.id);
             const isVisited = visitedRooms.has(room.id);
+            const isDiscoveredHazard = discoveredHazards.has(room.id);
             const isClickable = !gameOver && isConnected && !isPlayerInRoom;
 
             return (
