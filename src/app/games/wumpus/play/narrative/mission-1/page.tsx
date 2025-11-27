@@ -91,13 +91,13 @@ export default function MissionOnePage() {
           icon: Server, title: "Registro de Seguridad Recuperado",
           description: (
             <div className="text-left font-mono text-xs space-y-2">
-                <p>&gt; <span className="text-wumpus-accent">ID DE REGISTRO:</span> 8492-GAMMA-9</p>
-                <p>&gt; <span className="text-wumpus-accent">USUARIO:</span> C. VANCE, JEFE DE SEGURIDAD</p>
-                <p>&gt; <span className="text-wumpus-accent">FECHA:</span> 24.10.2184</p>
-                <p className="border-t border-wumpus-accent/20 pt-2">&gt; Brecha de contención confirmada. El Activo 734 está suelto en los túneles de mantenimiento. Repito, el Activo 734 está suelto.</p>
-                <p>&gt; Las lecturas de bioseñales son... erráticas. Más agresivas que en las simulaciones.</p>
-                <p>&gt; No tenemos contacto visual. Parece que está interfiriendo con nuestros sistemas. Los sensores de proximidad son nuestra única guía.</p>
-                <p>&gt; Un Extractor ha sido desplegado. Esperemos que sea suficiente. Vance fuera.</p>
+                <div>&gt; <span className="text-wumpus-accent">ID DE REGISTRO:</span> 8492-GAMMA-9</div>
+                <div>&gt; <span className="text-wumpus-accent">USUARIO:</span> C. VANCE, JEFE DE SEGURIDAD</div>
+                <div>&gt; <span className="text-wumpus-accent">FECHA:</span> 24.10.2184</div>
+                <div className="border-t border-wumpus-accent/20 pt-2">&gt; Brecha de contención confirmada. El Activo 734 está suelto en los túneles de mantenimiento. Repito, el Activo 734 está suelto.</div>
+                <div>&gt; Las lecturas de bioseñales son... erráticas. Más agresivas que en las simulaciones.</div>
+                <div>&gt; No tenemos contacto visual. Parece que está interfiriendo con nuestros sistemas. Los sensores de proximidad son nuestra única guía.</div>
+                <div>&gt; Un Extractor ha sido desplegado. Esperemos que sea suficiente. Vance fuera.</div>
             </div>
           ),
           buttonText: "Continuar",
