@@ -189,13 +189,7 @@ export default function IntermediatePracticePage() {
       return true;
     }
     if (room.hasBat) {
-      setDiscoveredHazards(prev => new Set(prev).add(room.id));
-      setAlertModal({
-          icon: Shuffle, title: "Dron de Transporte Activado",
-          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
-          buttonText: "Continuar",
-          onConfirm: () => setPendingAction('transportByDrone'),
-      });
+      // Logic handled in handleMove to show icon before transport.
       return false;
     }
     if (room.hasLockdown) {
@@ -212,32 +206,36 @@ export default function IntermediatePracticePage() {
   }, []);
 
   const handleDroneTransport = useCallback(() => {
-    setGameMap(currentMap => {
-        let randomRoomId;
-        let newRoom;
-        do {
-            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
-            newRoom = getRoomById(randomRoomId, currentMap);
-        } while (randomRoomId === playerRoomId || !newRoom);
+     setAlertModal({
+        icon: Shuffle, title: "Dron de Transporte Activado",
+        description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
+        buttonText: "Continuar",
+        onConfirm: () => {
+             setGameMap(currentMap => {
+                let randomRoomId;
+                let newRoom;
+                do {
+                    randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+                    newRoom = getRoomById(randomRoomId, currentMap);
+                } while (randomRoomId === playerRoomId || !newRoom);
 
-        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-        setPlayerRoomId(newRoom.id);
-        
-        setTimeout(() => checkHazards(newRoom!), 0);
-        
-        return currentMap;
+                setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+                setPlayerRoomId(newRoom.id);
+                
+                setTimeout(() => checkHazards(newRoom!), 0);
+                
+                return currentMap;
+            });
+        },
     });
   }, [playerRoomId, getRoomById, checkHazards]);
 
   useEffect(() => {
-    if (pendingAction === 'transportByDrone') {
-        handleDroneTransport();
-        setPendingAction(null);
-    } else if (pendingAction === 'moveWumpus') {
+    if (pendingAction === 'moveWumpus') {
         moveWumpus();
         setPendingAction(null);
     }
-  }, [pendingAction, handleDroneTransport, moveWumpus]);
+  }, [pendingAction, moveWumpus]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -251,16 +249,22 @@ export default function IntermediatePracticePage() {
 
     setWumpusStatus('DORMIDO');
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
-    setPlayerRoomId(newRoom.id);
     setIsShooting(false);
     
     if (isGameStarted && Math.random() < 0.25) {
         setPendingAction('moveWumpus');
     }
+
+    if (newRoom.hasBat) {
+        setDiscoveredHazards(prev => new Set(prev).add(newRoomId));
+        handleDroneTransport();
+        return;
+    }
     
+    setPlayerRoomId(newRoom.id);
     checkHazards(newRoom);
 
-  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted]);
+  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted, handleDroneTransport]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -474,19 +478,15 @@ export default function IntermediatePracticePage() {
                            })}
                         </div>
                       </div>
-                    ) : (
-                        <>
-                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {isDiscoveredHazard && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {isDiscoveredHazard && room.hasLockdown && <ShieldAlert className="h-8 w-8 text-orange-400" />}
-                            {isDiscoveredHazard && room.hasStatic && <WifiOff className="h-8 w-8 text-gray-400" />}
-                            
-                            {isVisited && !isDiscoveredHazard && !room.hasWumpus && !room.hasPit && (
-                                <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
-                            )}
-                        </>
-                    )}
+                    ) : isDiscoveredHazard && room.hasBat ? (
+                        <Shuffle className="h-8 w-8 text-wumpus-accent" />
+                    ) : isDiscoveredHazard && room.hasLockdown ? (
+                        <ShieldAlert className="h-8 w-8 text-orange-400" />
+                    ) : isDiscoveredHazard && room.hasStatic ? (
+                        <WifiOff className="h-8 w-8 text-gray-400" />
+                    ) : isVisited ? (
+                        <Footprints className="h-6 w-6 md:h-8 md:h-8 text-wumpus-primary opacity-40" />
+                    ) : null}
                 </div>
                 </div>
             );

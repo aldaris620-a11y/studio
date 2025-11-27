@@ -111,7 +111,7 @@ export default function NarrativeMissionPage() {
     const currentMission = currentChapter.missions[missionIndex];
     const nextMission = missionIndex + 1 < currentChapter.missions.length ? currentChapter.missions[missionIndex + 1] : null;
     
-    return { chapter: currentChapter, mission: currentMission, nextMission };
+    return { chapter: currentChapter, mission: currentMission, nextMission: nextMission };
   }, [chapterId, missionId]);
 
   const config = useMemo(() => {
@@ -136,13 +136,13 @@ export default function NarrativeMissionPage() {
   const getRoomById = useCallback((id: number, currentMap: Room[]) => currentMap.find(r => r.id === id), []);
 
   const handleMissionComplete = useCallback(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && mission) {
         const completed = JSON.parse(localStorage.getItem('completedMissions') || '{}');
-        completed[missionId] = true;
+        completed[mission.id] = true;
         localStorage.setItem('completedMissions', JSON.stringify(completed));
     }
      setGameOver({ icon: Trophy, title: "Misión Cumplida", description: "Has recuperado el registro de datos. La información obtenida es vital para las siguientes operaciones.", variant: 'victory' });
-  }, [missionId]);
+  }, [mission]);
 
   const moveWumpus = useCallback(() => {
     setGameMap(currentMap => {
@@ -208,8 +208,7 @@ export default function NarrativeMissionPage() {
        return true;
     }
     if (room.hasBat) {
-      setDiscoveredHazards(prev => new Set(prev).add(room.id));
-      setAlertModal({ icon: Shuffle, title: "Dron de Transporte Activado", description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!", buttonText: "Continuar", onConfirm: () => setPendingAction('transportByDrone') });
+      // Logic handled in handleMove
       return false;
     }
     if (room.hasLockdown) {
@@ -225,29 +224,28 @@ export default function NarrativeMissionPage() {
   }, [mission, handleMissionComplete]);
 
   const handleDroneTransport = useCallback(() => {
-    setGameMap(currentMap => {
-        let randomRoomId, newRoom;
-        do {
-            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
-            newRoom = getRoomById(randomRoomId, currentMap);
-        } while (randomRoomId === playerRoomId || !newRoom);
+    setAlertModal({ icon: Shuffle, title: "Dron de Transporte Activado", description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!", buttonText: "Continuar", onConfirm: () => {
+        setGameMap(currentMap => {
+            let randomRoomId, newRoom;
+            do {
+                randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+                newRoom = getRoomById(randomRoomId, currentMap);
+            } while (randomRoomId === playerRoomId || !newRoom);
 
-        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-        setPlayerRoomId(newRoom.id);
-        setTimeout(() => checkHazards(newRoom!), 0);
-        return currentMap;
-    });
+            setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+            setPlayerRoomId(newRoom.id);
+            setTimeout(() => checkHazards(newRoom!), 0);
+            return currentMap;
+        });
+    } });
   }, [playerRoomId, getRoomById, checkHazards]);
 
   useEffect(() => {
-    if (pendingAction === 'transportByDrone') {
-        handleDroneTransport();
-        setPendingAction(null);
-    } else if (pendingAction === 'moveWumpus') {
+    if (pendingAction === 'moveWumpus') {
         moveWumpus();
         setPendingAction(null);
     }
-  }, [pendingAction, handleDroneTransport, moveWumpus]);
+  }, [pendingAction, moveWumpus]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver || gameMap.length === 0) return;
@@ -258,13 +256,20 @@ export default function NarrativeMissionPage() {
 
     setWumpusStatus('DORMIDO');
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
-    setPlayerRoomId(newRoom.id);
 
     if (isGameStarted && Math.random() < config.wumpusMoveChance) {
         setPendingAction('moveWumpus');
     }
+    
+    if (newRoom.hasBat) {
+        setDiscoveredHazards(prev => new Set(prev).add(newRoomId));
+        handleDroneTransport();
+        return;
+    }
+
+    setPlayerRoomId(newRoom.id);
     checkHazards(newRoom);
-  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted, config.wumpusMoveChance]);
+  }, [gameOver, gameMap, getRoomById, checkHazards, isGameStarted, config.wumpusMoveChance, handleDroneTransport]);
 
   const restartGame = useCallback(() => {
     if (!mission) return;
@@ -437,6 +442,8 @@ export default function NarrativeMissionPage() {
                       </div>
                     ) : room.isTerminal ? (
                        <Server className={cn(playerIconSizeClass, 'text-wumpus-primary')} />
+                    ) : isDiscoveredHazard && room.hasBat ? (
+                        <Shuffle className={cn(playerIconSizeClass, "text-wumpus-accent")} />
                     ) : isVisited ? (
                         <Footprints className={cn(playerIconSizeClass, 'text-wumpus-primary opacity-40')} />
                     ) : null}
@@ -510,3 +517,5 @@ export default function NarrativeMissionPage() {
     </>
   );
 }
+
+    

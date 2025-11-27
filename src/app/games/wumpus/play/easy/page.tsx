@@ -125,55 +125,57 @@ export default function EasyPracticePage() {
       return true;
     }
     if (room.hasBat) {
-      setDiscoveredHazards(prev => new Set(prev).add(room.id));
-      setAlertModal({
-          icon: Shuffle, title: "Dron de Transporte Activado",
-          description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
-          buttonText: "Continuar",
-          onConfirm: () => setPendingAction('transportByDrone'),
-      });
-      return false; // Not a game over, but triggers an event
+      // This will be handled in handleMove to show the icon before transport
+      return false;
     }
     return false;
   }, []);
 
   const handleDroneTransport = useCallback(() => {
-    setGameMap(currentMap => {
-        let randomRoomId;
-        let newRoom;
-        do {
-            randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
-            newRoom = getRoomById(randomRoomId, currentMap);
-        } while (randomRoomId === playerRoomId || !newRoom);
+    setAlertModal({
+        icon: Shuffle, title: "Dron de Transporte Activado",
+        description: "Un dron de transporte errático te ha atrapado. ¡Prepárate para una reubicación forzada!",
+        buttonText: "Continuar",
+        onConfirm: () => {
+            setGameMap(currentMap => {
+                let randomRoomId;
+                let newRoom;
+                do {
+                    randomRoomId = Math.floor(Math.random() * currentMap.length) + 1;
+                    newRoom = getRoomById(randomRoomId, currentMap);
+                } while (randomRoomId === playerRoomId || !newRoom);
 
-        setVisitedRooms(prev => new Set(prev).add(newRoom.id));
-        setPlayerRoomId(newRoom.id);
-        
-        setTimeout(() => checkHazards(newRoom!), 0);
-        
-        return currentMap;
+                setVisitedRooms(prev => new Set(prev).add(newRoom.id));
+                setPlayerRoomId(newRoom.id);
+                
+                // Check for hazards in the new room after being transported
+                setTimeout(() => checkHazards(newRoom!), 0);
+                
+                return currentMap;
+            });
+        }
     });
   }, [playerRoomId, getRoomById, checkHazards]);
-
-  useEffect(() => {
-    if (pendingAction === 'transportByDrone') {
-      handleDroneTransport();
-      setPendingAction(null);
-    }
-  }, [pendingAction, handleDroneTransport]);
 
   const handleMove = useCallback((newRoomId: number) => {
     if (gameOver) return;
 
     const newRoom = getRoomById(newRoomId, gameMap);
     if (!newRoom) return;
-
+    
     setVisitedRooms(prev => new Set(prev).add(newRoomId));
-    setPlayerRoomId(newRoom.id);
     setIsShooting(false);
 
+    // If the new room has a bat, discover it FIRST, then transport.
+    if (newRoom.hasBat) {
+        setDiscoveredHazards(prev => new Set(prev).add(newRoomId));
+        handleDroneTransport();
+        return; // Stop further execution, transport will handle the rest
+    }
+    
+    setPlayerRoomId(newRoom.id);
     checkHazards(newRoom);
-  }, [gameOver, getRoomById, gameMap, checkHazards]);
+  }, [gameOver, getRoomById, gameMap, checkHazards, handleDroneTransport]);
   
   const handleShootClick = () => {
     if (gameOver || arrowsLeft === 0) return;
@@ -363,16 +365,11 @@ export default function EasyPracticePage() {
                            })}
                         </div>
                       </div>
-                    ) : (
-                        <>
-                            {room.hasWumpus && <Skull className="h-8 w-8 text-wumpus-danger" />}
-                            {room.hasPit && <AlertTriangle className="h-8 w-8 text-wumpus-warning" />}
-                            {isDiscoveredHazard && room.hasBat && <Shuffle className="h-8 w-8 text-wumpus-accent" />}
-                            {isVisited && !isDiscoveredHazard && !room.hasWumpus && !room.hasPit && (
-                                <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
-                            )}
-                        </>
-                    )}
+                    ) : isDiscoveredHazard && room.hasBat ? (
+                        <Shuffle className="h-8 w-8 text-wumpus-accent" />
+                    ) : isVisited ? (
+                        <Footprints className="h-8 w-8 text-wumpus-primary opacity-40" />
+                    ) : null}
                 </div>
                 </div>
             );
