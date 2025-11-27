@@ -2,22 +2,12 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Skull, AlertTriangle, Shuffle, WifiOff, ShieldAlert, Ghost, Lock, Target, BookOpen, Server } from 'lucide-react';
+import { ArrowLeft, Lock, BookOpen, Server, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { AnimatedLoading } from '@/components/animated-loading';
 import { chapters, Mission } from '@/games/wumpus/narrative-missions';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-
-
-const hazardIcons = {
-    wumpus: { icon: Skull, color: 'text-wumpus-danger' },
-    pit: { icon: AlertTriangle, color: 'text-wumpus-warning' },
-    bat: { icon: Shuffle, color: 'text-wumpus-accent' },
-    static: { icon: WifiOff, color: 'text-gray-400' },
-    lockdown: { icon: ShieldAlert, color: 'text-orange-400' },
-    ghost: { icon: Ghost, color: 'text-purple-400' },
-};
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
 export default function MissionSelectionPage() {
@@ -37,8 +27,8 @@ export default function MissionSelectionPage() {
     }
   }, []);
 
-  const handleMissionSelect = (mission: Mission) => {
-    if (!mission.enabled) return;
+  const handleMissionSelect = (mission: Mission, isUnlocked: boolean) => {
+    if (!isUnlocked) return;
     setIsLoading(mission.id);
     router.push(`/games/wumpus/play/narrative/${chapterId}/${mission.id}`);
   };
@@ -57,6 +47,20 @@ export default function MissionSelectionPage() {
     });
   };
 
+  const handleShowSummary = () => {
+    if (!chapter || !chapter.summary) return;
+    setLogModal({
+        title: chapter.summary.title,
+        content: (
+            <div className="text-left font-mono text-xs space-y-2 my-4 max-h-[40vh] overflow-y-auto pr-2">
+                {chapter.summary.content.map((line, index) => (
+                    <div key={index} className="mb-2">{line}</div>
+                ))}
+            </div>
+        )
+    })
+  }
+
   if (!chapter) {
     return (
         <div className="flex min-h-screen w-full flex-col items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
@@ -74,6 +78,8 @@ export default function MissionSelectionPage() {
     return <AnimatedLoading text={`Accediendo a ${mission?.title}...`} />;
   }
 
+  const allMissionsCompleted = chapter.missions.every(m => completedMissions[m.id]);
+
   return (
     <>
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-wumpus-background text-wumpus-foreground p-4">
@@ -85,33 +91,35 @@ export default function MissionSelectionPage() {
           {chapter.subtitle}
         </p>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {chapter.missions.map((mission, index) => {
             const isCompleted = completedMissions[mission.id];
+            const isUnlocked = index === 0 || completedMissions[chapter.missions[index - 1].id];
+            
             return (
                  <div
                     key={mission.id}
                     className={cn(
                         "group relative flex flex-col overflow-hidden rounded-lg border border-wumpus-accent/20 bg-wumpus-card/80 p-4 text-left transition-all duration-300 ease-in-out fade-in",
-                        mission.enabled ? "cursor-pointer hover:border-wumpus-primary hover:shadow-glow-wumpus-primary hover:-translate-y-1" : "opacity-50 cursor-not-allowed",
+                        isUnlocked ? "cursor-pointer hover:border-wumpus-primary hover:shadow-glow-wumpus-primary hover:-translate-y-1" : "opacity-50 cursor-not-allowed",
                     )}
                     style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => handleMissionSelect(mission)}
+                    onClick={() => handleMissionSelect(mission, isUnlocked)}
                     >
                     <div className="flex justify-between items-start">
                          <h2 className="text-lg font-bold text-wumpus-primary">{mission.title}</h2>
-                        {isCompleted && (
+                        {isCompleted && mission.dataLog && (
                             <button onClick={(e) => { e.stopPropagation(); handleShowLog(mission); }} className="text-wumpus-accent hover:text-wumpus-primary transition-colors">
                                 <BookOpen className="h-5 w-5"/>
                             </button>
                         )}
                     </div>
                     <div className="mt-2 border-t border-wumpus-accent/10 pt-2">
-                        <p className="text-xs font-semibold mb-2 text-wumpus-accent flex items-center gap-2"><Target/> Objetivo de la Misión:</p>
+                        <p className="text-xs font-semibold mb-2 text-wumpus-accent flex items-center gap-2"><Server/> Objetivo del Registro:</p>
                         <p className="text-xs text-wumpus-foreground/80">{mission.objective}</p>
                     </div>
 
-                    {!mission.enabled && (
+                    {!isUnlocked && (
                         <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
                             <Lock className="h-8 w-8 mb-2 text-wumpus-danger"/>
                             <span className="font-bold text-wumpus-danger">BLOQUEADO</span>
@@ -120,6 +128,26 @@ export default function MissionSelectionPage() {
                 </div>
             );
           })}
+
+          {/* Chapter Summary Card */}
+          <div
+            className={cn(
+                "group relative flex flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-wumpus-accent/20 bg-wumpus-card/50 p-4 text-center transition-all duration-300 ease-in-out fade-in",
+                allMissionsCompleted ? "cursor-pointer hover:border-wumpus-primary hover:shadow-glow-wumpus-primary hover:-translate-y-1" : "opacity-50 cursor-not-allowed",
+            )}
+            style={{ animationDelay: `${chapter.missions.length * 100}ms` }}
+            onClick={() => allMissionsCompleted && handleShowSummary()}
+            >
+             <BrainCircuit className={cn("h-10 w-10 mb-2 transition-colors", allMissionsCompleted ? "text-wumpus-primary" : "text-wumpus-foreground/30")} />
+             <h2 className="text-lg font-bold text-wumpus-primary">Resumen del Capítulo</h2>
+             <p className="text-xs text-wumpus-foreground/60 mt-1">Completa todas las misiones para desbloquear el informe final.</p>
+             {!allMissionsCompleted && (
+                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                    <Lock className="h-8 w-8 mb-2 text-wumpus-danger"/>
+                 </div>
+             )}
+            </div>
+
         </div>
       </div>
       
