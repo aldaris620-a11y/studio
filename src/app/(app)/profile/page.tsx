@@ -44,28 +44,32 @@ export default function ProfilePage() {
       const fetchUserData = async () => {
         setIsPageLoading(true);
         const userDocRef = doc(db, 'users', user.uid);
-        try {
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                form.reset({ 
-                    username: userData.username || user.displayName || '',
+        
+        getDoc(userDocRef)
+            .then(userDoc => {
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    form.reset({ 
+                        username: userData.username || user.displayName || '',
+                    });
+                    setSelectedAvatar(userData.avatar || '🎮');
+                } else {
+                    form.reset({ 
+                        username: user.displayName || '',
+                    });
+                    setSelectedAvatar('🎮');
+                }
+            })
+            .catch(error => {
+                 const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'get',
                 });
-                setSelectedAvatar(userData.avatar || '🎮');
-            } else {
-                form.reset({ 
-                    username: user.displayName || '',
-                });
-                setSelectedAvatar('🎮');
-            }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-            form.reset({ 
-                username: user.displayName || '',
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsPageLoading(false);
             });
-            setSelectedAvatar('🎮');
-        }
-        setIsPageLoading(false);
       };
       fetchUserData();
     }
@@ -81,6 +85,7 @@ export default function ProfilePage() {
     const profileData = {
         username: newUsername,
         avatar: selectedAvatar,
+        id: user.uid,
     };
 
     setDoc(userDocRef, profileData, { merge: true })

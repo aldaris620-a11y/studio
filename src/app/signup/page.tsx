@@ -97,21 +97,22 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Step 1: Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
+      // Update Auth profile first
+      await updateProfile(user, { displayName: values.username });
+      
       const profileData = {
         id: user.uid,
         username: values.username,
         avatar: "🎮", // Default avatar
       };
 
-      // Step 2 & 3: Create Firestore profile and update Auth profile concurrently
-      await Promise.all([
-        setDoc(doc(db, 'users', user.uid), profileData),
-        updateProfile(user, { displayName: values.username })
-      ]);
+      const userDocRef = doc(db, 'users', user.uid);
+      
+      // Set Firestore document
+      await setDoc(userDocRef, profileData);
       
       setIsNavigating(true);
       router.push("/dashboard");
@@ -123,16 +124,20 @@ export default function SignupPage() {
       if (error?.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso. Por favor, intenta con otro.";
       } else if (error.name === 'FirebaseError') {
+        // This is likely a Firestore permission error if auth creation succeeded.
         const permissionError = new FirestorePermissionError({
-            path: `users/${error.request?.auth?.uid || 'unknown'}`,
+            path: `users/${auth.currentUser?.uid || 'unknown-uid'}`,
             operation: 'create',
             requestResourceData: {
+                id: auth.currentUser?.uid || 'unknown-uid',
                 username: values.username,
                 avatar: '🎮'
             }
         });
         errorEmitter.emit('permission-error', permissionError);
-        description = "No se pudo crear tu perfil en la base de datos. Contacta a soporte.";
+        // The global listener will throw the error, so we don't need a toast here.
+        setIsLoading(false);
+        return; 
       }
       
       toast({
@@ -141,9 +146,9 @@ export default function SignupPage() {
         variant: "destructive",
       });
       setIsLoading(false);
-
     }
   }
+
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
