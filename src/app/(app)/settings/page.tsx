@@ -91,44 +91,50 @@ export default function SettingsPage() {
   async function handleDeleteGameProgress(gameId: string) {
     if (!user || !db) return;
     setGameProgressIsLoading(gameId);
-
+  
     const gameProgressColRef = collection(db, 'users', user.uid, 'game_progress');
-    const q = query(gameProgressColRef, where("gameId", "==", gameId));
-
+  
     try {
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            toast({
-                title: 'No hay progreso que borrar',
-                description: `No se encontró progreso para este juego.`,
-                variant: 'default'
-            });
-            setGameProgressIsLoading(null);
-            return;
-        }
-
-        const batch = writeBatch(db);
-        querySnapshot.forEach(doc => {
-            batch.delete(doc.ref);
-        });
-
-        await batch.commit();
-
+      // Step 1: Get all documents from the subcollection. This requires `list` permission.
+      const querySnapshot = await getDocs(gameProgressColRef);
+  
+      // Step 2: Filter documents on the client-side.
+      const docsToDelete = querySnapshot.docs.filter(
+        (doc) => doc.data().gameId === gameId
+      );
+  
+      if (docsToDelete.length === 0) {
         toast({
-            title: 'Progreso Eliminado',
-            description: `Tu progreso en el juego ha sido eliminado exitosamente.`,
-            variant: 'success'
+          title: 'No hay progreso que borrar',
+          description: `No se encontró progreso para este juego.`,
+          variant: 'default',
         });
-
-    } catch (error) {
-         const permissionError = new FirestorePermissionError({
-            path: gameProgressColRef.path,
-            operation: 'list', // The initial query fails here
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
         setGameProgressIsLoading(null);
+        return;
+      }
+  
+      // Step 3: Delete the filtered documents in a batch. This requires `delete` permission.
+      const batch = writeBatch(db);
+      docsToDelete.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+  
+      await batch.commit();
+  
+      toast({
+        title: 'Progreso Eliminado',
+        description: `Tu progreso en el juego ha sido eliminado exitosamente.`,
+        variant: 'success',
+      });
+    } catch (error) {
+      // This will now correctly trigger if the initial getDocs fails.
+      const permissionError = new FirestorePermissionError({
+        path: gameProgressColRef.path,
+        operation: 'list', // The getDocs operation is a 'list' operation.
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setGameProgressIsLoading(null);
     }
   }
 
