@@ -10,15 +10,16 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow create: if request.auth != null;
-      allow read, update, delete: if isOwner(userId);
+      allow read, update: if isOwner(userId);
       
       // Rules for subcollections
-      match /user_achievements/{achievementId} {
-         allow read, write, delete: if isOwner(userId);
-      }
-      
+      // This rule allows the owner to list and read documents in the subcollection.
       match /game_progress/{gameProgressId} {
-        allow read, write, delete: if isOwner(userId);
+         allow read, write: if isOwner(userId);
+      }
+
+      match /user_achievements/{achievementId} {
+         allow read, write: if isOwner(userId);
       }
     }
       
@@ -27,3 +28,4 @@ service cloud.firestore {
     }
   }
 }
+
