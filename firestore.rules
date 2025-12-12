@@ -18,14 +18,17 @@ service cloud.firestore {
       allow read, update, delete: if isOwner(userId);
       
       match /user_achievements/{achievementId} {
-        // Allow owner to read and create their own achievements.
-        allow read, create, update: if isOwner(userId);
+        // Allow owner to manage their own achievements.
+        allow read, create, update, delete: if isOwner(userId);
+      }
+      
+      match /game_progress/{gameProgressId} {
+        // Allow owner to read and write individual game progress documents.
+        allow read, write: if isOwner(userId);
       }
 
-      match /game_progress/{gameProgressId} {
-        // Allow owner to manage their own game progress.
-        allow read, write, delete: if isOwner(userId);
-      }
+      // Allow the owner to list and delete multiple documents in their own subcollections.
+      allow list, delete: if isOwner(userId);
     }
       
     match /rewards/{rewardId} {
@@ -33,5 +36,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
