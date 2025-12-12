@@ -95,48 +95,41 @@ export default function SettingsPage() {
     const gameProgressColRef = collection(db, 'users', user.uid, 'game_progress');
     const q = query(gameProgressColRef, where("gameId", "==", gameId));
 
-    getDocs(q)
-        .then(gameQuerySnapshot => {
-            if (gameQuerySnapshot.empty) {
-                toast({
-                    title: 'No hay progreso que borrar',
-                    description: `No se encontró progreso para este juego.`,
-                    variant: 'default'
-                });
-                setGameProgressIsLoading(null);
-                return;
-            }
-
-            const batch = writeBatch(db);
-            gameQuerySnapshot.forEach(doc => batch.delete(doc.ref));
-
-            batch.commit()
-                .then(() => {
-                    toast({
-                        title: 'Progreso Eliminado',
-                        description: `Tu progreso en el juego ha sido eliminado exitosamente.`,
-                        variant: 'success'
-                    });
-                })
-                .catch(error => {
-                    const permissionError = new FirestorePermissionError({
-                        path: gameProgressColRef.path, // Path of the collection
-                        operation: 'delete',
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                })
-                .finally(() => {
-                    setGameProgressIsLoading(null);
-                });
-        })
-        .catch(error => {
-            const permissionError = new FirestorePermissionError({
-                path: gameProgressColRef.path,
-                operation: 'list',
+    try {
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            toast({
+                title: 'No hay progreso que borrar',
+                description: `No se encontró progreso para este juego.`,
+                variant: 'default'
             });
-            errorEmitter.emit('permission-error', permissionError);
             setGameProgressIsLoading(null);
+            return;
+        }
+
+        const batch = writeBatch(db);
+        querySnapshot.forEach(doc => {
+            batch.delete(doc.ref);
         });
+
+        await batch.commit();
+
+        toast({
+            title: 'Progreso Eliminado',
+            description: `Tu progreso en el juego ha sido eliminado exitosamente.`,
+            variant: 'success'
+        });
+
+    } catch (error) {
+         const permissionError = new FirestorePermissionError({
+            path: gameProgressColRef.path,
+            operation: 'list', // The initial query fails here
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
+        setGameProgressIsLoading(null);
+    }
   }
 
 

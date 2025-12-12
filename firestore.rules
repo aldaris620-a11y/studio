@@ -11,10 +11,10 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if request.auth != null;
       allow read, update, delete: if isOwner(userId);
-      allow list: if isOwner(userId);
       
+      // Rules for subcollections
       match /user_achievements/{achievementId} {
-        allow read, create, update, delete: if isOwner(userId);
+         allow read, write, delete: if isOwner(userId);
       }
       
       match /game_progress/{gameProgressId} {
