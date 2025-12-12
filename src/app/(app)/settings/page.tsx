@@ -147,11 +147,9 @@ export default function SettingsPage() {
     setShowDeleteLoading(true);
   
     try {
-      // Re-authenticate user first
       const credential = EmailAuthProvider.credential(user.email, values.confirmPassword);
       await reauthenticateWithCredential(user, credential);
   
-      // Delete user profile document from Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await deleteDoc(userDocRef).catch(error => {
         const permissionError = new FirestorePermissionError({
@@ -159,11 +157,9 @@ export default function SettingsPage() {
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Re-throw to be caught by the outer catch block
         throw error;
       });
   
-      // Finally, delete user from Firebase Auth
       await deleteUser(user);
   
       toast({
@@ -174,7 +170,6 @@ export default function SettingsPage() {
       router.push('/login');
     } catch (error: any) {
         setShowDeleteLoading(false);
-        // Check for specific auth error first
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
             toast({
             title: 'Error al Eliminar la Cuenta',
@@ -182,7 +177,6 @@ export default function SettingsPage() {
             variant: 'destructive',
             });
         } 
-        // If it's not a permission error (which is handled globally), show a generic toast
         else if (error.name !== 'FirebaseError') {
             toast({
                 title: 'Error al Eliminar la Cuenta',
@@ -190,7 +184,6 @@ export default function SettingsPage() {
                 variant: 'destructive',
             });
         }
-        // If it IS a FirebaseError but not wrong password, it's likely the permission error, which will be handled by the global listener.
     } finally {
       setIsDeleteLoading(false);
     }
@@ -337,5 +330,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

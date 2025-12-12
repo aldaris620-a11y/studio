@@ -9,24 +9,15 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Allow a user to create their own profile document shortly after signing up.
-      // request.auth is populated, but the write may happen before request.auth.uid is fully consistent.
-      // The update/delete rules below secure the document post-creation.
       allow create: if request.auth != null;
-
-      // Allow owner to read, update, and delete their own document.
       allow read, update, delete: if isOwner(userId);
-      
-      // Allow the owner to list documents in their own subcollections.
       allow list: if isOwner(userId);
       
       match /user_achievements/{achievementId} {
-        // Allow owner to manage their own achievements.
         allow read, create, update, delete: if isOwner(userId);
       }
       
       match /game_progress/{gameProgressId} {
-        // Allow owner to read, write and delete individual game progress documents.
         allow read, write, delete: if isOwner(userId);
       }
     }
