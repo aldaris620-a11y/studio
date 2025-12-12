@@ -1,27 +1,25 @@
-
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { firebaseConfig } from "./config";
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase(): { firebaseApp: FirebaseApp, auth: Auth, firestore: Firestore } {
   const isConfigured = getApps().length > 0;
-  const app = !isConfigured ? initializeApp(firebaseConfig) : getApp();
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
+  const firebaseApp = !isConfigured ? initializeApp(firebaseConfig) : getApp();
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
 
-  return { firebaseApp: app, auth, firestore };
+  return { firebaseApp, auth, firestore };
 }
 
-export * from './provider';
 
+export * from './provider';
+export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-

@@ -1,19 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
-import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
-import { initializeFirebase } from '@/firebase';
+import { FirebaseApp, initializeApp, getApps, getApp } from 'firebase/app';
+import { Firestore, getFirestore } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { firebaseConfig } from '@/firebase/config';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
-interface FirebaseServices {
+// This is the shape of the props that the FirebaseProvider component will accept.
+export interface FirebaseProviderProps {
+  children: ReactNode;
   firebaseApp: FirebaseApp;
-  firestore: Firestore;
   auth: Auth;
+  firestore: Firestore;
 }
 
-// Combined state for the Firebase context
+// This is the shape of the state that will be stored in the FirebaseContext.
+//
 export interface FirebaseContextState {
   firebaseApp: FirebaseApp;
   firestore: Firestore;
@@ -24,13 +27,8 @@ export interface FirebaseContextState {
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-/**
- * FirebaseProvider manages and provides Firebase services and user authentication state.
- */
-export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Use useMemo to ensure Firebase is initialized only once
-  const { firebaseApp, auth, firestore } = useMemo(() => initializeFirebase(), []);
-
+export const FirebaseProvider = (props: FirebaseProviderProps) => {
+  const { firebaseApp, auth, firestore, children } = props;
   const [user, setUser] = useState<User | null>(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
 
@@ -53,6 +51,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   return (
     <FirebaseContext.Provider value={contextValue}>
+      <FirebaseErrorListener />
       {children}
     </FirebaseContext.Provider>
   );

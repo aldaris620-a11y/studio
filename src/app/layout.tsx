@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import './games/wumpus/wumpus.css';
 import { Toaster } from "@/components/ui/toaster"
-import { Providers } from './providers';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'Save Point',
@@ -22,10 +22,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased scanlines">
-        <Providers>
+        <FirebaseClientProvider>
           {children}
           <Toaster />
-        </Providers>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
